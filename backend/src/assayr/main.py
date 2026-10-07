@@ -8,6 +8,7 @@ from assayr import __version__
 from assayr.config import Settings, get_settings
 from assayr.db import Database, utcnow
 from assayr.health import router as health_router
+from assayr.identity.auth_router import router as auth_router
 
 _REQUEST_ID_UNSAFE = re.compile(r"[^A-Za-z0-9_-]")
 
@@ -34,4 +35,5 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         return response
 
     app.include_router(health_router, prefix="/api/v1")
+    app.include_router(auth_router, prefix="/api/v1")
     return app
