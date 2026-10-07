@@ -3,8 +3,10 @@ import uuid
 
 from fastapi import FastAPI, Request
 
+import assayr.models  # noqa: F401
 from assayr import __version__
 from assayr.config import Settings, get_settings
+from assayr.db import Database, utcnow
 from assayr.health import router as health_router
 
 _REQUEST_ID_UNSAFE = re.compile(r"[^A-Za-z0-9_-]")
@@ -20,6 +22,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         redoc_url=None,
     )
     app.state.settings = settings
+    app.state.db = Database(settings.database_url)
+    app.state.clock = utcnow
 
     @app.middleware("http")
     async def request_id(request: Request, call_next):
