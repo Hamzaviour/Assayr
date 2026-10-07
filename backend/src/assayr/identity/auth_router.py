@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
 from assayr.audit.service import record
@@ -50,10 +50,19 @@ def login(body: LoginIn, request: Request, response: Response, db: Session = Dep
         verify_password(dummy_hash(), body.password)
         raise fail("locked")
     if not user.is_active or not user.password_hash or not verify_password(user.password_hash, body.password):
-        user.failed_logins += 1
-        if user.failed_logins >= settings.login_max_failures:
-            user.locked_until = now + timedelta(minutes=settings.login_lockout_minutes)
-            user.failed_logins = 0
+        # Increment in the database, not from the loaded value, so parallel attempts are all counted.
+        failures = db.execute(
+            update(User)
+            .where(User.id == user.id)
+            .values(failed_logins=User.failed_logins + 1)
+            .returning(User.failed_logins)
+        ).scalar_one()
+        if failures >= settings.login_max_failures:
+            db.execute(
+                update(User)
+                .where(User.id == user.id)
+                .values(locked_until=now + timedelta(minutes=settings.login_lockout_minutes), failed_logins=0)
+            )
         raise fail("inactive" if not user.is_active else "bad_password")
 
     user.failed_logins = 0

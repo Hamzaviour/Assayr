@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 from assayr.audit.models import AuditLog
 from assayr.audit.service import verify_chain
 from assayr.db import get_session
-from assayr.identity.deps import require
+from assayr.identity.deps import require_global
 from assayr.identity.rbac import Perm
 
 router = APIRouter(prefix="/audit-log", tags=["audit"])
@@ -44,7 +44,7 @@ class ChainOut(BaseModel):
 
 @router.get("", response_model=AuditPage)
 def list_entries(
-    _grant=Depends(require(Perm.AUDIT_LOG_READ)),
+    _grant=Depends(require_global(Perm.AUDIT_LOG_READ)),
     db: Session = Depends(get_session),
     limit: int = Query(50, ge=1, le=500),
     before_seq: int | None = Query(None, ge=1),
@@ -67,6 +67,8 @@ def list_entries(
 
 
 @router.get("/verify", response_model=ChainOut)
-def verify(_grant=Depends(require(Perm.AUDIT_LOG_READ)), db: Session = Depends(get_session)) -> ChainOut:
+def verify(
+    _grant=Depends(require_global(Perm.AUDIT_LOG_READ)), db: Session = Depends(get_session)
+) -> ChainOut:
     result = verify_chain(db)
     return ChainOut(ok=result.ok, checked=result.checked, first_bad_seq=result.first_bad_seq)

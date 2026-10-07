@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from assayr.audit.service import record
 from assayr.db import get_session
-from assayr.identity.deps import actor_for, current_user, require
+from assayr.identity.deps import actor_for, current_user, require_global
 from assayr.identity.models import RoleAssignment, Scope, User, UserSession
 from assayr.identity.rbac import Perm, Role
 from assayr.identity.schemas import RoleGrantIn, UserCreateIn, UserOut, UserUpdateIn
@@ -17,6 +17,11 @@ router = APIRouter(prefix="/users", tags=["users"])
 
 def _desired_roles(db: Session, grants: list[RoleGrantIn]) -> set[tuple[str, uuid.UUID | None]]:
     desired = {(g.role.value, g.scope_id) for g in grants}
+    if any(role == Role.PLATFORM_ADMIN.value and scope_id is not None for role, scope_id in desired):
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
+            "The platform administrator role always applies to all scopes.",
+        )
     for _role, scope_id in desired:
         if scope_id is not None and db.get(Scope, scope_id) is None:
             raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "Unknown scope.")
@@ -25,7 +30,7 @@ def _desired_roles(db: Session, grants: list[RoleGrantIn]) -> set[tuple[str, uui
 
 @router.get("", response_model=list[UserOut])
 def list_users(
-    _grant=Depends(require(Perm.USERS_MANAGE)), db: Session = Depends(get_session)
+    _grant=Depends(require_global(Perm.USERS_MANAGE)), db: Session = Depends(get_session)
 ) -> list[UserOut]:
     return [UserOut.from_user(u) for u in db.scalars(select(User).order_by(User.email))]
 
@@ -35,7 +40,7 @@ def create_user(
     body: UserCreateIn,
     request: Request,
     actor: User = Depends(current_user),
-    _grant=Depends(require(Perm.USERS_MANAGE)),
+    _grant=Depends(require_global(Perm.USERS_MANAGE)),
     db: Session = Depends(get_session),
 ) -> UserOut:
     email = normalize_email(body.email)
@@ -72,7 +77,7 @@ def update_user(
     body: UserUpdateIn,
     request: Request,
     actor: User = Depends(current_user),
-    _grant=Depends(require(Perm.USERS_MANAGE)),
+    _grant=Depends(require_global(Perm.USERS_MANAGE)),
     db: Session = Depends(get_session),
 ) -> UserOut:
     target = db.get(User, user_id)
