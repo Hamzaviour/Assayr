@@ -3,6 +3,7 @@ import { Outlet, useLocation, useNavigate } from "@tanstack/react-router"
 import { useEffect, useRef } from "react"
 import { ApiError } from "../api/client"
 import { useMe } from "../auth/session"
+import { AppShell } from "../components/AppShell"
 
 export function AppLayout() {
   const me = useMe()
@@ -40,8 +41,8 @@ export function AppLayout() {
     )
   }
   return (
-    <main className="p-6">
+    <AppShell me={me.data}>
       <Outlet />
-    </main>
+    </AppShell>
   )
 }
