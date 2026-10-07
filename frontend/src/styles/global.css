@@ -1,0 +1,48 @@
+@import "tailwindcss";
+@import "./tokens.css";
+
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-subtle: var(--subtle);
+  --color-line: var(--line);
+  --color-line-2: var(--line-2);
+  --color-fg: var(--text);
+  --color-fg-2: var(--text-2);
+  --color-fg-3: var(--text-3);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-soft: var(--primary-soft);
+  --color-on-primary: var(--on-primary);
+  --color-ink: var(--ink);
+  --color-brass: var(--brass);
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-bad: var(--bad);
+  --color-bad-soft: var(--bad-soft);
+  --color-review: var(--review);
+  --color-review-soft: var(--review-soft);
+  --color-idle: var(--idle);
+  --color-idle-soft: var(--idle-soft);
+  --color-na: var(--na);
+  --font-display: var(--f-display);
+  --font-sans: var(--f-body);
+  --font-mono: var(--f-mono);
+}
+
+html, body, #root { height: 100%; }
+body {
+  background: var(--canvas);
+  color: var(--text);
+  font-family: var(--f-body);
+  font-size: 14px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3 { text-wrap: balance; }
+:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: 4px; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
