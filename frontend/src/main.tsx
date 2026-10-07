@@ -6,12 +6,24 @@ import "@fontsource/ibm-plex-mono/500.css"
 import "@fontsource/schibsted-grotesk/600.css"
 import "@fontsource/schibsted-grotesk/800.css"
 import "./styles/global.css"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { RouterProvider } from "@tanstack/react-router"
 import { StrictMode } from "react"
 import { createRoot } from "react-dom/client"
-import { Styleguide } from "./pages/Styleguide"
+import { ApiError } from "./api/client"
+import { createAppRouter } from "./router"
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: { retry: (count, error) => !(error instanceof ApiError && error.status < 500) && count < 2 },
+  },
+})
+const router = createAppRouter()
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <main className="p-6"><Styleguide /></main>
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>
   </StrictMode>,
 )
