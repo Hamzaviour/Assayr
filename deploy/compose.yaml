@@ -1,0 +1,39 @@
+name: assayr
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: assayr
+      POSTGRES_USER: assayr
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in assayr.env}
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U assayr -d assayr"]
+      interval: 5s
+      retries: 20
+    restart: unless-stopped
+
+  api:
+    build: ../backend
+    environment:
+      ASSAYR_DATABASE_URL: postgresql+pg8000://assayr:${POSTGRES_PASSWORD}@db:5432/assayr
+      ASSAYR_ORG_NAME: ${ASSAYR_ORG_NAME:-My Organization}
+      ASSAYR_SECURE_COOKIES: ${ASSAYR_SECURE_COOKIES:-false}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  web:
+    build: ../frontend
+    ports:
+      - "${ASSAYR_HTTP_PORT:-8080}:8080"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  dbdata:
