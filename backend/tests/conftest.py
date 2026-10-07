@@ -6,6 +6,8 @@ from fastapi.testclient import TestClient
 
 from assayr.config import Settings
 from assayr.db import Base, utcnow
+from assayr.identity.models import RoleAssignment, User
+from assayr.identity.security import hash_password, normalize_email
 from assayr.main import create_app
 
 TEST_DB_URL = os.environ.get("ASSAYR_TEST_DATABASE_URL", "sqlite+pysqlite:///:memory:")
@@ -57,3 +59,28 @@ def clock(app) -> FakeClock:
     fake = FakeClock()
     app.state.clock = fake
     return fake
+
+
+PASSWORD = "correct-horse-battery"
+
+
+def create_user(
+    db, email, password=PASSWORD, roles=(("isms_manager", None),), full_name="Test User", active=True
+):
+    user = User(
+        email=normalize_email(email),
+        full_name=full_name,
+        password_hash=hash_password(password),
+        is_active=active,
+        role_assignments=[RoleAssignment(role=role, scope_id=scope_id) for role, scope_id in roles],
+    )
+    db.add(user)
+    db.commit()
+    return user
+
+
+def sign_in(client, email, password=PASSWORD):
+    response = client.post("/api/v1/auth/login", json={"email": email, "password": password})
+    if response.status_code == 200:
+        client.headers["X-CSRF-Token"] = client.cookies.get("assayr_csrf")
+    return response
