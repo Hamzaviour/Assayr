@@ -11,7 +11,10 @@ import { RouterProvider } from "@tanstack/react-router"
 import { StrictMode } from "react"
 import { createRoot } from "react-dom/client"
 import { ApiError } from "./api/client"
+import { initTheme } from "./lib/theme"
 import { createAppRouter } from "./router"
+
+initTheme()
 
 const queryClient = new QueryClient({
   defaultOptions: {

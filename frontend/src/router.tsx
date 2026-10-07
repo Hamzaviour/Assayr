@@ -1,5 +1,6 @@
 import { createRootRoute, createRoute, createRouter, Outlet, type RouterHistory } from "@tanstack/react-router"
 import { AppLayout } from "./layouts/AppLayout"
+import { ControlDetailPage } from "./pages/ControlDetail"
 import { ControlsPage } from "./pages/Controls"
 import { DashboardPage } from "./pages/Dashboard"
 import { LoginPage } from "./pages/Login"
@@ -18,12 +19,21 @@ const loginRoute = createRoute({
 
 const appRoute = createRoute({ getParentRoute: () => rootRoute, id: "app", component: AppLayout })
 const dashboardRoute = createRoute({ getParentRoute: () => appRoute, path: "/", component: DashboardPage })
-const controlsRoute = createRoute({ getParentRoute: () => appRoute, path: "/controls", component: ControlsPage })
+const controlsRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/controls",
+  validateSearch: (search: Record<string, unknown>): { theme?: string; q?: string } => ({
+    theme: typeof search.theme === "string" && search.theme ? search.theme : undefined,
+    q: typeof search.q === "string" && search.q ? search.q : undefined,
+  }),
+  component: ControlsPage,
+})
+const controlRoute = createRoute({ getParentRoute: () => appRoute, path: "/controls/$code", component: ControlDetailPage })
 const styleguideRoute = createRoute({ getParentRoute: () => appRoute, path: "/styleguide", component: Styleguide })
 
 export const routeTree = rootRoute.addChildren([
   loginRoute,
-  appRoute.addChildren([dashboardRoute, controlsRoute, styleguideRoute]),
+  appRoute.addChildren([dashboardRoute, controlsRoute, controlRoute, styleguideRoute]),
 ])
 
 export function createAppRouter(history?: RouterHistory) {
