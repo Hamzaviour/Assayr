@@ -11,3 +11,5 @@ frontend/node_modules/
 frontend/dist/
 deploy/assayr.env
 *.log
+.claude-flow/
+.remember/
