@@ -1,0 +1,4489 @@
+{
+  "framework": "ISO/IEC 27001:2022",
+  "annex": "A",
+  "controls": [
+    {
+      "ref": "A.5.1",
+      "title": "Policies for information security",
+      "theme": "Organizational",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Identify"
+      ],
+      "intent": "Management defines, approves, publishes and periodically reviews an information security policy and topic-specific policies, and staff acknowledge them.",
+      "evidence_requirements": [
+        {
+          "type": "Policy",
+          "example": "Approved Information Security Policy with version history"
+        },
+        {
+          "type": "Record",
+          "example": "Policy acknowledgement records for all in-scope staff"
+        },
+        {
+          "type": "Minutes",
+          "example": "Management approval / review minutes"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-DATE",
+          "V-APPROVAL",
+          "V-VERSION",
+          "V-OWNER",
+          "V-REVIEW",
+          "V-KEYWORDS",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "information security policy",
+          "objectives",
+          "approved",
+          "review",
+          "responsibilities"
+        ]
+      },
+      "review_frequency": "Annual",
+      "default_owner_role": "CISO",
+      "related": [
+        "5.2",
+        "5.4",
+        "5.36"
+      ]
+    },
+    {
+      "ref": "A.5.2",
+      "title": "Information security roles and responsibilities",
+      "theme": "Organizational",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Identify"
+      ],
+      "intent": "Security roles and responsibilities are defined, allocated and communicated, including ISMS ownership and asset/risk owners.",
+      "evidence_requirements": [
+        {
+          "type": "Document",
+          "example": "RACI / roles and responsibilities matrix"
+        },
+        {
+          "type": "Document",
+          "example": "Job descriptions with security duties"
+        },
+        {
+          "type": "Record",
+          "example": "Appointment letter for ISMS manager"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-DATE",
+          "V-APPROVAL",
+          "V-KEYWORDS",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "roles",
+          "responsibilities",
+          "owner",
+          "ISMS",
+          "accountable"
+        ]
+      },
+      "review_frequency": "Annual",
+      "default_owner_role": "CISO",
+      "related": [
+        "5.1",
+        "5.3",
+        "5.4"
+      ]
+    },
+    {
+      "ref": "A.5.3",
+      "title": "Segregation of duties",
+      "theme": "Organizational",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Protect"
+      ],
+      "intent": "Conflicting duties and areas of responsibility are separated so no single person can misuse or alter assets undetected.",
+      "evidence_requirements": [
+        {
+          "type": "Document",
+          "example": "Segregation of duties matrix for critical processes"
+        },
+        {
+          "type": "Export",
+          "example": "Role/permission export showing separated approver and executor roles"
+        },
+        {
+          "type": "Record",
+          "example": "Exception register with compensating controls"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-DATE",
+          "V-KEYWORDS",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "segregation",
+          "conflicting duties",
+          "approval",
+          "compensating control"
+        ]
+      },
+      "review_frequency": "Annual",
+      "default_owner_role": "IT Manager",
+      "related": [
+        "5.2",
+        "5.15",
+        "8.2"
+      ]
+    },
+    {
+      "ref": "A.5.4",
+      "title": "Management responsibilities",
+      "theme": "Organizational",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Identify"
+      ],
+      "intent": "Management requires all personnel to apply security in line with policies and actively supports the ISMS.",
+      "evidence_requirements": [
+        {
+          "type": "Minutes",
+          "example": "Leadership meeting minutes showing ISMS support"
+        },
+        {
+          "type": "Document",
+          "example": "Signed management commitment statement"
+        },
+        {
+          "type": "Record",
+          "example": "Resource allocation / budget approval"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-DATE",
+          "V-APPROVAL",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "management",
+          "commitment",
+          "support",
+          "resources"
+        ]
+      },
+      "review_frequency": "Annual",
+      "default_owner_role": "Top Management",
+      "related": [
+        "5.1",
+        "5.2"
+      ]
+    },
+    {
+      "ref": "A.5.5",
+      "title": "Contact with authorities",
+      "theme": "Organizational",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive",
+        "Corrective"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Identify",
+        "Protect",
+        "Respond",
+        "Recover"
+      ],
+      "intent": "The organization maintains contact with relevant authorities (regulators, law enforcement, CERT) and knows when and how to reach them.",
+      "evidence_requirements": [
+        {
+          "type": "Register",
+          "example": "Authority contacts register with owner and last-verified date"
+        },
+        {
+          "type": "Procedure",
+          "example": "Incident escalation procedure referencing authorities"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-FRESH",
+          "V-KEYWORDS",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "authorities",
+          "regulator",
+          "law enforcement",
+          "contact",
+          "notification"
+        ]
+      },
+      "review_frequency": "Annual",
+      "default_owner_role": "CISO",
+      "related": [
+        "5.6",
+        "5.24",
+        "5.31"
+      ]
+    },
+    {
+      "ref": "A.5.6",
+      "title": "Contact with special interest groups",
+      "theme": "Organizational",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive",
+        "Corrective"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Protect",
+        "Respond",
+        "Recover"
+      ],
+      "intent": "Membership of security forums and professional associations is maintained to stay informed of threats and good practice.",
+      "evidence_requirements": [
+        {
+          "type": "Register",
+          "example": "List of memberships/subscriptions (ISACs, forums)"
+        },
+        {
+          "type": "Record",
+          "example": "Membership confirmation or recent bulletins received"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-FRESH",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "forum",
+          "association",
+          "membership",
+          "advisories"
+        ]
+      },
+      "review_frequency": "Annual",
+      "default_owner_role": "CISO",
+      "related": [
+        "5.5",
+        "5.7"
+      ]
+    },
+    {
+      "ref": "A.5.7",
+      "title": "Threat intelligence",
+      "theme": "Organizational",
+      "new_in_2022": true,
+      "control_type": [
+        "Preventive",
+        "Detective",
+        "Corrective"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Identify",
+        "Detect",
+        "Respond"
+      ],
+      "intent": "Information about threats is collected, analysed and used to produce actionable intelligence that feeds risk and defensive decisions.",
+      "evidence_requirements": [
+        {
+          "type": "Procedure",
+          "example": "Threat intelligence process (sources, analysis, distribution)"
+        },
+        {
+          "type": "Report",
+          "example": "Recent threat intelligence reports / advisories with actions taken"
+        },
+        {
+          "type": "Ticket",
+          "example": "Tickets raised from threat intel"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-FRESH",
+          "V-KEYWORDS",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "threat intelligence",
+          "sources",
+          "analysis",
+          "indicators",
+          "actions"
+        ]
+      },
+      "review_frequency": "Quarterly",
+      "default_owner_role": "Security Operations",
+      "related": [
+        "5.6",
+        "8.8",
+        "8.16"
+      ]
+    },
+    {
+      "ref": "A.5.8",
+      "title": "Information security in project management",
+      "theme": "Organizational",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Identify",
+        "Protect"
+      ],
+      "intent": "Security requirements and risk are integrated into project management for all projects regardless of type.",
+      "evidence_requirements": [
+        {
+          "type": "Procedure",
+          "example": "Project methodology with security gates"
+        },
+        {
+          "type": "Record",
+          "example": "Completed security checklist / risk assessment for a sample project"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-DATE",
+          "V-KEYWORDS",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "project",
+          "security requirements",
+          "risk assessment",
+          "gate"
+        ]
+      },
+      "review_frequency": "Annual",
+      "default_owner_role": "PMO",
+      "related": [
+        "8.25",
+        "8.26"
+      ]
+    },
+    {
+      "ref": "A.5.9",
+      "title": "Inventory of information and other associated assets",
+      "theme": "Organizational",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Identify"
+      ],
+      "intent": "An inventory of information and associated assets, with owners, is developed and kept accurate and current.",
+      "evidence_requirements": [
+        {
+          "type": "Register",
+          "example": "Asset inventory with owner, classification, location"
+        },
+        {
+          "type": "Record",
+          "example": "Evidence of periodic inventory review"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-FRESH",
+          "V-COMPLETENESS",
+          "V-KEYWORDS",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "asset",
+          "inventory",
+          "owner",
+          "classification"
+        ]
+      },
+      "review_frequency": "Quarterly",
+      "default_owner_role": "IT Manager",
+      "related": [
+        "5.10",
+        "5.12",
+        "5.11"
+      ]
+    },
+    {
+      "ref": "A.5.10",
+      "title": "Acceptable use of information and other associated assets",
+      "theme": "Organizational",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Protect"
+      ],
+      "intent": "Rules for acceptable use and handling of information and assets are identified, documented and implemented.",
+      "evidence_requirements": [
+        {
+          "type": "Policy",
+          "example": "Acceptable Use Policy"
+        },
+        {
+          "type": "Record",
+          "example": "Signed AUP acknowledgements"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-DATE",
+          "V-APPROVAL",
+          "V-VERSION",
+          "V-KEYWORDS",
+          "V-COMPLETENESS"
+        ],
+        "required_concepts": [
+          "acceptable use",
+          "prohibited",
+          "handling",
+          "monitoring"
+        ]
+      },
+      "review_frequency": "Annual",
+      "default_owner_role": "CISO",
+      "related": [
+        "5.9",
+        "6.2"
+      ]
+    },
+    {
+      "ref": "A.5.11",
+      "title": "Return of assets",
+      "theme": "Organizational",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Protect"
+      ],
+      "intent": "Personnel and external parties return organizational assets on change or termination of employment or agreement.",
+      "evidence_requirements": [
+        {
+          "type": "Procedure",
+          "example": "Offboarding procedure with asset return step"
+        },
+        {
+          "type": "Record",
+          "example": "Signed asset return forms for recent leavers"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-DATE",
+          "V-COMPLETENESS",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "return",
+          "assets",
+          "termination",
+          "offboarding"
+        ]
+      },
+      "review_frequency": "Per event",
+      "default_owner_role": "HR",
+      "related": [
+        "5.9",
+        "6.5"
+      ]
+    },
+    {
+      "ref": "A.5.12",
+      "title": "Classification of information",
+      "theme": "Organizational",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Identify"
+      ],
+      "intent": "Information is classified according to security needs based on confidentiality, integrity, availability and stakeholder requirements.",
+      "evidence_requirements": [
+        {
+          "type": "Policy",
+          "example": "Information classification scheme"
+        },
+        {
+          "type": "Register",
+          "example": "Asset inventory showing classification per asset"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-DATE",
+          "V-APPROVAL",
+          "V-KEYWORDS",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "classification",
+          "confidential",
+          "internal",
+          "public",
+          "levels"
+        ]
+      },
+      "review_frequency": "Annual",
+      "default_owner_role": "CISO",
+      "related": [
+        "5.13",
+        "5.9"
+      ]
+    },
+    {
+      "ref": "A.5.13",
+      "title": "Labelling of information",
+      "theme": "Organizational",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Protect"
+      ],
+      "intent": "Procedures for labelling information are developed and applied in line with the classification scheme.",
+      "evidence_requirements": [
+        {
+          "type": "Procedure",
+          "example": "Labelling procedure"
+        },
+        {
+          "type": "Screenshot",
+          "example": "Example of labelled document / sensitivity label configuration"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-DATE",
+          "V-SCREENSHOT",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "label",
+          "marking",
+          "classification"
+        ]
+      },
+      "review_frequency": "Annual",
+      "default_owner_role": "CISO",
+      "related": [
+        "5.12"
+      ]
+    },
+    {
+      "ref": "A.5.14",
+      "title": "Information transfer",
+      "theme": "Organizational",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Protect"
+      ],
+      "intent": "Rules, procedures or agreements are in place for all types of information transfer, internal and external.",
+      "evidence_requirements": [
+        {
+          "type": "Policy",
+          "example": "Information transfer policy"
+        },
+        {
+          "type": "Contract",
+          "example": "Data transfer agreement sample"
+        },
+        {
+          "type": "Screenshot",
+          "example": "Secure transfer tool configuration (TLS / encrypted email)"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-DATE",
+          "V-KEYWORDS",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "transfer",
+          "encryption",
+          "agreement",
+          "email"
+        ]
+      },
+      "review_frequency": "Annual",
+      "default_owner_role": "IT Manager",
+      "related": [
+        "8.24",
+        "5.31"
+      ]
+    },
+    {
+      "ref": "A.5.15",
+      "title": "Access control",
+      "theme": "Organizational",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Protect"
+      ],
+      "intent": "Rules for physical and logical access are established based on business and security requirements (least privilege, need-to-know).",
+      "evidence_requirements": [
+        {
+          "type": "Policy",
+          "example": "Access Control Policy"
+        },
+        {
+          "type": "Record",
+          "example": "Latest user access review"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-DATE",
+          "V-APPROVAL",
+          "V-VERSION",
+          "V-KEYWORDS",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "access control",
+          "least privilege",
+          "need-to-know",
+          "review"
+        ]
+      },
+      "review_frequency": "Annual",
+      "default_owner_role": "IT Manager",
+      "related": [
+        "5.16",
+        "5.17",
+        "5.18",
+        "8.2",
+        "8.3"
+      ]
+    },
+    {
+      "ref": "A.5.16",
+      "title": "Identity management",
+      "theme": "Organizational",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Protect"
+      ],
+      "intent": "The full lifecycle of identities (creation, change, removal) is managed; shared identities are restricted.",
+      "evidence_requirements": [
+        {
+          "type": "Procedure",
+          "example": "Joiner-mover-leaver procedure"
+        },
+        {
+          "type": "Export",
+          "example": "Directory export showing unique IDs, no orphan accounts"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-FRESH",
+          "V-COMPLETENESS",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "identity",
+          "joiner",
+          "leaver",
+          "unique",
+          "account"
+        ]
+      },
+      "review_frequency": "Quarterly",
+      "default_owner_role": "IT Manager",
+      "related": [
+        "5.15",
+        "5.18"
+      ]
+    },
+    {
+      "ref": "A.5.17",
+      "title": "Authentication information",
+      "theme": "Organizational",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Protect"
+      ],
+      "intent": "Allocation and management of authentication information (passwords, keys, tokens) is controlled, including user guidance.",
+      "evidence_requirements": [
+        {
+          "type": "Policy",
+          "example": "Password / authentication policy"
+        },
+        {
+          "type": "Screenshot",
+          "example": "Password policy configuration in identity provider"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-DATE",
+          "V-SCREENSHOT",
+          "V-KEYWORDS",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "password",
+          "authentication",
+          "length",
+          "MFA",
+          "secret"
+        ]
+      },
+      "review_frequency": "Annual",
+      "default_owner_role": "IT Manager",
+      "related": [
+        "8.5",
+        "5.16"
+      ]
+    },
+    {
+      "ref": "A.5.18",
+      "title": "Access rights",
+      "theme": "Organizational",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Protect"
+      ],
+      "intent": "Access rights are provisioned, reviewed, modified and removed according to the access control policy.",
+      "evidence_requirements": [
+        {
+          "type": "Record",
+          "example": "Quarterly access review sign-off"
+        },
+        {
+          "type": "Ticket",
+          "example": "Access request tickets with approval"
+        },
+        {
+          "type": "Record",
+          "example": "Leaver access removal evidence"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-FRESH",
+          "V-APPROVAL",
+          "V-COMPLETENESS",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "access review",
+          "approval",
+          "revocation",
+          "provisioning"
+        ]
+      },
+      "review_frequency": "Quarterly",
+      "default_owner_role": "IT Manager",
+      "related": [
+        "5.15",
+        "5.16",
+        "8.2"
+      ]
+    },
+    {
+      "ref": "A.5.19",
+      "title": "Information security in supplier relationships",
+      "theme": "Organizational",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Identify"
+      ],
+      "intent": "Processes manage security risks associated with the use of suppliers' products and services.",
+      "evidence_requirements": [
+        {
+          "type": "Policy",
+          "example": "Supplier security policy"
+        },
+        {
+          "type": "Register",
+          "example": "Supplier register with risk tier"
+        },
+        {
+          "type": "Record",
+          "example": "Supplier risk assessments"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-DATE",
+          "V-KEYWORDS",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "supplier",
+          "third party",
+          "risk",
+          "assessment"
+        ]
+      },
+      "review_frequency": "Annual",
+      "default_owner_role": "Procurement",
+      "related": [
+        "5.20",
+        "5.21",
+        "5.22"
+      ]
+    },
+    {
+      "ref": "A.5.20",
+      "title": "Addressing information security within supplier agreements",
+      "theme": "Organizational",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Identify"
+      ],
+      "intent": "Relevant security requirements are agreed with each supplier based on the type of relationship.",
+      "evidence_requirements": [
+        {
+          "type": "Contract",
+          "example": "Supplier contract / DPA with security clauses"
+        },
+        {
+          "type": "Document",
+          "example": "Standard security schedule template"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-DATE",
+          "V-SIGNATURE",
+          "V-KEYWORDS",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "agreement",
+          "confidentiality",
+          "right to audit",
+          "security requirements",
+          "breach notification"
+        ]
+      },
+      "review_frequency": "Per contract",
+      "default_owner_role": "Legal",
+      "related": [
+        "5.19",
+        "5.31"
+      ]
+    },
+    {
+      "ref": "A.5.21",
+      "title": "Managing information security in the ICT supply chain",
+      "theme": "Organizational",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Identify"
+      ],
+      "intent": "Processes manage security risks in the ICT products and services supply chain.",
+      "evidence_requirements": [
+        {
+          "type": "Procedure",
+          "example": "ICT supply chain risk procedure"
+        },
+        {
+          "type": "Record",
+          "example": "Software/hardware vendor assessments, SBOM where relevant"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-DATE",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "supply chain",
+          "ICT",
+          "components",
+          "vendor"
+        ]
+      },
+      "review_frequency": "Annual",
+      "default_owner_role": "Procurement",
+      "related": [
+        "5.19",
+        "5.22"
+      ]
+    },
+    {
+      "ref": "A.5.22",
+      "title": "Monitoring, review and change management of supplier services",
+      "theme": "Organizational",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Identify"
+      ],
+      "intent": "Supplier security practices and service delivery are regularly monitored, reviewed and changes managed.",
+      "evidence_requirements": [
+        {
+          "type": "Record",
+          "example": "Annual supplier review / SOC report review"
+        },
+        {
+          "type": "Minutes",
+          "example": "Service review meeting minutes"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-FRESH",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "supplier review",
+          "service level",
+          "SOC 2",
+          "ISO certificate",
+          "changes"
+        ]
+      },
+      "review_frequency": "Annual",
+      "default_owner_role": "Procurement",
+      "related": [
+        "5.19",
+        "5.20"
+      ]
+    },
+    {
+      "ref": "A.5.23",
+      "title": "Information security for use of cloud services",
+      "theme": "Organizational",
+      "new_in_2022": true,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Protect"
+      ],
+      "intent": "Processes for acquiring, using, managing and exiting cloud services are established in line with security requirements.",
+      "evidence_requirements": [
+        {
+          "type": "Policy",
+          "example": "Cloud security policy incl. exit strategy"
+        },
+        {
+          "type": "Register",
+          "example": "Cloud service register with shared-responsibility notes"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-DATE",
+          "V-KEYWORDS",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "cloud",
+          "shared responsibility",
+          "exit",
+          "provider"
+        ]
+      },
+      "review_frequency": "Annual",
+      "default_owner_role": "IT Manager",
+      "related": [
+        "5.19",
+        "5.22"
+      ]
+    },
+    {
+      "ref": "A.5.24",
+      "title": "Information security incident management planning and preparation",
+      "theme": "Organizational",
+      "new_in_2022": false,
+      "control_type": [
+        "Corrective"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Respond",
+        "Recover"
+      ],
+      "intent": "Incident management processes, roles and responsibilities are defined, established and communicated.",
+      "evidence_requirements": [
+        {
+          "type": "Procedure",
+          "example": "Incident response plan"
+        },
+        {
+          "type": "Record",
+          "example": "Incident response team contact list"
+        },
+        {
+          "type": "Record",
+          "example": "Tabletop exercise report"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-DATE",
+          "V-APPROVAL",
+          "V-VERSION",
+          "V-KEYWORDS",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "incident",
+          "response",
+          "roles",
+          "escalation",
+          "communication"
+        ]
+      },
+      "review_frequency": "Annual",
+      "default_owner_role": "Security Operations",
+      "related": [
+        "5.25",
+        "5.26",
+        "5.27",
+        "5.28",
+        "6.8"
+      ]
+    },
+    {
+      "ref": "A.5.25",
+      "title": "Assessment and decision on information security events",
+      "theme": "Organizational",
+      "new_in_2022": false,
+      "control_type": [
+        "Detective"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Detect",
+        "Respond"
+      ],
+      "intent": "Security events are assessed and a decision is made whether to categorize them as incidents.",
+      "evidence_requirements": [
+        {
+          "type": "Procedure",
+          "example": "Event triage and classification criteria"
+        },
+        {
+          "type": "Register",
+          "example": "Event/incident log with triage decisions"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-FRESH",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "event",
+          "triage",
+          "severity",
+          "classification"
+        ]
+      },
+      "review_frequency": "Continuous",
+      "default_owner_role": "Security Operations",
+      "related": [
+        "5.24",
+        "5.26"
+      ]
+    },
+    {
+      "ref": "A.5.26",
+      "title": "Response to information security incidents",
+      "theme": "Organizational",
+      "new_in_2022": false,
+      "control_type": [
+        "Corrective"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Respond",
+        "Recover"
+      ],
+      "intent": "Incidents are responded to in accordance with documented procedures.",
+      "evidence_requirements": [
+        {
+          "type": "Report",
+          "example": "Incident reports for recent incidents"
+        },
+        {
+          "type": "Ticket",
+          "example": "Incident tickets with timeline and closure"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-FRESH",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "containment",
+          "eradication",
+          "recovery",
+          "timeline"
+        ]
+      },
+      "review_frequency": "Per event",
+      "default_owner_role": "Security Operations",
+      "related": [
+        "5.24",
+        "5.27"
+      ]
+    },
+    {
+      "ref": "A.5.27",
+      "title": "Learning from information security incidents",
+      "theme": "Organizational",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Identify",
+        "Protect"
+      ],
+      "intent": "Knowledge gained from incidents strengthens and improves security controls.",
+      "evidence_requirements": [
+        {
+          "type": "Report",
+          "example": "Post-incident review / lessons learned"
+        },
+        {
+          "type": "Ticket",
+          "example": "Improvement actions raised from incidents"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-FRESH",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "lessons learned",
+          "root cause",
+          "improvement"
+        ]
+      },
+      "review_frequency": "Per event",
+      "default_owner_role": "Security Operations",
+      "related": [
+        "5.26",
+        "10.2"
+      ]
+    },
+    {
+      "ref": "A.5.28",
+      "title": "Collection of evidence",
+      "theme": "Organizational",
+      "new_in_2022": false,
+      "control_type": [
+        "Corrective"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Detect",
+        "Respond"
+      ],
+      "intent": "Procedures exist for identification, collection, acquisition and preservation of evidence related to security events.",
+      "evidence_requirements": [
+        {
+          "type": "Procedure",
+          "example": "Forensic evidence handling / chain of custody procedure"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-DATE",
+          "V-KEYWORDS",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "chain of custody",
+          "forensic",
+          "preservation",
+          "evidence"
+        ]
+      },
+      "review_frequency": "Annual",
+      "default_owner_role": "Security Operations",
+      "related": [
+        "5.26"
+      ]
+    },
+    {
+      "ref": "A.5.29",
+      "title": "Information security during disruption",
+      "theme": "Organizational",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive",
+        "Corrective"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Protect",
+        "Respond"
+      ],
+      "intent": "Security is maintained at an appropriate level during disruption.",
+      "evidence_requirements": [
+        {
+          "type": "Plan",
+          "example": "Business continuity plan with security considerations"
+        },
+        {
+          "type": "Report",
+          "example": "BCP test report"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-DATE",
+          "V-APPROVAL",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "disruption",
+          "continuity",
+          "security level",
+          "crisis"
+        ]
+      },
+      "review_frequency": "Annual",
+      "default_owner_role": "BCM Lead",
+      "related": [
+        "5.30",
+        "8.13",
+        "8.14"
+      ]
+    },
+    {
+      "ref": "A.5.30",
+      "title": "ICT readiness for business continuity",
+      "theme": "Organizational",
+      "new_in_2022": true,
+      "control_type": [
+        "Corrective"
+      ],
+      "security_properties": [
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Respond"
+      ],
+      "intent": "ICT readiness is planned, implemented, maintained and tested based on continuity objectives (RTO/RPO).",
+      "evidence_requirements": [
+        {
+          "type": "Document",
+          "example": "Business impact analysis with RTO/RPO"
+        },
+        {
+          "type": "Report",
+          "example": "DR test results against RTO/RPO"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-FRESH",
+          "V-KEYWORDS",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "RTO",
+          "RPO",
+          "disaster recovery",
+          "test",
+          "business impact"
+        ]
+      },
+      "review_frequency": "Annual",
+      "default_owner_role": "IT Manager",
+      "related": [
+        "5.29",
+        "8.13",
+        "8.14"
+      ]
+    },
+    {
+      "ref": "A.5.31",
+      "title": "Legal, statutory, regulatory and contractual requirements",
+      "theme": "Organizational",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Identify"
+      ],
+      "intent": "Applicable legal, regulatory and contractual requirements, and the approach to meet them, are identified, documented and kept current.",
+      "evidence_requirements": [
+        {
+          "type": "Register",
+          "example": "Legal and regulatory requirements register"
+        },
+        {
+          "type": "Record",
+          "example": "Evidence of periodic legal review"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-FRESH",
+          "V-KEYWORDS",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "legal",
+          "regulatory",
+          "contractual",
+          "register",
+          "obligations"
+        ]
+      },
+      "review_frequency": "Annual",
+      "default_owner_role": "Legal",
+      "related": [
+        "5.32",
+        "5.33",
+        "5.34"
+      ]
+    },
+    {
+      "ref": "A.5.32",
+      "title": "Intellectual property rights",
+      "theme": "Organizational",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Identify"
+      ],
+      "intent": "Procedures protect intellectual property rights, including licensed software compliance.",
+      "evidence_requirements": [
+        {
+          "type": "Register",
+          "example": "Software licence register"
+        },
+        {
+          "type": "Policy",
+          "example": "IPR policy"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-FRESH",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "licence",
+          "intellectual property",
+          "copyright"
+        ]
+      },
+      "review_frequency": "Annual",
+      "default_owner_role": "Legal",
+      "related": [
+        "5.31"
+      ]
+    },
+    {
+      "ref": "A.5.33",
+      "title": "Protection of records",
+      "theme": "Organizational",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Identify",
+        "Protect"
+      ],
+      "intent": "Records are protected from loss, destruction, falsification and unauthorized access or release.",
+      "evidence_requirements": [
+        {
+          "type": "Policy",
+          "example": "Records retention schedule"
+        },
+        {
+          "type": "Screenshot",
+          "example": "Retention/immutability configuration"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-DATE",
+          "V-KEYWORDS",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "retention",
+          "records",
+          "destruction",
+          "schedule"
+        ]
+      },
+      "review_frequency": "Annual",
+      "default_owner_role": "Legal",
+      "related": [
+        "5.31",
+        "8.10",
+        "8.13"
+      ]
+    },
+    {
+      "ref": "A.5.34",
+      "title": "Privacy and protection of PII",
+      "theme": "Organizational",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Identify",
+        "Protect"
+      ],
+      "intent": "Requirements for privacy and protection of personally identifiable information are identified and met.",
+      "evidence_requirements": [
+        {
+          "type": "Policy",
+          "example": "Privacy policy / data protection policy"
+        },
+        {
+          "type": "Register",
+          "example": "Record of processing activities"
+        },
+        {
+          "type": "Document",
+          "example": "DPIA sample"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-DATE",
+          "V-APPROVAL",
+          "V-KEYWORDS",
+          "V-RELEVANCE",
+          "V-PII"
+        ],
+        "required_concepts": [
+          "personal data",
+          "privacy",
+          "PII",
+          "lawful basis",
+          "data subject"
+        ]
+      },
+      "review_frequency": "Annual",
+      "default_owner_role": "DPO",
+      "related": [
+        "5.31",
+        "8.11"
+      ]
+    },
+    {
+      "ref": "A.5.35",
+      "title": "Independent review of information security",
+      "theme": "Organizational",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive",
+        "Corrective"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Identify",
+        "Protect"
+      ],
+      "intent": "The approach to managing information security is independently reviewed at planned intervals or on significant change.",
+      "evidence_requirements": [
+        {
+          "type": "Report",
+          "example": "Independent / internal audit report"
+        },
+        {
+          "type": "Report",
+          "example": "External assessment or penetration test report"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-FRESH",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "independent",
+          "review",
+          "audit",
+          "findings"
+        ]
+      },
+      "review_frequency": "Annual",
+      "default_owner_role": "Internal Audit",
+      "related": [
+        "9.2",
+        "5.36"
+      ]
+    },
+    {
+      "ref": "A.5.36",
+      "title": "Compliance with policies, rules and standards for information security",
+      "theme": "Organizational",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Identify",
+        "Protect"
+      ],
+      "intent": "Compliance with the security policy, topic-specific policies and standards is regularly reviewed.",
+      "evidence_requirements": [
+        {
+          "type": "Report",
+          "example": "Compliance check reports / control self-assessments"
+        },
+        {
+          "type": "Ticket",
+          "example": "Non-compliance remediation tickets"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-FRESH",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "compliance review",
+          "self-assessment",
+          "non-compliance"
+        ]
+      },
+      "review_frequency": "Quarterly",
+      "default_owner_role": "CISO",
+      "related": [
+        "5.1",
+        "5.35"
+      ]
+    },
+    {
+      "ref": "A.5.37",
+      "title": "Documented operating procedures",
+      "theme": "Organizational",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive",
+        "Corrective"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Protect",
+        "Recover"
+      ],
+      "intent": "Operating procedures for information processing facilities are documented and made available to those who need them.",
+      "evidence_requirements": [
+        {
+          "type": "Procedure",
+          "example": "Operating procedures / runbooks with owners and review dates"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-DATE",
+          "V-VERSION",
+          "V-OWNER",
+          "V-REVIEW",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "procedure",
+          "runbook",
+          "steps",
+          "owner"
+        ]
+      },
+      "review_frequency": "Annual",
+      "default_owner_role": "IT Manager",
+      "related": [
+        "8.32"
+      ]
+    },
+    {
+      "ref": "A.6.1",
+      "title": "Screening",
+      "theme": "People",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Protect"
+      ],
+      "intent": "Background verification of candidates is carried out before joining and on an ongoing basis, proportional to risk and law.",
+      "evidence_requirements": [
+        {
+          "type": "Procedure",
+          "example": "Screening procedure"
+        },
+        {
+          "type": "Record",
+          "example": "Screening completion records for recent hires"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-DATE",
+          "V-COMPLETENESS",
+          "V-PII",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "background check",
+          "screening",
+          "verification",
+          "references"
+        ]
+      },
+      "review_frequency": "Per hire",
+      "default_owner_role": "HR",
+      "related": [
+        "6.2"
+      ]
+    },
+    {
+      "ref": "A.6.2",
+      "title": "Terms and conditions of employment",
+      "theme": "People",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Protect"
+      ],
+      "intent": "Employment contracts state personnel and organizational responsibilities for information security.",
+      "evidence_requirements": [
+        {
+          "type": "Contract",
+          "example": "Employment contract template with security clauses"
+        },
+        {
+          "type": "Record",
+          "example": "Signed contracts sample"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-SIGNATURE",
+          "V-KEYWORDS",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "employment",
+          "confidentiality",
+          "security responsibilities"
+        ]
+      },
+      "review_frequency": "Per hire",
+      "default_owner_role": "HR",
+      "related": [
+        "6.1",
+        "6.6"
+      ]
+    },
+    {
+      "ref": "A.6.3",
+      "title": "Information security awareness, education and training",
+      "theme": "People",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Protect"
+      ],
+      "intent": "Personnel receive appropriate awareness, education and training, and regular updates relevant to their role.",
+      "evidence_requirements": [
+        {
+          "type": "Record",
+          "example": "Training completion report covering all staff"
+        },
+        {
+          "type": "Document",
+          "example": "Training content / curriculum"
+        },
+        {
+          "type": "Report",
+          "example": "Phishing simulation results"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-FRESH",
+          "V-COMPLETENESS",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "training",
+          "awareness",
+          "completion",
+          "phishing"
+        ]
+      },
+      "review_frequency": "Annual",
+      "default_owner_role": "HR",
+      "related": [
+        "7.2",
+        "6.8"
+      ]
+    },
+    {
+      "ref": "A.6.4",
+      "title": "Disciplinary process",
+      "theme": "People",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive",
+        "Corrective"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Protect",
+        "Respond"
+      ],
+      "intent": "A formal and communicated disciplinary process exists for personnel who violate the security policy.",
+      "evidence_requirements": [
+        {
+          "type": "Policy",
+          "example": "Disciplinary policy referencing security violations"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-DATE",
+          "V-APPROVAL",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "disciplinary",
+          "violation",
+          "sanction"
+        ]
+      },
+      "review_frequency": "Annual",
+      "default_owner_role": "HR",
+      "related": [
+        "6.2"
+      ]
+    },
+    {
+      "ref": "A.6.5",
+      "title": "Responsibilities after termination or change of employment",
+      "theme": "People",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Protect"
+      ],
+      "intent": "Security responsibilities that remain valid after termination or change are defined, communicated and enforced.",
+      "evidence_requirements": [
+        {
+          "type": "Procedure",
+          "example": "Offboarding checklist"
+        },
+        {
+          "type": "Record",
+          "example": "Exit acknowledgement of continuing obligations"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-DATE",
+          "V-COMPLETENESS",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "termination",
+          "post-employment",
+          "obligations",
+          "offboarding"
+        ]
+      },
+      "review_frequency": "Per event",
+      "default_owner_role": "HR",
+      "related": [
+        "5.11",
+        "6.6"
+      ]
+    },
+    {
+      "ref": "A.6.6",
+      "title": "Confidentiality or non-disclosure agreements",
+      "theme": "People",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality"
+      ],
+      "cybersecurity_concepts": [
+        "Protect"
+      ],
+      "intent": "NDAs reflecting the organization's needs are identified, documented, reviewed and signed by personnel and relevant parties.",
+      "evidence_requirements": [
+        {
+          "type": "Contract",
+          "example": "NDA template"
+        },
+        {
+          "type": "Record",
+          "example": "Signed NDAs for staff and contractors"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-SIGNATURE",
+          "V-COMPLETENESS",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "non-disclosure",
+          "confidential",
+          "term",
+          "signed"
+        ]
+      },
+      "review_frequency": "Annual",
+      "default_owner_role": "Legal",
+      "related": [
+        "6.2",
+        "5.20"
+      ]
+    },
+    {
+      "ref": "A.6.7",
+      "title": "Remote working",
+      "theme": "People",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Protect"
+      ],
+      "intent": "Security measures protect information accessed, processed or stored outside the organization's premises.",
+      "evidence_requirements": [
+        {
+          "type": "Policy",
+          "example": "Remote working policy"
+        },
+        {
+          "type": "Screenshot",
+          "example": "VPN / ZTNA and device compliance configuration"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-DATE",
+          "V-KEYWORDS",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "remote",
+          "VPN",
+          "home",
+          "public network"
+        ]
+      },
+      "review_frequency": "Annual",
+      "default_owner_role": "IT Manager",
+      "related": [
+        "8.1",
+        "7.9"
+      ]
+    },
+    {
+      "ref": "A.6.8",
+      "title": "Information security event reporting",
+      "theme": "People",
+      "new_in_2022": false,
+      "control_type": [
+        "Detective"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Detect"
+      ],
+      "intent": "Personnel have a mechanism to report observed or suspected security events promptly.",
+      "evidence_requirements": [
+        {
+          "type": "Procedure",
+          "example": "Event reporting procedure and channel"
+        },
+        {
+          "type": "Register",
+          "example": "Reported events log"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-DATE",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "report",
+          "event",
+          "channel",
+          "suspicious"
+        ]
+      },
+      "review_frequency": "Annual",
+      "default_owner_role": "Security Operations",
+      "related": [
+        "5.24",
+        "5.25"
+      ]
+    },
+    {
+      "ref": "A.7.1",
+      "title": "Physical security perimeters",
+      "theme": "Physical",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Protect"
+      ],
+      "intent": "Security perimeters protect areas containing information and associated assets.",
+      "evidence_requirements": [
+        {
+          "type": "Document",
+          "example": "Site plan showing security zones"
+        },
+        {
+          "type": "Photo",
+          "example": "Photos of perimeter controls"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-DATE",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "perimeter",
+          "zone",
+          "site",
+          "barrier"
+        ]
+      },
+      "review_frequency": "Annual",
+      "default_owner_role": "Facilities",
+      "related": [
+        "7.2",
+        "7.3"
+      ]
+    },
+    {
+      "ref": "A.7.2",
+      "title": "Physical entry",
+      "theme": "Physical",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Protect"
+      ],
+      "intent": "Secure areas are protected by appropriate entry controls and access points.",
+      "evidence_requirements": [
+        {
+          "type": "Export",
+          "example": "Badge access system user list / logs"
+        },
+        {
+          "type": "Register",
+          "example": "Visitor log"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-FRESH",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "badge",
+          "access card",
+          "visitor",
+          "entry"
+        ]
+      },
+      "review_frequency": "Quarterly",
+      "default_owner_role": "Facilities",
+      "related": [
+        "7.1",
+        "7.4"
+      ]
+    },
+    {
+      "ref": "A.7.3",
+      "title": "Securing offices, rooms and facilities",
+      "theme": "Physical",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Protect"
+      ],
+      "intent": "Physical security for offices, rooms and facilities is designed and implemented.",
+      "evidence_requirements": [
+        {
+          "type": "Photo",
+          "example": "Locked server room / restricted area photos"
+        },
+        {
+          "type": "Document",
+          "example": "Facility security standard"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-DATE",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "office",
+          "room",
+          "locked",
+          "restricted"
+        ]
+      },
+      "review_frequency": "Annual",
+      "default_owner_role": "Facilities",
+      "related": [
+        "7.1"
+      ]
+    },
+    {
+      "ref": "A.7.4",
+      "title": "Physical security monitoring",
+      "theme": "Physical",
+      "new_in_2022": true,
+      "control_type": [
+        "Preventive",
+        "Detective"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Protect",
+        "Detect"
+      ],
+      "intent": "Premises are continuously monitored for unauthorized physical access.",
+      "evidence_requirements": [
+        {
+          "type": "Screenshot",
+          "example": "CCTV system status with retention setting"
+        },
+        {
+          "type": "Record",
+          "example": "Alarm system test record"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-FRESH",
+          "V-SCREENSHOT",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "CCTV",
+          "alarm",
+          "monitoring",
+          "retention"
+        ]
+      },
+      "review_frequency": "Quarterly",
+      "default_owner_role": "Facilities",
+      "related": [
+        "7.2"
+      ]
+    },
+    {
+      "ref": "A.7.5",
+      "title": "Protecting against physical and environmental threats",
+      "theme": "Physical",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Protect"
+      ],
+      "intent": "Protection against physical and environmental threats (fire, flood, natural disasters) is designed and implemented.",
+      "evidence_requirements": [
+        {
+          "type": "Record",
+          "example": "Fire suppression inspection certificate"
+        },
+        {
+          "type": "Document",
+          "example": "Environmental risk assessment"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-FRESH",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "fire",
+          "flood",
+          "environmental",
+          "suppression"
+        ]
+      },
+      "review_frequency": "Annual",
+      "default_owner_role": "Facilities",
+      "related": [
+        "7.8",
+        "7.11"
+      ]
+    },
+    {
+      "ref": "A.7.6",
+      "title": "Working in secure areas",
+      "theme": "Physical",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Protect"
+      ],
+      "intent": "Security measures for working in secure areas are designed and implemented.",
+      "evidence_requirements": [
+        {
+          "type": "Procedure",
+          "example": "Secure area working rules"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-DATE",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "secure area",
+          "supervised",
+          "recording devices"
+        ]
+      },
+      "review_frequency": "Annual",
+      "default_owner_role": "Facilities",
+      "related": [
+        "7.3"
+      ]
+    },
+    {
+      "ref": "A.7.7",
+      "title": "Clear desk and clear screen",
+      "theme": "Physical",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality"
+      ],
+      "cybersecurity_concepts": [
+        "Protect"
+      ],
+      "intent": "Clear desk rules for papers and removable media and clear screen rules for facilities are defined and enforced.",
+      "evidence_requirements": [
+        {
+          "type": "Policy",
+          "example": "Clear desk and clear screen policy"
+        },
+        {
+          "type": "Screenshot",
+          "example": "Screen lock GPO / MDM configuration"
+        },
+        {
+          "type": "Record",
+          "example": "Clear desk spot-check results"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-DATE",
+          "V-SCREENSHOT",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "clear desk",
+          "screen lock",
+          "timeout"
+        ]
+      },
+      "review_frequency": "Annual",
+      "default_owner_role": "IT Manager",
+      "related": [
+        "8.1"
+      ]
+    },
+    {
+      "ref": "A.7.8",
+      "title": "Equipment siting and protection",
+      "theme": "Physical",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Protect"
+      ],
+      "intent": "Equipment is sited securely and protected.",
+      "evidence_requirements": [
+        {
+          "type": "Photo",
+          "example": "Rack / equipment placement photos"
+        },
+        {
+          "type": "Document",
+          "example": "Data centre standard"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-DATE",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "equipment",
+          "siting",
+          "rack"
+        ]
+      },
+      "review_frequency": "Annual",
+      "default_owner_role": "IT Manager",
+      "related": [
+        "7.5"
+      ]
+    },
+    {
+      "ref": "A.7.9",
+      "title": "Security of assets off-premises",
+      "theme": "Physical",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Protect"
+      ],
+      "intent": "Off-site assets are protected.",
+      "evidence_requirements": [
+        {
+          "type": "Policy",
+          "example": "Off-premises equipment rules"
+        },
+        {
+          "type": "Screenshot",
+          "example": "Full-disk encryption compliance report"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-DATE",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "off-site",
+          "laptop",
+          "travel",
+          "encryption"
+        ]
+      },
+      "review_frequency": "Annual",
+      "default_owner_role": "IT Manager",
+      "related": [
+        "6.7",
+        "8.1"
+      ]
+    },
+    {
+      "ref": "A.7.10",
+      "title": "Storage media",
+      "theme": "Physical",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Protect"
+      ],
+      "intent": "Storage media are managed through their lifecycle of acquisition, use, transport and disposal.",
+      "evidence_requirements": [
+        {
+          "type": "Procedure",
+          "example": "Removable media procedure"
+        },
+        {
+          "type": "Screenshot",
+          "example": "USB block configuration"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-DATE",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "removable media",
+          "USB",
+          "transport",
+          "disposal"
+        ]
+      },
+      "review_frequency": "Annual",
+      "default_owner_role": "IT Manager",
+      "related": [
+        "7.14",
+        "8.10"
+      ]
+    },
+    {
+      "ref": "A.7.11",
+      "title": "Supporting utilities",
+      "theme": "Physical",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive",
+        "Detective"
+      ],
+      "security_properties": [
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Protect",
+        "Detect"
+      ],
+      "intent": "Facilities are protected from power failures and other disruptions caused by failures in supporting utilities.",
+      "evidence_requirements": [
+        {
+          "type": "Record",
+          "example": "UPS / generator maintenance and test records"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-FRESH",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "UPS",
+          "generator",
+          "power",
+          "HVAC"
+        ]
+      },
+      "review_frequency": "Semi-annual",
+      "default_owner_role": "Facilities",
+      "related": [
+        "7.5",
+        "7.13"
+      ]
+    },
+    {
+      "ref": "A.7.12",
+      "title": "Cabling security",
+      "theme": "Physical",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Protect"
+      ],
+      "intent": "Power, data and supporting cables are protected from interception, interference or damage.",
+      "evidence_requirements": [
+        {
+          "type": "Photo",
+          "example": "Cable management / locked patch panels"
+        },
+        {
+          "type": "Document",
+          "example": "Cabling standard"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-DATE",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "cabling",
+          "patch panel",
+          "conduit"
+        ]
+      },
+      "review_frequency": "Annual",
+      "default_owner_role": "IT Manager",
+      "related": [
+        "7.8"
+      ]
+    },
+    {
+      "ref": "A.7.13",
+      "title": "Equipment maintenance",
+      "theme": "Physical",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Protect"
+      ],
+      "intent": "Equipment is maintained correctly to ensure availability, integrity and confidentiality of information.",
+      "evidence_requirements": [
+        {
+          "type": "Record",
+          "example": "Maintenance logs / vendor service reports"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-FRESH",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "maintenance",
+          "service",
+          "schedule"
+        ]
+      },
+      "review_frequency": "Semi-annual",
+      "default_owner_role": "IT Manager",
+      "related": [
+        "7.11"
+      ]
+    },
+    {
+      "ref": "A.7.14",
+      "title": "Secure disposal or re-use of equipment",
+      "theme": "Physical",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality"
+      ],
+      "cybersecurity_concepts": [
+        "Protect"
+      ],
+      "intent": "Equipment containing storage media is verified so sensitive data and licensed software are removed or securely overwritten before disposal or re-use.",
+      "evidence_requirements": [
+        {
+          "type": "Record",
+          "example": "Certificates of destruction / wipe logs"
+        },
+        {
+          "type": "Procedure",
+          "example": "Secure disposal procedure"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-FRESH",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "disposal",
+          "wipe",
+          "destruction",
+          "certificate"
+        ]
+      },
+      "review_frequency": "Per event",
+      "default_owner_role": "IT Manager",
+      "related": [
+        "7.10",
+        "8.10"
+      ]
+    },
+    {
+      "ref": "A.8.1",
+      "title": "User endpoint devices",
+      "theme": "Technological",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Protect"
+      ],
+      "intent": "Information stored on, processed by or accessible via user endpoint devices is protected.",
+      "evidence_requirements": [
+        {
+          "type": "Policy",
+          "example": "Endpoint security policy"
+        },
+        {
+          "type": "Export",
+          "example": "MDM compliance report (encryption, OS version, screen lock)"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-FRESH",
+          "V-COMPLETENESS",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "endpoint",
+          "MDM",
+          "encryption",
+          "patch"
+        ]
+      },
+      "review_frequency": "Monthly",
+      "default_owner_role": "IT Manager",
+      "related": [
+        "8.7",
+        "7.9",
+        "6.7"
+      ]
+    },
+    {
+      "ref": "A.8.2",
+      "title": "Privileged access rights",
+      "theme": "Technological",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Protect"
+      ],
+      "intent": "Allocation and use of privileged access rights is restricted and managed.",
+      "evidence_requirements": [
+        {
+          "type": "Export",
+          "example": "List of privileged accounts with justification"
+        },
+        {
+          "type": "Record",
+          "example": "Privileged access review sign-off"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-FRESH",
+          "V-APPROVAL",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "privileged",
+          "admin",
+          "justification",
+          "review"
+        ]
+      },
+      "review_frequency": "Quarterly",
+      "default_owner_role": "IT Manager",
+      "related": [
+        "5.15",
+        "5.18",
+        "8.18"
+      ]
+    },
+    {
+      "ref": "A.8.3",
+      "title": "Information access restriction",
+      "theme": "Technological",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Protect"
+      ],
+      "intent": "Access to information and assets is restricted in accordance with the access control policy.",
+      "evidence_requirements": [
+        {
+          "type": "Screenshot",
+          "example": "Application role/permission configuration"
+        },
+        {
+          "type": "Export",
+          "example": "Share/folder permission report"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-FRESH",
+          "V-SCREENSHOT",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "permissions",
+          "role",
+          "restriction"
+        ]
+      },
+      "review_frequency": "Semi-annual",
+      "default_owner_role": "IT Manager",
+      "related": [
+        "5.15"
+      ]
+    },
+    {
+      "ref": "A.8.4",
+      "title": "Access to source code",
+      "theme": "Technological",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Protect"
+      ],
+      "intent": "Read and write access to source code, development tools and software libraries is appropriately managed.",
+      "evidence_requirements": [
+        {
+          "type": "Export",
+          "example": "Repository access list"
+        },
+        {
+          "type": "Screenshot",
+          "example": "Branch protection settings"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-FRESH",
+          "V-SCREENSHOT",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "source code",
+          "repository",
+          "branch protection"
+        ]
+      },
+      "review_frequency": "Quarterly",
+      "default_owner_role": "Engineering Lead",
+      "related": [
+        "8.25",
+        "8.32"
+      ]
+    },
+    {
+      "ref": "A.8.5",
+      "title": "Secure authentication",
+      "theme": "Technological",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Protect"
+      ],
+      "intent": "Secure authentication technologies and procedures are implemented based on access restrictions and the access control policy.",
+      "evidence_requirements": [
+        {
+          "type": "Screenshot",
+          "example": "MFA enforcement configuration"
+        },
+        {
+          "type": "Export",
+          "example": "MFA enrolment report"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-FRESH",
+          "V-SCREENSHOT",
+          "V-COMPLETENESS",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "MFA",
+          "SSO",
+          "multi-factor",
+          "authentication"
+        ]
+      },
+      "review_frequency": "Quarterly",
+      "default_owner_role": "IT Manager",
+      "related": [
+        "5.17"
+      ]
+    },
+    {
+      "ref": "A.8.6",
+      "title": "Capacity management",
+      "theme": "Technological",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive",
+        "Detective"
+      ],
+      "security_properties": [
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Identify",
+        "Protect",
+        "Detect"
+      ],
+      "intent": "Use of resources is monitored and adjusted in line with current and expected capacity requirements.",
+      "evidence_requirements": [
+        {
+          "type": "Screenshot",
+          "example": "Capacity monitoring dashboard with thresholds"
+        },
+        {
+          "type": "Report",
+          "example": "Capacity planning report"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-FRESH",
+          "V-SCREENSHOT",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "capacity",
+          "threshold",
+          "utilization",
+          "forecast"
+        ]
+      },
+      "review_frequency": "Quarterly",
+      "default_owner_role": "IT Manager",
+      "related": [
+        "8.16"
+      ]
+    },
+    {
+      "ref": "A.8.7",
+      "title": "Protection against malware",
+      "theme": "Technological",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive",
+        "Detective",
+        "Corrective"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Protect",
+        "Detect"
+      ],
+      "intent": "Protection against malware is implemented and supported by user awareness.",
+      "evidence_requirements": [
+        {
+          "type": "Export",
+          "example": "EDR/AV coverage report"
+        },
+        {
+          "type": "Screenshot",
+          "example": "AV policy with signature update status"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-FRESH",
+          "V-COMPLETENESS",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "malware",
+          "antivirus",
+          "EDR",
+          "signature"
+        ]
+      },
+      "review_frequency": "Monthly",
+      "default_owner_role": "Security Operations",
+      "related": [
+        "8.1",
+        "6.3"
+      ]
+    },
+    {
+      "ref": "A.8.8",
+      "title": "Management of technical vulnerabilities",
+      "theme": "Technological",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Identify",
+        "Protect"
+      ],
+      "intent": "Information about technical vulnerabilities is obtained, exposure evaluated and appropriate measures taken.",
+      "evidence_requirements": [
+        {
+          "type": "Report",
+          "example": "Vulnerability scan report"
+        },
+        {
+          "type": "Report",
+          "example": "Penetration test report"
+        },
+        {
+          "type": "Ticket",
+          "example": "Remediation tickets within SLA"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-FRESH",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "vulnerability",
+          "scan",
+          "CVSS",
+          "remediation",
+          "patch"
+        ]
+      },
+      "review_frequency": "Monthly",
+      "default_owner_role": "Security Operations",
+      "related": [
+        "5.7",
+        "8.9",
+        "8.29"
+      ]
+    },
+    {
+      "ref": "A.8.9",
+      "title": "Configuration management",
+      "theme": "Technological",
+      "new_in_2022": true,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Protect"
+      ],
+      "intent": "Configurations, including security configurations, of hardware, software, services and networks are established, documented, implemented, monitored and reviewed.",
+      "evidence_requirements": [
+        {
+          "type": "Document",
+          "example": "Hardening baselines (e.g. CIS benchmarks)"
+        },
+        {
+          "type": "Report",
+          "example": "Configuration compliance scan"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-FRESH",
+          "V-KEYWORDS",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "baseline",
+          "hardening",
+          "configuration",
+          "drift"
+        ]
+      },
+      "review_frequency": "Quarterly",
+      "default_owner_role": "IT Manager",
+      "related": [
+        "8.32",
+        "8.8"
+      ]
+    },
+    {
+      "ref": "A.8.10",
+      "title": "Information deletion",
+      "theme": "Technological",
+      "new_in_2022": true,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality"
+      ],
+      "cybersecurity_concepts": [
+        "Protect"
+      ],
+      "intent": "Information stored in systems, devices or other media is deleted when no longer required.",
+      "evidence_requirements": [
+        {
+          "type": "Procedure",
+          "example": "Data deletion procedure aligned to retention schedule"
+        },
+        {
+          "type": "Record",
+          "example": "Deletion logs / certificates"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-FRESH",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "deletion",
+          "retention",
+          "erasure"
+        ]
+      },
+      "review_frequency": "Annual",
+      "default_owner_role": "DPO",
+      "related": [
+        "5.33",
+        "7.14"
+      ]
+    },
+    {
+      "ref": "A.8.11",
+      "title": "Data masking",
+      "theme": "Technological",
+      "new_in_2022": true,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality"
+      ],
+      "cybersecurity_concepts": [
+        "Protect"
+      ],
+      "intent": "Data masking is used in accordance with access control and business requirements, considering applicable legislation.",
+      "evidence_requirements": [
+        {
+          "type": "Screenshot",
+          "example": "Masking configuration in non-production / reports"
+        },
+        {
+          "type": "Procedure",
+          "example": "Data masking standard"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-DATE",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "masking",
+          "pseudonymisation",
+          "anonymisation"
+        ]
+      },
+      "review_frequency": "Annual",
+      "default_owner_role": "Engineering Lead",
+      "related": [
+        "5.34",
+        "8.33"
+      ]
+    },
+    {
+      "ref": "A.8.12",
+      "title": "Data leakage prevention",
+      "theme": "Technological",
+      "new_in_2022": true,
+      "control_type": [
+        "Preventive",
+        "Detective"
+      ],
+      "security_properties": [
+        "Confidentiality"
+      ],
+      "cybersecurity_concepts": [
+        "Protect",
+        "Detect"
+      ],
+      "intent": "Data leakage prevention measures are applied to systems, networks and devices that process sensitive information.",
+      "evidence_requirements": [
+        {
+          "type": "Screenshot",
+          "example": "DLP policy configuration"
+        },
+        {
+          "type": "Report",
+          "example": "DLP incident report"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-FRESH",
+          "V-SCREENSHOT",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "DLP",
+          "leakage",
+          "exfiltration"
+        ]
+      },
+      "review_frequency": "Quarterly",
+      "default_owner_role": "Security Operations",
+      "related": [
+        "5.14",
+        "8.16"
+      ]
+    },
+    {
+      "ref": "A.8.13",
+      "title": "Information backup",
+      "theme": "Technological",
+      "new_in_2022": false,
+      "control_type": [
+        "Corrective"
+      ],
+      "security_properties": [
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Recover"
+      ],
+      "intent": "Backup copies of information, software and systems are maintained and regularly tested.",
+      "evidence_requirements": [
+        {
+          "type": "Policy",
+          "example": "Backup policy"
+        },
+        {
+          "type": "Report",
+          "example": "Backup job success report"
+        },
+        {
+          "type": "Record",
+          "example": "Restore test record"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-FRESH",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "backup",
+          "restore test",
+          "retention",
+          "offsite"
+        ]
+      },
+      "review_frequency": "Monthly",
+      "default_owner_role": "IT Manager",
+      "related": [
+        "5.30",
+        "8.14"
+      ]
+    },
+    {
+      "ref": "A.8.14",
+      "title": "Redundancy of information processing facilities",
+      "theme": "Technological",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Protect"
+      ],
+      "intent": "Information processing facilities are implemented with sufficient redundancy to meet availability requirements.",
+      "evidence_requirements": [
+        {
+          "type": "Document",
+          "example": "Architecture diagram showing redundancy"
+        },
+        {
+          "type": "Report",
+          "example": "Failover test results"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-FRESH",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "redundancy",
+          "failover",
+          "high availability"
+        ]
+      },
+      "review_frequency": "Annual",
+      "default_owner_role": "IT Manager",
+      "related": [
+        "5.30",
+        "8.13"
+      ]
+    },
+    {
+      "ref": "A.8.15",
+      "title": "Logging",
+      "theme": "Technological",
+      "new_in_2022": false,
+      "control_type": [
+        "Detective"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Detect"
+      ],
+      "intent": "Logs recording activities, exceptions, faults and other relevant events are produced, stored, protected and analysed.",
+      "evidence_requirements": [
+        {
+          "type": "Policy",
+          "example": "Logging standard"
+        },
+        {
+          "type": "Screenshot",
+          "example": "SIEM log sources and retention settings"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-FRESH",
+          "V-SCREENSHOT",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "log",
+          "retention",
+          "SIEM",
+          "tamper"
+        ]
+      },
+      "review_frequency": "Quarterly",
+      "default_owner_role": "Security Operations",
+      "related": [
+        "8.16",
+        "8.17"
+      ]
+    },
+    {
+      "ref": "A.8.16",
+      "title": "Monitoring activities",
+      "theme": "Technological",
+      "new_in_2022": true,
+      "control_type": [
+        "Detective",
+        "Corrective"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Detect",
+        "Respond"
+      ],
+      "intent": "Networks, systems and applications are monitored for anomalous behaviour and appropriate actions taken.",
+      "evidence_requirements": [
+        {
+          "type": "Screenshot",
+          "example": "SIEM alert rules"
+        },
+        {
+          "type": "Report",
+          "example": "Monthly monitoring / alert triage report"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-FRESH",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "monitoring",
+          "alert",
+          "anomaly",
+          "triage"
+        ]
+      },
+      "review_frequency": "Monthly",
+      "default_owner_role": "Security Operations",
+      "related": [
+        "8.15",
+        "5.25"
+      ]
+    },
+    {
+      "ref": "A.8.17",
+      "title": "Clock synchronization",
+      "theme": "Technological",
+      "new_in_2022": false,
+      "control_type": [
+        "Detective"
+      ],
+      "security_properties": [
+        "Integrity"
+      ],
+      "cybersecurity_concepts": [
+        "Protect",
+        "Detect"
+      ],
+      "intent": "Clocks of information processing systems are synchronized to approved time sources.",
+      "evidence_requirements": [
+        {
+          "type": "Screenshot",
+          "example": "NTP configuration"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-DATE",
+          "V-SCREENSHOT",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "NTP",
+          "time source",
+          "synchronization"
+        ]
+      },
+      "review_frequency": "Annual",
+      "default_owner_role": "IT Manager",
+      "related": [
+        "8.15"
+      ]
+    },
+    {
+      "ref": "A.8.18",
+      "title": "Use of privileged utility programs",
+      "theme": "Technological",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Protect"
+      ],
+      "intent": "Use of utility programs capable of overriding system and application controls is restricted and tightly controlled.",
+      "evidence_requirements": [
+        {
+          "type": "Export",
+          "example": "Application allow-list / restricted utilities configuration"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-DATE",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "utility",
+          "restricted",
+          "allow-list"
+        ]
+      },
+      "review_frequency": "Annual",
+      "default_owner_role": "IT Manager",
+      "related": [
+        "8.2",
+        "8.19"
+      ]
+    },
+    {
+      "ref": "A.8.19",
+      "title": "Installation of software on operational systems",
+      "theme": "Technological",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Protect"
+      ],
+      "intent": "Procedures and measures securely manage software installation on operational systems.",
+      "evidence_requirements": [
+        {
+          "type": "Procedure",
+          "example": "Software installation procedure"
+        },
+        {
+          "type": "Screenshot",
+          "example": "Restriction of local admin / software deployment tool"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-DATE",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "installation",
+          "software",
+          "approved",
+          "local admin"
+        ]
+      },
+      "review_frequency": "Annual",
+      "default_owner_role": "IT Manager",
+      "related": [
+        "8.32",
+        "8.18"
+      ]
+    },
+    {
+      "ref": "A.8.20",
+      "title": "Networks security",
+      "theme": "Technological",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive",
+        "Detective"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Protect",
+        "Detect"
+      ],
+      "intent": "Networks and network devices are secured, managed and controlled to protect information in systems and applications.",
+      "evidence_requirements": [
+        {
+          "type": "Document",
+          "example": "Network diagram"
+        },
+        {
+          "type": "Export",
+          "example": "Firewall rule review"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-FRESH",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "network",
+          "firewall",
+          "diagram",
+          "rule review"
+        ]
+      },
+      "review_frequency": "Semi-annual",
+      "default_owner_role": "Network Lead",
+      "related": [
+        "8.21",
+        "8.22"
+      ]
+    },
+    {
+      "ref": "A.8.21",
+      "title": "Security of network services",
+      "theme": "Technological",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Protect"
+      ],
+      "intent": "Security mechanisms, service levels and requirements of network services are identified, implemented and monitored.",
+      "evidence_requirements": [
+        {
+          "type": "Contract",
+          "example": "ISP / network service SLA with security terms"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-DATE",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "network service",
+          "SLA",
+          "provider"
+        ]
+      },
+      "review_frequency": "Annual",
+      "default_owner_role": "Network Lead",
+      "related": [
+        "8.20"
+      ]
+    },
+    {
+      "ref": "A.8.22",
+      "title": "Segregation of networks",
+      "theme": "Technological",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Protect"
+      ],
+      "intent": "Groups of information services, users and systems are segregated in the organization's networks.",
+      "evidence_requirements": [
+        {
+          "type": "Document",
+          "example": "Network segmentation diagram / VLAN plan"
+        },
+        {
+          "type": "Export",
+          "example": "Inter-zone firewall rules"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-FRESH",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "segmentation",
+          "VLAN",
+          "zone",
+          "DMZ"
+        ]
+      },
+      "review_frequency": "Annual",
+      "default_owner_role": "Network Lead",
+      "related": [
+        "8.20"
+      ]
+    },
+    {
+      "ref": "A.8.23",
+      "title": "Web filtering",
+      "theme": "Technological",
+      "new_in_2022": true,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Protect"
+      ],
+      "intent": "Access to external websites is managed to reduce exposure to malicious content.",
+      "evidence_requirements": [
+        {
+          "type": "Screenshot",
+          "example": "Web filter category policy"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-FRESH",
+          "V-SCREENSHOT",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "web filter",
+          "category",
+          "proxy",
+          "blocked"
+        ]
+      },
+      "review_frequency": "Annual",
+      "default_owner_role": "Network Lead",
+      "related": [
+        "8.7"
+      ]
+    },
+    {
+      "ref": "A.8.24",
+      "title": "Use of cryptography",
+      "theme": "Technological",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Protect"
+      ],
+      "intent": "Rules for effective use of cryptography, including key management, are defined and implemented.",
+      "evidence_requirements": [
+        {
+          "type": "Policy",
+          "example": "Cryptography and key management policy"
+        },
+        {
+          "type": "Screenshot",
+          "example": "TLS configuration / encryption at rest settings"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-DATE",
+          "V-APPROVAL",
+          "V-KEYWORDS",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "encryption",
+          "key management",
+          "TLS",
+          "algorithm"
+        ]
+      },
+      "review_frequency": "Annual",
+      "default_owner_role": "Security Architect",
+      "related": [
+        "5.14",
+        "8.5"
+      ]
+    },
+    {
+      "ref": "A.8.25",
+      "title": "Secure development life cycle",
+      "theme": "Technological",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Protect"
+      ],
+      "intent": "Rules for secure development of software and systems are established and applied.",
+      "evidence_requirements": [
+        {
+          "type": "Policy",
+          "example": "Secure SDLC policy"
+        },
+        {
+          "type": "Record",
+          "example": "Evidence of security activities in a recent release"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-DATE",
+          "V-KEYWORDS",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "SDLC",
+          "threat modelling",
+          "code review",
+          "security testing"
+        ]
+      },
+      "review_frequency": "Annual",
+      "default_owner_role": "Engineering Lead",
+      "related": [
+        "8.26",
+        "8.27",
+        "8.28",
+        "8.29"
+      ]
+    },
+    {
+      "ref": "A.8.26",
+      "title": "Application security requirements",
+      "theme": "Technological",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Protect"
+      ],
+      "intent": "Security requirements are identified, specified and approved when developing or acquiring applications.",
+      "evidence_requirements": [
+        {
+          "type": "Document",
+          "example": "Security requirements in specifications / user stories"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-DATE",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "requirements",
+          "authentication",
+          "input validation",
+          "logging"
+        ]
+      },
+      "review_frequency": "Per project",
+      "default_owner_role": "Engineering Lead",
+      "related": [
+        "8.25",
+        "5.8"
+      ]
+    },
+    {
+      "ref": "A.8.27",
+      "title": "Secure system architecture and engineering principles",
+      "theme": "Technological",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Protect"
+      ],
+      "intent": "Principles for engineering secure systems are established, documented, maintained and applied.",
+      "evidence_requirements": [
+        {
+          "type": "Document",
+          "example": "Secure architecture principles"
+        },
+        {
+          "type": "Record",
+          "example": "Architecture review record"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-DATE",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "architecture",
+          "defence in depth",
+          "zero trust",
+          "principles"
+        ]
+      },
+      "review_frequency": "Annual",
+      "default_owner_role": "Security Architect",
+      "related": [
+        "8.25"
+      ]
+    },
+    {
+      "ref": "A.8.28",
+      "title": "Secure coding",
+      "theme": "Technological",
+      "new_in_2022": true,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Protect"
+      ],
+      "intent": "Secure coding principles are applied to software development.",
+      "evidence_requirements": [
+        {
+          "type": "Document",
+          "example": "Secure coding standard"
+        },
+        {
+          "type": "Report",
+          "example": "SAST / dependency scan results"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-FRESH",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "secure coding",
+          "OWASP",
+          "SAST",
+          "dependency"
+        ]
+      },
+      "review_frequency": "Per release",
+      "default_owner_role": "Engineering Lead",
+      "related": [
+        "8.25",
+        "8.29"
+      ]
+    },
+    {
+      "ref": "A.8.29",
+      "title": "Security testing in development and acceptance",
+      "theme": "Technological",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Identify"
+      ],
+      "intent": "Security testing processes are defined and implemented in the development lifecycle.",
+      "evidence_requirements": [
+        {
+          "type": "Report",
+          "example": "Security test results for a release"
+        },
+        {
+          "type": "Report",
+          "example": "Pen test before go-live"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-FRESH",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "security testing",
+          "acceptance",
+          "DAST",
+          "pen test"
+        ]
+      },
+      "review_frequency": "Per release",
+      "default_owner_role": "Engineering Lead",
+      "related": [
+        "8.28",
+        "8.8"
+      ]
+    },
+    {
+      "ref": "A.8.30",
+      "title": "Outsourced development",
+      "theme": "Technological",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive",
+        "Detective"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Identify",
+        "Protect",
+        "Detect"
+      ],
+      "intent": "The organization directs, monitors and reviews activities related to outsourced system development.",
+      "evidence_requirements": [
+        {
+          "type": "Contract",
+          "example": "Development contract with security requirements"
+        },
+        {
+          "type": "Report",
+          "example": "Acceptance testing of outsourced code"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-DATE",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "outsourced",
+          "contractor",
+          "acceptance",
+          "code ownership"
+        ]
+      },
+      "review_frequency": "Per contract",
+      "default_owner_role": "Engineering Lead",
+      "related": [
+        "5.20",
+        "8.29"
+      ]
+    },
+    {
+      "ref": "A.8.31",
+      "title": "Separation of development, test and production environments",
+      "theme": "Technological",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Protect"
+      ],
+      "intent": "Development, testing and production environments are separated and secured.",
+      "evidence_requirements": [
+        {
+          "type": "Document",
+          "example": "Environment architecture diagram"
+        },
+        {
+          "type": "Export",
+          "example": "Access lists per environment"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-DATE",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "development",
+          "test",
+          "production",
+          "separation"
+        ]
+      },
+      "review_frequency": "Annual",
+      "default_owner_role": "Engineering Lead",
+      "related": [
+        "8.32",
+        "8.33"
+      ]
+    },
+    {
+      "ref": "A.8.32",
+      "title": "Change management",
+      "theme": "Technological",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Protect"
+      ],
+      "intent": "Changes to information processing facilities and systems are subject to change management procedures.",
+      "evidence_requirements": [
+        {
+          "type": "Procedure",
+          "example": "Change management procedure"
+        },
+        {
+          "type": "Ticket",
+          "example": "Sample of approved change tickets with testing and rollback"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-FRESH",
+          "V-APPROVAL",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "change",
+          "approval",
+          "CAB",
+          "rollback",
+          "testing"
+        ]
+      },
+      "review_frequency": "Quarterly",
+      "default_owner_role": "IT Manager",
+      "related": [
+        "8.9",
+        "8.19",
+        "5.37"
+      ]
+    },
+    {
+      "ref": "A.8.33",
+      "title": "Test information",
+      "theme": "Technological",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity"
+      ],
+      "cybersecurity_concepts": [
+        "Protect"
+      ],
+      "intent": "Test information is appropriately selected, protected and managed.",
+      "evidence_requirements": [
+        {
+          "type": "Procedure",
+          "example": "Test data management procedure"
+        },
+        {
+          "type": "Screenshot",
+          "example": "Masked data in test environment"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-DATE",
+          "V-PII",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "test data",
+          "masking",
+          "production data"
+        ]
+      },
+      "review_frequency": "Annual",
+      "default_owner_role": "Engineering Lead",
+      "related": [
+        "8.11",
+        "8.31"
+      ]
+    },
+    {
+      "ref": "A.8.34",
+      "title": "Protection of information systems during audit testing",
+      "theme": "Technological",
+      "new_in_2022": false,
+      "control_type": [
+        "Preventive"
+      ],
+      "security_properties": [
+        "Confidentiality",
+        "Integrity",
+        "Availability"
+      ],
+      "cybersecurity_concepts": [
+        "Protect"
+      ],
+      "intent": "Audit tests and other assurance activities involving operational systems are planned and agreed between tester and management.",
+      "evidence_requirements": [
+        {
+          "type": "Record",
+          "example": "Audit/test plan agreed with system owner"
+        },
+        {
+          "type": "Document",
+          "example": "Rules of engagement for penetration test"
+        }
+      ],
+      "verification": {
+        "rules": [
+          "V-FMT",
+          "V-DATE",
+          "V-APPROVAL",
+          "V-RELEVANCE"
+        ],
+        "required_concepts": [
+          "audit testing",
+          "rules of engagement",
+          "read-only",
+          "approval"
+        ]
+      },
+      "review_frequency": "Per audit",
+      "default_owner_role": "Internal Audit",
+      "related": [
+        "5.35",
+        "8.29"
+      ]
+    }
+  ]
+}
