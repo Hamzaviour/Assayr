@@ -4,6 +4,7 @@ from datetime import timedelta
 import pytest
 from fastapi.testclient import TestClient
 
+from assayr.catalogue.seed import ensure_default_scope, seed_iso27001
 from assayr.config import Settings
 from assayr.db import Base, utcnow
 from assayr.identity.models import RoleAssignment, User
@@ -52,6 +53,14 @@ def client(app):
 def db(app):
     with app.state.db.sessionmaker() as session:
         yield session
+
+
+@pytest.fixture
+def seeded(db, settings):
+    scope = ensure_default_scope(db, settings.org_name)
+    seed_iso27001(db, scope)
+    db.commit()
+    return scope
 
 
 @pytest.fixture
