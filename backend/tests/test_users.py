@@ -94,3 +94,35 @@ def test_roles_can_be_replaced_including_re_adding_an_existing_one(client, db):
     )
     assert response.status_code == 200
     assert sorted(r["role"] for r in response.json()["roles"]) == ["control_owner", "viewer"]
+
+
+def test_scoped_platform_admin_cannot_manage_users(client, db, seeded):
+    create_user(db, "scoped-admin@acme.com", roles=(("platform_admin", seeded.id),))
+    sign_in(client, "scoped-admin@acme.com")
+    assert client.get("/api/v1/users").status_code == 403
+    response = client.post(
+        "/api/v1/users",
+        json={
+            "email": "boss@acme.com",
+            "full_name": "Boss",
+            "password": "another-long-password",
+            "roles": [{"role": "platform_admin"}],
+        },
+    )
+    assert response.status_code == 403
+
+
+def test_platform_admin_role_cannot_be_limited_to_a_scope(client, db, seeded):
+    create_user(db, "admin@acme.com", roles=ADMIN)
+    sign_in(client, "admin@acme.com")
+    response = client.post(
+        "/api/v1/users",
+        json={
+            "email": "x@acme.com",
+            "full_name": "X",
+            "password": "another-long-password",
+            "roles": [{"role": "platform_admin", "scope_id": str(seeded.id)}],
+        },
+    )
+    assert response.status_code == 422
+    assert response.json() == {"detail": "The platform administrator role always applies to all scopes."}

@@ -97,3 +97,24 @@ def test_sign_in_and_failures_are_audited(client, db):
     sign_in(client, "sana@acme.com")
     actions = list(db.scalars(select(AuditLog.action).order_by(AuditLog.seq)))
     assert actions == ["auth.login_failed", "auth.login"]
+
+
+def test_concurrent_failed_attempts_are_all_counted(client, db, monkeypatch):
+    """A failed attempt that commits while another is being checked must not be lost."""
+    from sqlalchemy import update
+
+    import assayr.identity.auth_router as auth_router
+    from assayr.identity.models import User
+
+    user = create_user(db, "sana@acme.com")
+    real_verify = auth_router.verify_password
+
+    def verify_while_another_attempt_lands(password_hash, password):
+        db.execute(update(User).where(User.id == user.id).values(failed_logins=User.failed_logins + 1))
+        db.commit()
+        return real_verify(password_hash, password)
+
+    monkeypatch.setattr(auth_router, "verify_password", verify_while_another_attempt_lands)
+    sign_in(client, "sana@acme.com", "not-the-right-password")
+    db.expire_all()
+    assert db.get(User, user.id).failed_logins == 2

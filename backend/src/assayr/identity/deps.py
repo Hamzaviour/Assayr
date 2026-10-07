@@ -66,6 +66,18 @@ def require(perm: Perm) -> Callable[..., Grant]:
     return dependency
 
 
+def require_global(perm: Perm) -> Callable[..., Grant]:
+    """For data that is not partitioned by scope (users, the audit trail): a scoped grant is not enough."""
+
+    def dependency(user: User = Depends(current_user)) -> Grant:
+        grant = grant_for(((a.role, a.scope_id) for a in user.role_assignments), perm)
+        if not grant.all_scopes:
+            raise HTTPException(status.HTTP_403_FORBIDDEN, "You don't have permission to do this.")
+        return grant
+
+    return dependency
+
+
 def actor_for(request: Request, user: User | None, email: str | None = None) -> Actor:
     return Actor(
         id=user.id if user else None,
