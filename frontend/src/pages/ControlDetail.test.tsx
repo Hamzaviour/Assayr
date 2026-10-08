@@ -99,3 +99,21 @@ test("uploading evidence shows the checks as they run and the verdict", async ()
   expect(post.init.body).toBeInstanceOf(FormData)
   expect(new Headers(post.init.headers).get("X-CSRF-Token")).toBe("token-xyz")
 })
+
+test("the owner attests that the control operates as described", async () => {
+  document.cookie = "assayr_csrf=token-xyz; path=/"
+  const calls = mockApi({
+    "GET /auth/me": () => json(200, ME),
+    "GET /controls/A.8.13": () => json(200, DETAIL),
+    "POST /controls/A.8.13/attest": () =>
+      json(200, { ...DETAIL, attestation: { attested_at: "2026-10-07T09:00:00Z", valid_until: "2026-11-07T09:00:00Z",
+                                            by: "Sana Malik", statement: "Operates as described." } }),
+  })
+  renderApp("/controls/A.8.13")
+  expect(await screen.findByText("Not attested yet")).toBeInTheDocument()
+  await userEvent.click(screen.getByRole("button", { name: "Attest" }))
+  await userEvent.click(screen.getByRole("button", { name: "Confirm attestation" }))
+  expect(await screen.findByText("Attested by Sana Malik on 7 Oct 2026, valid until 7 Nov 2026")).toBeInTheDocument()
+  const post = calls.find((c) => c.method === "POST")!
+  expect(JSON.parse(String(post.init.body))).toEqual({ statement: "This control operates as described." })
+})
