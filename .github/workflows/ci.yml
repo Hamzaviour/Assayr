@@ -1,8 +1,8 @@
 name: ci
 
+# Manual only: GitHub Actions minutes are limited. Run from the Actions tab when needed.
 on:
-  push:
-  pull_request:
+  workflow_dispatch:
 
 jobs:
   backend:
