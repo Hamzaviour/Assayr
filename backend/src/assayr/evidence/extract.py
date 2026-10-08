@@ -69,6 +69,14 @@ def _looks_like_text(head: bytes) -> bool:
 
 
 def extract(path: Path, mime: str | None) -> Extracted:
+    result = _extract(path, mime)
+    # NUL can't be stored in a PostgreSQL text column and never helps a rule.
+    result.text = result.text.replace("\x00", "")
+    result.metadata = {k: v.replace("\x00", "") for k, v in result.metadata.items()}
+    return result
+
+
+def _extract(path: Path, mime: str | None) -> Extracted:
     try:
         if mime == PDF:
             return _pdf(path)

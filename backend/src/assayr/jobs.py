@@ -43,11 +43,21 @@ class JobEnv:
 
 
 HANDLERS: dict[str, Callable[[Session, dict, JobEnv], None]] = {}
+# Called once, in a fresh transaction, when a job of that kind fails for good (with the last error).
+FAILURE_HANDLERS: dict[str, Callable[[Session, dict, JobEnv, str], None]] = {}
 
 
 def handler(kind: str):
     def register(func):
         HANDLERS[kind] = func
+        return func
+
+    return register
+
+
+def on_failure(kind: str):
+    def register(func):
+        FAILURE_HANDLERS[kind] = func
         return func
 
     return register
@@ -84,17 +94,37 @@ def claim_next(db: Session, now: datetime) -> Job | None:
     return job
 
 
+def _fail(db: Session, job: Job, error: str, env: JobEnv) -> None:
+    job.status = "failed"
+    job.last_error = error[:2000]
+    db.commit()
+    on_fail = FAILURE_HANDLERS.get(job.kind)
+    if on_fail is None:
+        return
+    job_id = job.id
+    try:
+        on_fail(db, dict(job.payload), env, error)
+        db.commit()
+    except Exception as exc:  # noqa: BLE001 - a failing hook must never stop the worker
+        db.rollback()
+        job = db.get(Job, job_id)
+        job.last_error = f"{error} (failure handler: {type(exc).__name__}: {exc})"[:2000]
+        db.commit()
+
+
 def run_one(make_session: sessionmaker, env: JobEnv) -> bool:
     with make_session() as db:
         job = claim_next(db, env.now())
         if job is None:
             return False
         job_id = job.id
+        if job.attempts > MAX_ATTEMPTS:
+            # Only a stale job reclaimed after its last attempt gets here: the worker died running it.
+            _fail(db, job, "The worker stopped while running this job.", env)
+            return True
         func = HANDLERS.get(job.kind)
         if func is None:
-            job.status = "failed"
-            job.last_error = f"Unknown job kind: {job.kind}"
-            db.commit()
+            _fail(db, job, f"Unknown job kind: {job.kind}", env)
             return True
         try:
             func(db, dict(job.payload), env)
@@ -105,13 +135,14 @@ def run_one(make_session: sessionmaker, env: JobEnv) -> bool:
         except Exception as exc:  # noqa: BLE001 - a failing job must never stop the worker
             db.rollback()
             job = db.get(Job, job_id)
-            job.last_error = f"{type(exc).__name__}: {exc}"[:2000]
+            error = f"{type(exc).__name__}: {exc}"
             if job.attempts >= MAX_ATTEMPTS:
-                job.status = "failed"
+                _fail(db, job, error, env)
             else:
+                job.last_error = error[:2000]
                 job.status = "queued"
                 job.run_after = env.now() + timedelta(seconds=30 * job.attempts)
-            db.commit()
+                db.commit()
         return True
 
 

@@ -59,3 +59,36 @@ def test_recompute_all_enqueues_each_scope_once(app, db, seeded):
     db.commit()
     assert [j.kind for j in db.scalars(select(Job))] == ["recompute_scope"]
     assert run_jobs(app) == 1
+
+
+def test_stale_job_out_of_attempts_is_failed_not_rerun(app, db, clock, monkeypatch):
+    """A job that keeps killing the worker must not be retried forever."""
+    seen = []
+    monkeypatch.setitem(HANDLERS, "test.echo", lambda session, payload, env: seen.append(1))
+    job = enqueue(db, "test.echo", {}, now=clock())
+    job.status, job.locked_at, job.attempts = "running", clock() - timedelta(minutes=11), 3
+    db.commit()
+    assert run_jobs(app) == 1
+    db.expire_all()
+    job = db.scalar(select(Job))
+    assert seen == [] and job.status == "failed"
+    assert job.last_error == "The worker stopped while running this job."
+
+
+def test_failure_handler_runs_once_when_a_job_finally_fails(app, db, clock, monkeypatch):
+    from assayr.jobs import FAILURE_HANDLERS
+
+    def boom(session, payload, env):
+        raise RuntimeError("disk full")
+
+    failures = []
+    monkeypatch.setitem(HANDLERS, "test.boom", boom)
+    monkeypatch.setitem(
+        FAILURE_HANDLERS, "test.boom", lambda session, payload, env, error: failures.append(error)
+    )
+    enqueue(db, "test.boom", {"n": 1}, now=clock())
+    db.commit()
+    for _ in range(3):
+        run_jobs(app)
+        clock.advance(minutes=5)
+    assert failures == ["RuntimeError: disk full"]
