@@ -4,6 +4,7 @@ from datetime import timedelta
 import pytest
 from fastapi.testclient import TestClient
 
+import assayr.job_handlers  # noqa: F401  (registers job handlers)
 from assayr.catalogue.seed import ensure_default_scope, seed_iso27001
 from assayr.config import Settings
 from assayr.db import Base, utcnow

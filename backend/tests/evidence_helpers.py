@@ -50,3 +50,10 @@ def add_link(
     db.add(link)
     db.flush()
     return link
+
+
+def run_jobs(app) -> int:
+    from assayr.jobs import JobEnv, run_pending
+
+    env = JobEnv(settings=app.state.settings, store=app.state.store, now=app.state.clock)
+    return run_pending(app.state.db.sessionmaker, env)

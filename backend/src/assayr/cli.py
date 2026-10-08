@@ -1,16 +1,21 @@
 """`assayr` administration commands."""
 
+import time
+from datetime import timedelta
+
 import typer
 from sqlalchemy import select
 
 from assayr.audit.service import SYSTEM, record, verify_chain
 from assayr.catalogue.seed import ensure_default_scope, seed_iso27001
 from assayr.config import get_settings
-from assayr.db import Database
+from assayr.db import Database, utcnow
 from assayr.identity.models import RoleAssignment, User
 from assayr.identity.rbac import Role
 from assayr.identity.security import WeakPasswordError, hash_password, normalize_email
+from assayr.jobs import JobEnv, run_one, run_pending
 from assayr.migrate import upgrade
+from assayr.storage import BlobStore
 
 app = typer.Typer(help="Assayr administration commands.", no_args_is_help=True)
 
@@ -98,3 +103,28 @@ def audit_verify() -> None:
         err=True,
     )
     raise typer.Exit(2)
+
+
+@app.command()
+def worker(once: bool = typer.Option(False, "--once", help="Process the queued jobs, then exit.")) -> None:
+    """Run background jobs: evidence verification and scheduled status checks."""
+    import assayr.job_handlers  # noqa: F401
+    from assayr.scoring.jobs import enqueue_recompute_all
+
+    settings = get_settings()
+    database = _database()
+    env = JobEnv(settings=settings, store=BlobStore(settings.storage_dir), now=utcnow)
+    if once:
+        processed = run_pending(database.sessionmaker, env)
+        typer.echo(f"Processed {processed} job{'s' if processed != 1 else ''}.")
+        return
+    typer.echo("Worker started.")
+    next_recompute = utcnow()
+    while True:
+        if utcnow() >= next_recompute:
+            with database.sessionmaker() as session:
+                enqueue_recompute_all(session, utcnow())
+                session.commit()
+            next_recompute = utcnow() + timedelta(minutes=settings.recompute_interval_minutes)
+        if not run_one(database.sessionmaker, env):
+            time.sleep(settings.worker_poll_seconds)

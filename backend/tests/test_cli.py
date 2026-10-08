@@ -67,3 +67,18 @@ def test_create_admin_refuses_duplicates_and_weak_passwords(cli_db):
     assert duplicate.exit_code == 1 and "already exists" in duplicate.output
     weak = run("create-admin", "--email", "new@acme.com", "--password", "short")
     assert weak.exit_code == 1 and "Use at least 12 characters." in weak.output
+
+
+def test_worker_once_processes_queued_jobs(cli_db, monkeypatch):
+    from assayr.db import utcnow
+    from assayr.jobs import HANDLERS, enqueue
+
+    run("migrate")
+    seen = []
+    monkeypatch.setitem(HANDLERS, "test.echo", lambda session, payload, env: seen.append(payload))
+    with Session(cli_db) as session:
+        enqueue(session, "test.echo", {"n": 7}, now=utcnow())
+        session.commit()
+    result = run("worker", "--once")
+    assert result.exit_code == 0 and "Processed 1 job." in result.output
+    assert seen == [{"n": 7}]
