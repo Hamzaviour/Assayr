@@ -163,3 +163,10 @@ def test_decide():
     assert decide([outcome("V-APPROVAL", "fail"), outcome("V-DATE", "pass")], 0.85, 0.6).verdict == "reject"
     nothing = decide([outcome("V-FMT", "pass"), outcome("V-RELEVANCE", "skipped")], 0.85, 0.6)
     assert (nothing.verdict, nothing.confidence) == ("review", None)
+
+
+def test_an_unscanned_file_is_never_accepted_automatically():
+    """A configured malware scanner that can't be reached must send the file to a reviewer."""
+    results = [outcome("V-AV", "warn"), outcome("V-SCOPE", "pass"), outcome("V-APPROVAL", "pass")]
+    decision = decide(results, 0.85, 0.6)
+    assert (decision.verdict, decision.confidence) == ("review", 1.0)

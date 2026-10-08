@@ -400,6 +400,8 @@ def decide(results: list[tuple[Rule, Outcome]], accept: float, reject: float) ->
         return Decision("review", None)
     if confidence < reject:
         return Decision("reject", confidence)
-    if confidence < accept:
+    # A hard check that couldn't confirm (e.g. the malware scanner was unreachable) needs a person.
+    hard_warn = any(rule.severity == "hard" and o.status == "warn" for rule, o in results)
+    if confidence < accept or hard_warn:
         return Decision("review", confidence)
     return Decision("accept", confidence)
