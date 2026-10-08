@@ -15,27 +15,50 @@ from assayr.identity.deps import actor_for, current_user, get_clock, require
 from assayr.identity.models import User
 from assayr.identity.rbac import Grant, Perm
 from assayr.risk.library_router import require_methodology
-from assayr.risk.methodology import band_for, rating_error, suggest_current
-from assayr.risk.models import Risk, RiskAssessment, RiskControl, RiskTemplate, Threat, Vulnerability
+from assayr.risk.methodology import (
+    AUTHORITY_LABEL,
+    acceptance_days,
+    authority_allows,
+    band_for,
+    rating_error,
+    suggest_current,
+)
+from assayr.risk.models import (
+    Risk,
+    RiskAcceptance,
+    RiskAssessment,
+    RiskControl,
+    RiskTemplate,
+    Threat,
+    Vulnerability,
+)
 from assayr.risk.schemas import (
+    AcceptIn,
+    ActionIn,
     AssessmentIn,
+    CloseIn,
     ControlLinksIn,
     RiskCreateIn,
     RiskDetailOut,
     RiskRowOut,
     RiskUpdateIn,
+    TreatmentIn,
 )
 from assayr.risk.service import (
     control_effects,
     definition_of,
     draft_assessment,
+    held_authority,
     inherent_of,
     latest_assessment,
     next_risk_code,
+    open_actions,
     refresh_risk,
+    risk_actions,
     risk_detail,
     risk_row,
 )
+from assayr.tasks.models import Task
 
 router = APIRouter(tags=["risks"])
 NOT_FOUND = "Risk not found."
@@ -446,5 +469,176 @@ def finalize_assessment(
             "band": band["key"],
         },
     )
+    db.commit()
+    return risk_detail(db, risk, user)
+
+
+@router.post("/risks/{code}/treatment", response_model=RiskDetailOut)
+def set_treatment(
+    code: str,
+    body: TreatmentIn,
+    request: Request,
+    user: User = Depends(current_user),
+    grant: Grant = Depends(require(Perm.RISKS_READ)),
+    db: Session = Depends(get_session),
+    scope_id: uuid.UUID | None = None,
+) -> RiskDetailOut:
+    risk = load_risk(db, grant, scope_id, code)
+    require_edit(user, risk)
+    require_open(risk)
+    if latest_assessment(db, risk) is None:
+        raise HTTPException(status.HTTP_409_CONFLICT, "Finish the assessment before choosing a treatment.")
+    note = (body.note or "").strip()
+    if body.option == "avoid" and not note:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "Record the decision to avoid the risk.")
+    if body.option == "share" and not note:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT, "Record the contract or insurance that shares the risk."
+        )
+    now = get_clock(request)()
+    before = risk.treatment_option
+    risk.treatment_option = body.option
+    risk.treatment_note = note or None
+    risk.treatment_budget = body.budget
+    risk.treatment_due = body.due
+    if body.option == "avoid":
+        risk.closed_at = now
+        risk.close_reason = f"Avoided: {note}"
+    refresh_risk(db, risk, now)
+    record(
+        db,
+        actor_for(request, user),
+        "risk.treatment",
+        "risk",
+        risk.code,
+        diff={"option": [before, body.option]},
+    )
+    db.commit()
+    return risk_detail(db, risk, user)
+
+
+@router.post("/risks/{code}/actions", response_model=RiskDetailOut, status_code=status.HTTP_201_CREATED)
+def add_action(
+    code: str,
+    body: ActionIn,
+    request: Request,
+    user: User = Depends(current_user),
+    grant: Grant = Depends(require(Perm.RISKS_READ)),
+    db: Session = Depends(get_session),
+    scope_id: uuid.UUID | None = None,
+) -> RiskDetailOut:
+    risk = load_risk(db, grant, scope_id, code)
+    require_edit(user, risk)
+    require_open(risk)
+    if risk.treatment_option != "modify":
+        raise HTTPException(
+            status.HTTP_409_CONFLICT, "Treatment actions belong to the 'modify' option. Choose it first."
+        )
+    check_active_user(db, body.assignee_id, "Assignee")
+    task = Task(
+        scope_id=risk.scope_id,
+        entity_type="risk",
+        entity_id=str(risk.id),
+        title=body.title.strip(),
+        assignee_id=body.assignee_id,
+        due=body.due,
+        created_by_id=user.id,
+    )
+    db.add(task)
+    db.flush()
+    refresh_risk(db, risk, get_clock(request)())
+    record(
+        db,
+        actor_for(request, user),
+        "task.create",
+        "task",
+        str(task.id),
+        diff={"risk": risk.code, "title": task.title},
+    )
+    db.commit()
+    return risk_detail(db, risk, user)
+
+
+@router.post("/risks/{code}/accept", response_model=RiskDetailOut)
+def accept_risk(
+    code: str,
+    body: AcceptIn,
+    request: Request,
+    user: User = Depends(current_user),
+    grant: Grant = Depends(require(Perm.RISKS_READ)),
+    db: Session = Depends(get_session),
+    scope_id: uuid.UUID | None = None,
+) -> RiskDetailOut:
+    risk = load_risk(db, grant, scope_id, code)
+    require_open(risk)
+    latest = latest_assessment(db, risk)
+    if latest is None:
+        raise HTTPException(status.HTTP_409_CONFLICT, "Finish the assessment before accepting the risk.")
+    if draft_assessment(db, risk) is not None:
+        raise HTTPException(status.HTTP_409_CONFLICT, "Finish the reassessment before accepting the risk.")
+    if risk.treatment_option == "modify" and open_actions(risk_actions(db, risk)):
+        raise HTTPException(
+            status.HTTP_409_CONFLICT, "Finish the treatment actions before accepting the residual risk."
+        )
+    definition = definition_of(db, latest)
+    band = band_for(definition, latest.current_l, latest.current_c)
+    held = held_authority(user, risk.scope_id, risk.owner_id == user.id)
+    if not authority_allows(held, band["authority"]):
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            f"A {band['label'].lower()} risk must be accepted by {AUTHORITY_LABEL[band['authority']]}.",
+        )
+    now = get_clock(request)()
+    if risk.treatment_option is None:
+        risk.treatment_option = "retain"
+    acceptance = RiskAcceptance(
+        risk_id=risk.id,
+        assessment_id=latest.id,
+        band=band["key"],
+        score=latest.current_l * latest.current_c,
+        authority=held,
+        statement=body.statement.strip(),
+        accepted_by_id=user.id,
+        accepted_at=now,
+        expires_at=now + timedelta(days=acceptance_days(definition, band["key"])),
+    )
+    db.add(acceptance)
+    db.flush()
+    refresh_risk(db, risk, now)
+    record(
+        db,
+        actor_for(request, user),
+        "risk.accept",
+        "risk",
+        risk.code,
+        diff={
+            "band": band["key"],
+            "score": acceptance.score,
+            "expires_at": acceptance.expires_at.isoformat(),
+        },
+    )
+    db.commit()
+    return risk_detail(db, risk, user)
+
+
+@router.post("/risks/{code}/close", response_model=RiskDetailOut)
+def close_risk(
+    code: str,
+    body: CloseIn,
+    request: Request,
+    user: User = Depends(current_user),
+    grant: Grant = Depends(require(Perm.RISKS_READ)),
+    db: Session = Depends(get_session),
+    scope_id: uuid.UUID | None = None,
+) -> RiskDetailOut:
+    risk = load_risk(db, grant, scope_id, code)
+    require_edit(user, risk)
+    if risk.closed_at is not None:
+        raise HTTPException(status.HTTP_409_CONFLICT, "This risk is already closed.")
+    now = get_clock(request)()
+    risk.closed_at = now
+    risk.close_reason = body.reason.strip()
+    refresh_risk(db, risk, now)
+    record(db, actor_for(request, user), "risk.close", "risk", risk.code, reason=risk.close_reason)
     db.commit()
     return risk_detail(db, risk, user)
