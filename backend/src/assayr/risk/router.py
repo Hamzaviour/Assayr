@@ -1,4 +1,5 @@
 import uuid
+from datetime import timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy import func, or_, select
@@ -14,9 +15,27 @@ from assayr.identity.deps import actor_for, current_user, get_clock, require
 from assayr.identity.models import User
 from assayr.identity.rbac import Grant, Perm
 from assayr.risk.library_router import require_methodology
+from assayr.risk.methodology import band_for, rating_error, suggest_current
 from assayr.risk.models import Risk, RiskAssessment, RiskControl, RiskTemplate, Threat, Vulnerability
-from assayr.risk.schemas import ControlLinksIn, RiskCreateIn, RiskDetailOut, RiskRowOut, RiskUpdateIn
-from assayr.risk.service import next_risk_code, refresh_risk, risk_detail, risk_row
+from assayr.risk.schemas import (
+    AssessmentIn,
+    ControlLinksIn,
+    RiskCreateIn,
+    RiskDetailOut,
+    RiskRowOut,
+    RiskUpdateIn,
+)
+from assayr.risk.service import (
+    control_effects,
+    definition_of,
+    draft_assessment,
+    inherent_of,
+    latest_assessment,
+    next_risk_code,
+    refresh_risk,
+    risk_detail,
+    risk_row,
+)
 
 router = APIRouter(tags=["risks"])
 NOT_FOUND = "Risk not found."
@@ -296,5 +315,136 @@ def set_risk_controls(
             diff={"controls": [before, after]},
         )
     refresh_risk(db, risk, get_clock(request)())
+    db.commit()
+    return risk_detail(db, risk, user)
+
+
+@router.patch("/risks/{code}/assessment", response_model=RiskDetailOut)
+def save_assessment(
+    code: str,
+    body: AssessmentIn,
+    request: Request,
+    user: User = Depends(current_user),
+    grant: Grant = Depends(require(Perm.RISKS_READ)),
+    db: Session = Depends(get_session),
+    scope_id: uuid.UUID | None = None,
+) -> RiskDetailOut:
+    risk = load_risk(db, grant, scope_id, code)
+    require_edit(user, risk)
+    require_open(risk)
+    version = require_methodology(db)
+    error = rating_error(
+        version.definition,
+        likelihood=body.likelihood,
+        consequence=body.consequence,
+        current=(body.current_l, body.current_c),
+        target=(body.target_l, body.target_c),
+    )
+    if error:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, error)
+    now = get_clock(request)()
+    draft = draft_assessment(db, risk)
+    if draft is None:
+        draft = RiskAssessment(risk_id=risk.id, methodology_version_id=version.id, created_at=now)
+        latest = latest_assessment(db, risk)
+        if latest is not None:  # a reassessment starts from the last ratings
+            draft.likelihood = latest.likelihood
+            draft.consequence = dict(latest.consequence or {})
+            draft.rationale = latest.rationale
+        db.add(draft)
+    fields = body.model_fields_set
+    for name in (
+        "likelihood",
+        "current_l",
+        "current_c",
+        "current_reason",
+        "target_l",
+        "target_c",
+        "rationale",
+    ):
+        if name in fields:
+            setattr(draft, name, getattr(body, name))
+    if "consequence" in fields:
+        draft.consequence = {**(draft.consequence or {}), **(body.consequence or {})}
+    draft.assessed_by_id = user.id
+    db.flush()
+    refresh_risk(db, risk, now)
+    db.commit()
+    return risk_detail(db, risk, user)
+
+
+def _pair(values: tuple[int | None, int | None], default: tuple[int, int], name: str) -> tuple[int, int]:
+    if values == (None, None):
+        return default
+    if None in values:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
+            f"Give both the likelihood and the consequence for the {name} level.",
+        )
+    return values  # type: ignore[return-value]
+
+
+@router.post("/risks/{code}/assessment/finalize", response_model=RiskDetailOut)
+def finalize_assessment(
+    code: str,
+    request: Request,
+    user: User = Depends(current_user),
+    grant: Grant = Depends(require(Perm.RISKS_READ)),
+    db: Session = Depends(get_session),
+    scope_id: uuid.UUID | None = None,
+) -> RiskDetailOut:
+    risk = load_risk(db, grant, scope_id, code)
+    require_edit(user, risk)
+    require_open(risk)
+    draft = draft_assessment(db, risk)
+    if draft is None:
+        raise HTTPException(status.HTTP_409_CONFLICT, "There's no assessment in progress.")
+    definition = definition_of(db, draft)
+    inherent = inherent_of(definition, draft)
+    if inherent is None:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
+            "Rate the likelihood and every consequence area before finishing.",
+        )
+    suggested = suggest_current(definition, *inherent, control_effects(risk))
+    current = _pair((draft.current_l, draft.current_c), suggested, "current")
+    if current != suggested and not (draft.current_reason or "").strip():
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
+            "Explain why the current level differs from the suggested one.",
+        )
+    if current[0] * current[1] > inherent[0] * inherent[1]:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
+            "The current level can't be higher than the inherent level.",
+        )
+    target = _pair((draft.target_l, draft.target_c), current, "target")
+    if target[0] * target[1] > current[0] * current[1]:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT, "The target can't be worse than the current level."
+        )
+    now = get_clock(request)()
+    draft.suggested = {"likelihood": suggested[0], "consequence": suggested[1]}
+    draft.current_l, draft.current_c = current
+    draft.target_l, draft.target_c = target
+    draft.finalized_at = now
+    draft.assessed_by_id = user.id
+    band = band_for(definition, *current)
+    risk.review_due = now.date() + timedelta(days=band["review_days"])
+    db.flush()
+    refresh_risk(db, risk, now)
+    record(
+        db,
+        actor_for(request, user),
+        "risk.assess",
+        "risk",
+        risk.code,
+        diff={
+            "inherent": inherent[0] * inherent[1],
+            "current": current[0] * current[1],
+            "target": target[0] * target[1],
+            "band": band["key"],
+        },
+    )
     db.commit()
     return risk_detail(db, risk, user)
