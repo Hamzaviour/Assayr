@@ -3387,8 +3387,7 @@ def test_accepting_evidence_no_check_could_read_needs_a_reason(app, client, db, 
 
 
 def test_accepting_evidence_with_failed_checks_needs_a_reason(app, client, db, seeded, clock):
-    draft = make_pdf(policy_text(clock().date(), approved=False).split("
-"))
+    draft = make_pdf(policy_text(clock().date(), approved=False).split("\n"))
     link_id = screenshot_in_review(app, db, file=("draft.pdf", draft, "application/pdf"))
     reviewer(client, db)
     response = client.post(f"/api/v1/artefact-links/{link_id}/decision", json={"decision": "accept"})

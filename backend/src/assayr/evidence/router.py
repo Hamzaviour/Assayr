@@ -3,22 +3,24 @@ from datetime import date
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile, status
 from fastapi.responses import FileResponse
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from assayr.audit.service import record
 from assayr.catalogue.access import edit_rights
-from assayr.catalogue.models import EvidenceSlot
+from assayr.catalogue.models import Control, EvidenceSlot
 from assayr.catalogue.router import FORBIDDEN, _get_control, resolve_scope
 from assayr.db import get_session
 from assayr.evidence.extract import sniff
 from assayr.evidence.models import Artefact, ArtefactLink, ArtefactVersion
-from assayr.evidence.schemas import LinkOut, link_out
+from assayr.evidence.schemas import DecisionIn, LinkOut, ReviewItemOut, latest_run, link_out, review_item
 from assayr.identity.deps import actor_for, current_user, get_clock, require
 from assayr.identity.models import User
 from assayr.identity.rbac import Grant, Perm
 from assayr.jobs import enqueue
 from assayr.scoring.service import recompute_control
 from assayr.storage import TooLargeError, safe_filename
+from assayr.verification.engine import supersede_older
 
 router = APIRouter(tags=["evidence"])
 NOT_FOUND = "Evidence not found."
@@ -148,3 +150,89 @@ def download_version(
         content_disposition_type="attachment",
         headers={"X-Content-Type-Options": "nosniff"},
     )
+
+
+@router.get("/review-queue", response_model=list[ReviewItemOut])
+def review_queue(
+    grant: Grant = Depends(require(Perm.EVIDENCE_REVIEW)),
+    db: Session = Depends(get_session),
+    scope_id: uuid.UUID | None = None,
+) -> list[ReviewItemOut]:
+    scope = resolve_scope(db, scope_id, grant)
+    links = db.scalars(
+        select(ArtefactLink)
+        .join(EvidenceSlot, ArtefactLink.slot_id == EvidenceSlot.id)
+        .join(Control, EvidenceSlot.control_id == Control.id)
+        .where(Control.scope_id == scope.id, ArtefactLink.state == "in_review")
+        .order_by(ArtefactLink.created_at)
+    ).unique()
+    return [review_item(db, link) for link in links]
+
+
+_DECISION_FROM = {"accept": {"in_review", "rejected"}, "reject": {"in_review"}}
+
+
+@router.post("/artefact-links/{link_id}/decision", response_model=LinkOut)
+def decide_link(
+    link_id: uuid.UUID,
+    body: DecisionIn,
+    request: Request,
+    user: User = Depends(current_user),
+    grant: Grant = Depends(require(Perm.EVIDENCE_REVIEW)),
+    db: Session = Depends(get_session),
+) -> LinkOut:
+    link = db.get(ArtefactLink, link_id)
+    if link is None or not grant.allows(link.slot.control.scope_id):
+        raise HTTPException(status.HTTP_404_NOT_FOUND, NOT_FOUND)
+    if link.version.uploaded_by_id == user.id:
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN, "You can't review evidence you uploaded. Ask another reviewer."
+        )
+    if link.state not in _DECISION_FROM[body.decision]:
+        raise HTTPException(status.HTTP_409_CONFLICT, "This evidence already has a final decision.")
+    reason = (body.reason or "").strip()
+    run = latest_run(db, link)
+    flagged = run is not None and any(r.status in ("fail", "warn") for r in run.results)
+    unchecked = run is None or run.confidence is None
+    if body.decision == "reject" and not reason:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT, "Give a reason so the uploader knows what to fix."
+        )
+    if body.decision == "accept" and not reason:
+        if flagged or link.state == "rejected":
+            raise HTTPException(
+                status.HTTP_422_UNPROCESSABLE_CONTENT,
+                "Some checks failed or raised warnings. Give a reason for accepting anyway.",
+            )
+        if unchecked:
+            raise HTTPException(
+                status.HTTP_422_UNPROCESSABLE_CONTENT,
+                "None of the content checks could run on this file. Say what you checked.",
+            )
+    now = get_clock(request)()
+    before = link.state
+    link.state = "accepted" if body.decision == "accept" else "rejected"
+    link.decided_by_id = user.id
+    link.decided_at = now
+    link.decision_reason = reason or None
+    if link.state == "accepted":
+        supersede_older(db, link)
+    record(
+        db,
+        actor_for(request, user),
+        "evidence.decision",
+        "artefact_link",
+        str(link.id),
+        diff={"state": [before, link.state]},
+        reason=reason or None,
+    )
+    verb = "accepted" if link.state == "accepted" else "rejected"
+    recompute_control(
+        db,
+        link.slot.control,
+        now,
+        request.app.state.settings,
+        trigger=f"Reviewer {verb} {link.version.filename}",
+    )
+    db.commit()
+    return link_out(db, link)

@@ -26,13 +26,16 @@ class Perm(StrEnum):
     USERS_MANAGE = "users:manage"
     AUDIT_LOG_READ = "audit_log:read"
     SETTINGS_MANAGE = "settings:manage"
+    EVIDENCE_REVIEW = "evidence:review"
 
 
 ROLE_PERMISSIONS: dict[Role, frozenset[Perm]] = {
     Role.PLATFORM_ADMIN: frozenset(
         {Perm.CONTROLS_READ, Perm.USERS_MANAGE, Perm.SETTINGS_MANAGE, Perm.AUDIT_LOG_READ}
     ),
-    Role.ISMS_MANAGER: frozenset({Perm.CONTROLS_READ, Perm.CONTROLS_WRITE, Perm.AUDIT_LOG_READ}),
+    Role.ISMS_MANAGER: frozenset(
+        {Perm.CONTROLS_READ, Perm.CONTROLS_WRITE, Perm.AUDIT_LOG_READ, Perm.EVIDENCE_REVIEW}
+    ),
     Role.CONTROL_OWNER: frozenset({Perm.CONTROLS_READ, Perm.CONTROLS_WRITE_OWN}),
     Role.RISK_OWNER: frozenset({Perm.CONTROLS_READ}),
     Role.CONTRIBUTOR: frozenset({Perm.CONTROLS_READ}),
