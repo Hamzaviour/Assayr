@@ -28,8 +28,13 @@ class FakeClock:
 
 
 @pytest.fixture
-def settings() -> Settings:
-    return Settings(database_url=TEST_DB_URL, secure_cookies=False, org_name="Acme Financial Services")
+def settings(tmp_path) -> Settings:
+    return Settings(
+        database_url=TEST_DB_URL,
+        secure_cookies=False,
+        org_name="Acme Financial Services",
+        storage_dir=str(tmp_path / "blobs"),
+    )
 
 
 @pytest.fixture

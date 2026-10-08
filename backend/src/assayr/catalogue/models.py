@@ -66,6 +66,7 @@ class Control(IdMixin, TimestampMixin, Base):
     implementation_text: Mapped[str | None] = mapped_column(Text)
     status: Mapped[str] = mapped_column(String(30), default="not_started")
     sort_order: Mapped[int] = mapped_column(default=0)
+    score: Mapped[float | None] = mapped_column(Float)
 
     owner: Mapped[User | None] = relationship(lazy="joined")
     slots: Mapped[list[EvidenceSlot]] = relationship(
