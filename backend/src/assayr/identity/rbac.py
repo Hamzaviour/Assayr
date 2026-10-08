@@ -27,23 +27,42 @@ class Perm(StrEnum):
     AUDIT_LOG_READ = "audit_log:read"
     SETTINGS_MANAGE = "settings:manage"
     EVIDENCE_REVIEW = "evidence:review"
+    RISKS_READ = "risks:read"
+    RISKS_WRITE = "risks:write"
+    RISKS_WRITE_OWN = "risks:write_own"
+    RISKS_ACCEPT_MEDIUM_OWN = "risks:accept_medium_own"
+    RISKS_ACCEPT_HIGH = "risks:accept_high"
+    RISKS_ACCEPT_CRITICAL = "risks:accept_critical"
+    ASSETS_READ = "assets:read"
+    ASSETS_WRITE = "assets:write"
+    ASSETS_WRITE_OWN = "assets:write_own"
+    SOA_READ = "soa:read"
+    SOA_WRITE = "soa:write"
+    SOA_APPROVE = "soa:approve"
 
+
+_READ_ALL = frozenset({Perm.CONTROLS_READ, Perm.RISKS_READ, Perm.ASSETS_READ, Perm.SOA_READ})
 
 ROLE_PERMISSIONS: dict[Role, frozenset[Perm]] = {
-    Role.PLATFORM_ADMIN: frozenset(
-        {Perm.CONTROLS_READ, Perm.USERS_MANAGE, Perm.SETTINGS_MANAGE, Perm.AUDIT_LOG_READ}
-    ),
-    Role.ISMS_MANAGER: frozenset(
-        {Perm.CONTROLS_READ, Perm.CONTROLS_WRITE, Perm.AUDIT_LOG_READ, Perm.EVIDENCE_REVIEW}
-    ),
-    Role.CONTROL_OWNER: frozenset({Perm.CONTROLS_READ, Perm.CONTROLS_WRITE_OWN}),
-    Role.RISK_OWNER: frozenset({Perm.CONTROLS_READ}),
-    Role.CONTRIBUTOR: frozenset({Perm.CONTROLS_READ}),
-    Role.INTERNAL_AUDITOR: frozenset({Perm.CONTROLS_READ, Perm.AUDIT_LOG_READ}),
-    Role.EXTERNAL_AUDITOR: frozenset({Perm.CONTROLS_READ}),
-    Role.EXECUTIVE: frozenset({Perm.CONTROLS_READ}),
+    Role.PLATFORM_ADMIN: _READ_ALL | {Perm.USERS_MANAGE, Perm.SETTINGS_MANAGE, Perm.AUDIT_LOG_READ},
+    Role.ISMS_MANAGER: _READ_ALL
+    | {
+        Perm.CONTROLS_WRITE,
+        Perm.AUDIT_LOG_READ,
+        Perm.EVIDENCE_REVIEW,
+        Perm.RISKS_WRITE,
+        Perm.RISKS_ACCEPT_HIGH,
+        Perm.ASSETS_WRITE,
+        Perm.SOA_WRITE,
+    },
+    Role.CONTROL_OWNER: _READ_ALL | {Perm.CONTROLS_WRITE_OWN, Perm.ASSETS_WRITE_OWN},
+    Role.RISK_OWNER: _READ_ALL | {Perm.RISKS_WRITE_OWN, Perm.RISKS_ACCEPT_MEDIUM_OWN},
+    Role.CONTRIBUTOR: _READ_ALL,
+    Role.INTERNAL_AUDITOR: _READ_ALL | {Perm.AUDIT_LOG_READ},
+    Role.EXTERNAL_AUDITOR: _READ_ALL,
+    Role.EXECUTIVE: _READ_ALL | {Perm.RISKS_ACCEPT_CRITICAL, Perm.SOA_APPROVE},
     Role.EMPLOYEE: frozenset(),
-    Role.VIEWER: frozenset({Perm.CONTROLS_READ}),
+    Role.VIEWER: _READ_ALL,
 }
 
 
