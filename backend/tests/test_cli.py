@@ -82,3 +82,11 @@ def test_worker_once_processes_queued_jobs(cli_db, monkeypatch):
     result = run("worker", "--once")
     assert result.exit_code == 0 and "Processed 1 job." in result.output
     assert seen == [{"n": 7}]
+
+
+def test_seed_loads_the_risk_library(cli_db):
+    run("migrate")
+    first = run("seed")
+    assert first.exit_code == 0
+    assert "Risk library: 40 threats, 60 vulnerabilities and 25 templates added." in first.output
+    assert "Risk library: 0 threats, 0 vulnerabilities and 0 templates added." in run("seed").output

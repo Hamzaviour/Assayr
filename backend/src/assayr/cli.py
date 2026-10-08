@@ -15,6 +15,7 @@ from assayr.identity.rbac import Role
 from assayr.identity.security import WeakPasswordError, hash_password, normalize_email
 from assayr.jobs import JobEnv, run_one, run_pending
 from assayr.migrate import upgrade
+from assayr.risk.seed import ensure_methodology, ensure_risk_library
 from assayr.storage import BlobStore
 
 app = typer.Typer(help="Assayr administration commands.", no_args_is_help=True)
@@ -37,9 +38,15 @@ def seed() -> None:
     with _database().sessionmaker() as session:
         scope = ensure_default_scope(session, get_settings().org_name)
         result = seed_iso27001(session, scope)
+        ensure_methodology(session, utcnow())
+        library = ensure_risk_library(session)
         session.commit()
     typer.echo(
         f"Seed complete: {result.requirements_created} requirements and {result.controls_created} controls created."
+    )
+    typer.echo(
+        f"Risk library: {library.threats} threats, {library.vulnerabilities} vulnerabilities "
+        f"and {library.templates} templates added."
     )
 
 
