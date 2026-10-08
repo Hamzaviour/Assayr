@@ -30,3 +30,11 @@ test("401 responses announce that the session ended", async () => {
   window.removeEventListener("assayr:unauthorized", listener)
   expect(listener).toHaveBeenCalledOnce()
 })
+
+test("FormData bodies keep the browser's multipart content type", async () => {
+  const calls = mockApi({ "POST /controls/A.5.1/slots/s1/artefacts": () => json(202, { id: "l1" }) })
+  const form = new FormData()
+  form.set("file", new File(["x"], "a.pdf"))
+  await api("/controls/A.5.1/slots/s1/artefacts", { method: "POST", body: form })
+  expect(new Headers(calls[0].init.headers).has("Content-Type")).toBe(false)
+})

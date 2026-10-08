@@ -28,9 +28,9 @@ function humanize(value: string): string {
   return text.charAt(0).toUpperCase() + text.slice(1)
 }
 
-export function StatusPill({ status }: { status: string }) {
+export function StatusPill({ status, label: override }: { status: string; label?: string }) {
   const known = status in STATUS_LABEL ? (status as ControlStatus) : null
-  const label = known ? STATUS_LABEL[known] : humanize(status)
+  const label = override ?? (known ? STATUS_LABEL[known] : humanize(status))
   const style = known ? STYLE[known] : STYLE.not_started
   return (
     <span
