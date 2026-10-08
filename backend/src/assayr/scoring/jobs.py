@@ -6,12 +6,16 @@ from sqlalchemy.orm import Session
 
 from assayr.identity.models import Scope
 from assayr.jobs import Job, JobEnv, enqueue, handler
+from assayr.risk.service import refresh_scope_risks
 from assayr.scoring.service import recompute_scope
 
 
 @handler("recompute_scope")
 def recompute_scope_job(db: Session, payload: dict, env: JobEnv) -> None:
-    recompute_scope(db, uuid.UUID(payload["scope_id"]), env.now(), env.settings)
+    scope_id = uuid.UUID(payload["scope_id"])
+    now = env.now()
+    recompute_scope(db, scope_id, now, env.settings)
+    refresh_scope_risks(db, scope_id, now)
     db.commit()
 
 
