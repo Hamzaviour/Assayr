@@ -30,6 +30,7 @@ cp .env.example .env
 uv run assayr migrate && uv run assayr seed
 uv run assayr create-admin --email you@example.com
 uv run uvicorn assayr.main:create_app --factory --reload --port 8000
+uv run assayr worker               # in a second terminal: verifies uploaded evidence
 uv run pytest
 ```
 
@@ -67,3 +68,4 @@ The stack serves plain HTTP on port 8080 for evaluation. Put it behind TLS and s
 | `assayr seed` | Load the ISO/IEC 27001:2022 catalogue (safe to repeat) |
 | `assayr create-admin --email …` | Create an administrator (password from prompt or `ASSAYR_ADMIN_PASSWORD`) |
 | `assayr audit-verify` | Check the audit trail's hash chain (exit code 2 if broken) |
+| `assayr worker [--once]` | Run background jobs (evidence verification, scheduled status checks) |

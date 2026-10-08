@@ -19,5 +19,19 @@ curl -fsS -c "$JAR" -H 'Content-Type: application/json' \
   -d '{"email":"admin@example.com","password":"smoke-test-password-123"}' "$BASE/api/v1/auth/login" >/dev/null
 total="$(curl -fsS -b "$JAR" "$BASE/api/v1/controls/summary" | sed -n 's/.*"total":\([0-9]*\).*/\1/p')"
 [ "$total" = "93" ] || { echo "Expected 93 controls, got $total" >&2; exit 1; }
+CSRF="$(awk '$6=="assayr_csrf"{print $7}' "$JAR")"
+SLOT="$(curl -fsS -b "$JAR" "$BASE/api/v1/controls/A.5.1" | sed -n 's/.*"slots":\[{"id":"\([^"]*\)".*/\1/p')"
+DOC="$(mktemp --suffix=.txt)"
+printf 'Acme Financial Services\nInformation Security Policy\nVersion 1.0\nApproved by: Smoke Admin\n' > "$DOC"
+LINK="$(curl -fsS -b "$JAR" -H "X-CSRF-Token: $CSRF" -F "file=@$DOC;filename=policy.txt" \
+  "$BASE/api/v1/controls/A.5.1/slots/$SLOT/artefacts" | sed -n 's/^{"id":"\([^"]*\)".*/\1/p')"
+state="verifying"
+for _ in $(seq 1 60); do
+  state="$(curl -fsS -b "$JAR" "$BASE/api/v1/artefact-links/$LINK" | sed -n 's/.*"state":"\([a-z_]*\)".*/\1/p' | head -n1)"
+  [ "$state" != "verifying" ] && break
+  sleep 1
+done
+[ "$state" != "verifying" ] || { echo "Evidence was never verified (is the worker running?)" >&2; exit 1; }
+echo "Evidence verified by the worker: $state"
 compose exec -T api assayr audit-verify
 echo "Smoke test passed: stack is up, sign-in works and 93 controls are seeded."
