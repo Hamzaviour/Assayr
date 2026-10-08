@@ -140,3 +140,17 @@ def test_upload_requires_csrf(client, db, seeded, clock):
     client.headers.pop("X-CSRF-Token")
     _, url = slot_url(db)
     assert client.post(url, files=pdf_file(clock)).status_code == 403
+
+
+def test_a_file_that_failed_the_safety_checks_cannot_be_downloaded(client, db, seeded, app):
+    manager(client, db)
+    _, url = slot_url(db)
+    link = client.post(
+        url, files={"file": ("invoice.pdf", b"MZ\x90\x00 not a pdf", "application/pdf")}
+    ).json()
+    run_jobs(app)
+    response = client.get(f"/api/v1/artefact-versions/{link['version_id']}/download")
+    assert response.status_code == 403
+    assert response.json() == {
+        "detail": "This file failed the file-type or malware check, so it can't be downloaded."
+    }

@@ -3,7 +3,7 @@ from datetime import date
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile, status
 from fastapi.responses import FileResponse
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from assayr.audit.service import record
@@ -12,7 +12,7 @@ from assayr.catalogue.models import Control, EvidenceSlot
 from assayr.catalogue.router import FORBIDDEN, _get_control, resolve_scope
 from assayr.db import get_session
 from assayr.evidence.extract import sniff
-from assayr.evidence.models import Artefact, ArtefactLink, ArtefactVersion
+from assayr.evidence.models import Artefact, ArtefactLink, ArtefactVersion, RuleResult, VerificationRun
 from assayr.evidence.schemas import DecisionIn, LinkOut, ReviewItemOut, latest_run, link_out, review_item
 from assayr.identity.deps import actor_for, current_user, get_clock, require
 from assayr.identity.models import User
@@ -24,6 +24,25 @@ from assayr.verification.engine import supersede_older
 
 router = APIRouter(tags=["evidence"])
 NOT_FOUND = "Evidence not found."
+SAFETY_RULES = ("V-FMT", "V-AV")
+
+
+def failed_safety_check(db: Session, version_id: uuid.UUID) -> bool:
+    """True when any check of this file found it unreadable as evidence or flagged it as malware (quarantine)."""
+    count = db.scalar(
+        select(func.count())
+        .select_from(RuleResult)
+        .join(VerificationRun, RuleResult.run_id == VerificationRun.id)
+        .join(ArtefactLink, VerificationRun.link_id == ArtefactLink.id)
+        .where(
+            ArtefactLink.version_id == version_id,
+            RuleResult.code.in_(SAFETY_RULES),
+            RuleResult.status == "fail",
+        )
+    )
+    return bool(count)
+
+
 HEAD_BYTES = 8192
 
 
@@ -128,6 +147,11 @@ def download_version(
     version = db.get(ArtefactVersion, version_id)
     if version is None or not grant.allows(version.artefact.scope_id):
         raise HTTPException(status.HTTP_404_NOT_FOUND, NOT_FOUND)
+    if failed_safety_check(db, version.id):
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            "This file failed the file-type or malware check, so it can't be downloaded.",
+        )
     path = request.app.state.store.path_for(version.sha256)
     if not path.exists():
         raise HTTPException(
@@ -190,6 +214,11 @@ def decide_link(
         )
     if link.state not in _DECISION_FROM[body.decision]:
         raise HTTPException(status.HTTP_409_CONFLICT, "This evidence already has a final decision.")
+    if body.decision == "accept" and failed_safety_check(db, link.version_id):
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
+            "This file failed the file-type or malware check and can't be accepted. Ask for a new upload.",
+        )
     reason = (body.reason or "").strip()
     run = latest_run(db, link)
     flagged = run is not None and any(r.status in ("fail", "warn") for r in run.results)
