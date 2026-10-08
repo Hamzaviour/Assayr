@@ -4,6 +4,7 @@ import { ControlDetailPage } from "./pages/ControlDetail"
 import { ControlsPage } from "./pages/Controls"
 import { DashboardPage } from "./pages/Dashboard"
 import { LoginPage } from "./pages/Login"
+import { ReviewQueuePage } from "./pages/ReviewQueue"
 import { Styleguide } from "./pages/Styleguide"
 
 const rootRoute = createRootRoute({ component: () => <Outlet /> })
@@ -29,11 +30,12 @@ const controlsRoute = createRoute({
   component: ControlsPage,
 })
 const controlRoute = createRoute({ getParentRoute: () => appRoute, path: "/controls/$code", component: ControlDetailPage })
+const evidenceRoute = createRoute({ getParentRoute: () => appRoute, path: "/evidence", component: ReviewQueuePage })
 const styleguideRoute = createRoute({ getParentRoute: () => appRoute, path: "/styleguide", component: Styleguide })
 
 export const routeTree = rootRoute.addChildren([
   loginRoute,
-  appRoute.addChildren([dashboardRoute, controlsRoute, controlRoute, styleguideRoute]),
+  appRoute.addChildren([dashboardRoute, controlsRoute, controlRoute, evidenceRoute, styleguideRoute]),
 ])
 
 export function createAppRouter(history?: RouterHistory) {
