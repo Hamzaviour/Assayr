@@ -5,7 +5,7 @@ import { json, ME, mockApi, renderApp } from "../test/render"
 
 const row = (n: number, code: string, title: string, theme = "Organizational"): ControlSummary => ({
   id: `id-${n}`, scope_id: "s", code, title, theme, status: "not_started",
-  implementation_status: "not_started", owner: null, evidence_required: 2,
+  implementation_status: "not_started", owner: null, evidence_required: 2, score: null,
 })
 
 test("lists controls, loads more and filters by theme through the URL", async () => {

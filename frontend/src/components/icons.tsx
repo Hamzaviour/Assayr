@@ -16,6 +16,11 @@ const PATHS: Record<string, string> = {
   audit: "M5 21V4h11l-2 4 2 4H5",
   theme: "M12 3.5a8.5 8.5 0 1 0 0 17zM12 3.5a8.5 8.5 0 0 1 0 17",
   logout: "M15 4h4v16h-4M10 8l-4 4 4 4M6 12h10",
+  pass: "M5 12.5 9.5 17 19 7.5",
+  warn: "M12 4 2.8 19.5h18.4zM12 10v4m0 3h.01",
+  fail: "M6 6l12 12M18 6 6 18",
+  skipped: "M5 12h14",
+  upload: "M12 16V4m0 0-4.5 4.5M12 4l4.5 4.5M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3",
 }
 
 export type IconName = keyof typeof PATHS

@@ -5,10 +5,11 @@ import { json, ME, mockApi, renderApp } from "../test/render"
 
 const DETAIL: ControlDetail = {
   id: "c1", scope_id: "s", code: "A.8.13", title: "Information backup", theme: "Technological",
-  status: "not_started", implementation_status: "not_started", owner: null, evidence_required: 3,
+  status: "not_started", implementation_status: "not_started", owner: null, evidence_required: 3, score: null, attestation: null,
   description: "Backup copies are maintained and regularly tested.", review_frequency: "Monthly",
   default_owner_role: "IT Manager", implementation_text: null,
-  slots: [{ id: "s1", name: "Backup policy", evidence_type: "Policy", required: true, freshness_days: 31, rules: ["V-FMT"] }],
+  slots: [{ id: "s1", name: "Backup policy", evidence_type: "Policy", required: true, freshness_days: 31, rules: ["V-FMT"],
+    state: "missing", artefact: null }],
   requirements: [{ ref: "A.8.13", title: "Information backup" }],
 }
 
@@ -52,4 +53,49 @@ test("an unknown control shows a helpful message", async () => {
   })
   renderApp("/controls/A.9.99")
   expect(await screen.findByRole("alert")).toHaveTextContent("Control not found.")
+})
+
+test("uploading evidence shows the checks as they run and the verdict", async () => {
+  document.cookie = "assayr_csrf=token-xyz; path=/"
+  let linkPolls = 0
+  let uploaded = false
+  const rule = (seq: number, name: string) => ({
+    seq, code: `V-${seq}`, name, status: "pass", reason: `${name} ok.`, fix_hint: null, excerpt: null,
+  })
+  const link = (state: string, rules: unknown[]) => ({
+    id: "l1", state, confidence: state === "accepted" ? 1 : null, evidence_date: "2026-09-07",
+    expires_on: "2026-10-08", slot_id: "s1", slot_name: "Backup policy", control_code: "A.8.13",
+    control_title: "Information backup", artefact_id: "a1", version_id: "v1", version_no: 1,
+    filename: "backup.pdf", size: 10, mime: "application/pdf", uploaded_at: "2026-10-07T09:00:00Z",
+    uploaded_by: "Sana Malik", decided_by: null, decision_reason: null, rules_planned: 2, rules,
+    text_preview: null,
+  })
+  const calls = mockApi({
+    "GET /auth/me": () => json(200, ME),
+    "GET /controls/A.8.13": () =>
+      json(200, uploaded
+        ? { ...DETAIL, slots: [{ ...DETAIL.slots[0], state: "verified", artefact: {
+            link_id: "l1", version_id: "v1", filename: "backup.pdf", state: "accepted", confidence: 1,
+            evidence_date: "2026-09-07", expires_on: "2026-10-08" } }] }
+        : DETAIL),
+    "POST /controls/A.8.13/slots/s1/artefacts": () => {
+      uploaded = true
+      return json(202, link("verifying", []))
+    },
+    "GET /artefact-links/l1": () => {
+      linkPolls += 1
+      return linkPolls === 1
+        ? json(200, link("verifying", [rule(1, "File readable")]))
+        : json(200, link("accepted", [rule(1, "File readable"), rule(2, "Document date")]))
+    },
+  })
+  renderApp("/controls/A.8.13")
+  const input = await screen.findByLabelText("Upload evidence for Backup policy")
+  await userEvent.upload(input, new File(["%PDF-1.4"], "backup.pdf", { type: "application/pdf" }))
+  expect(await screen.findByText("File readable")).toBeInTheDocument()
+  expect(await screen.findByText(/Accepted\./, {}, { timeout: 3000 })).toBeInTheDocument()
+  expect(await screen.findByText("Verified")).toBeInTheDocument()
+  const post = calls.find((c) => c.method === "POST")!
+  expect(post.init.body).toBeInstanceOf(FormData)
+  expect(new Headers(post.init.headers).get("X-CSRF-Token")).toBe("token-xyz")
 })

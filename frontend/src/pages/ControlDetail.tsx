@@ -1,11 +1,17 @@
 import { Link, useParams } from "@tanstack/react-router"
-import { type FormEvent, useEffect, useState } from "react"
+import { useQueryClient } from "@tanstack/react-query"
+import { type DragEvent, type FormEvent, useCallback, useEffect, useState } from "react"
 import { IMPLEMENTATION_LABEL, useControl, useUpdateControl } from "../api/controls"
-import type { ControlDetail as Detail } from "../api/types"
+import { useUploadEvidence } from "../api/evidence"
+import type { ControlDetail as Detail, EvidenceSlot as Slot } from "../api/types"
 import { useMe } from "../auth/session"
 import { Button } from "../components/Button"
 import { ControlId } from "../components/ControlId"
+import { Icon } from "../components/icons"
+import { SlotStatePill } from "../components/SlotStatePill"
 import { StatusPill } from "../components/StatusPill"
+import { VerificationPanel } from "../components/VerificationPanel"
+import { formatDate } from "../lib/format"
 
 export function ControlDetailPage() {
   const { code } = useParams({ from: "/app/controls/$code" })
@@ -38,27 +44,7 @@ export function ControlDetailPage() {
       </header>
       <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_300px]">
         <div className="grid content-start gap-4">
-          <section className="rounded-xl border border-line bg-surface">
-            <h2 className="border-b border-line px-5 py-3.5 text-[15px] font-semibold">Evidence</h2>
-            <ul>
-              {c.slots.map((s) => (
-                <li
-                  key={s.id}
-                  className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-5 py-3.5 last:border-0"
-                >
-                  <div className="min-w-0">
-                    <p className="font-semibold">{s.name}</p>
-                    <p className="text-[12.5px] text-fg-3">
-                      <span>{s.evidence_type}</span>
-                      {s.freshness_days ? <span aria-hidden="true"> · </span> : null}
-                      {s.freshness_days ? <span>Refresh every {s.freshness_days} days</span> : null}
-                    </p>
-                  </div>
-                  <StatusPill status="not_started" />
-                </li>
-              ))}
-            </ul>
-          </section>
+          <EvidenceSlots control={c} canEdit={canEdit} />
           <ImplementationSection control={c} canEdit={canEdit} />
         </div>
         <aside className="grid content-start gap-4">
@@ -136,5 +122,96 @@ function ImplementationSection({ control, canEdit }: { control: Detail; canEdit:
       {update.isError && <p role="alert" className="text-[13px] text-bad">{update.error.message}</p>}
       {saved && <p role="status" className="text-[13px] text-ok">Saved</p>}
     </form>
+  )
+}
+
+function EvidenceSlots({ control, canEdit }: { control: Detail; canEdit: boolean }) {
+  const upload = useUploadEvidence(control.code)
+  const queryClient = useQueryClient()
+  const [active, setActive] = useState<Record<string, string>>({})
+  const [errors, setErrors] = useState<Record<string, string>>({})
+  const refresh = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ["control", control.code] })
+    queryClient.invalidateQueries({ queryKey: ["readiness"] })
+  }, [queryClient, control.code])
+
+  async function send(slotId: string, file: File) {
+    setErrors((e) => ({ ...e, [slotId]: "" }))
+    try {
+      const link = await upload.mutateAsync({ slotId, file })
+      setActive((a) => ({ ...a, [slotId]: link.id }))
+    } catch (err) {
+      setErrors((e) => ({ ...e, [slotId]: err instanceof Error ? err.message : "Upload failed." }))
+    }
+  }
+
+  return (
+    <section className="rounded-xl border border-line bg-surface">
+      <div className="flex items-center justify-between border-b border-line px-5 py-3.5">
+        <h2 className="text-[15px] font-semibold">Evidence</h2>
+        {canEdit && <span className="text-[12.5px] text-fg-3">Drop a file on a slot, or use Upload</span>}
+      </div>
+      <ul>
+        {control.slots.map((slot) => (
+          <SlotRow key={slot.id} slot={slot} canEdit={canEdit} onFile={(f) => send(slot.id, f)}
+            activeLinkId={active[slot.id]} error={errors[slot.id]} onDone={refresh} />
+        ))}
+      </ul>
+    </section>
+  )
+}
+
+function SlotRow({ slot, canEdit, onFile, activeLinkId, error, onDone }: {
+  slot: Slot
+  canEdit: boolean
+  onFile: (file: File) => void
+  activeLinkId?: string
+  error?: string
+  onDone: () => void
+}) {
+  const [over, setOver] = useState(false)
+  const meta = [
+    slot.evidence_type,
+    slot.freshness_days ? `Refresh every ${slot.freshness_days} days` : null,
+    slot.artefact?.filename,
+    slot.artefact?.expires_on ? `expires ${formatDate(slot.artefact.expires_on)}` : null,
+  ].filter(Boolean)
+
+  function onDrop(event: DragEvent) {
+    event.preventDefault()
+    setOver(false)
+    const file = event.dataTransfer.files[0]
+    if (file && canEdit) onFile(file)
+  }
+
+  return (
+    <li
+      className={`border-b border-line last:border-0 ${over ? "bg-primary-soft" : ""}`}
+      onDragOver={(e) => { if (canEdit) { e.preventDefault(); setOver(true) } }}
+      onDragLeave={() => setOver(false)}
+      onDrop={onDrop}
+    >
+      <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-3.5">
+        <div className="min-w-0">
+          <p className="font-semibold">{slot.name}</p>
+          <p className="text-[12.5px] text-fg-3">
+            {meta.map((m, i) => <span key={i}>{i > 0 && <span aria-hidden="true"> · </span>}{m}</span>)}
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <SlotStatePill state={slot.state} artefactState={slot.artefact?.state} />
+          {canEdit && (
+            <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-line-2 bg-surface px-2.5 py-1 text-[13px] font-medium hover:border-fg-3">
+              <Icon name="upload" size={14} />
+              {slot.artefact ? "New version" : "Upload"}
+              <input type="file" className="sr-only" aria-label={`Upload evidence for ${slot.name}`}
+                onChange={(e) => { const f = e.target.files?.[0]; if (f) onFile(f); e.target.value = "" }} />
+            </label>
+          )}
+        </div>
+      </div>
+      {activeLinkId && <VerificationPanel linkId={activeLinkId} onDone={onDone} />}
+      {error && <p role="alert" className="px-5 pb-3 text-[13px] text-bad">{error}</p>}
+    </li>
   )
 }

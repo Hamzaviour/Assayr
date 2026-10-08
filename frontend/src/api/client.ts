@@ -14,7 +14,7 @@ export function readCookie(name: string): string | undefined {
 export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
   const method = (init.method ?? "GET").toUpperCase()
   const headers = new Headers(init.headers)
-  if (init.body !== undefined && !headers.has("Content-Type")) headers.set("Content-Type", "application/json")
+  if (typeof init.body === "string" && !headers.has("Content-Type")) headers.set("Content-Type", "application/json")
   if (method !== "GET" && method !== "HEAD") {
     const csrf = readCookie("assayr_csrf")
     if (csrf) headers.set("X-CSRF-Token", csrf)
