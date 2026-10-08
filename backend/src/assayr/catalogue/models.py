@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import uuid
 
-from sqlalchemy import JSON, Float, ForeignKey, Index, String, Text, UniqueConstraint
+from sqlalchemy import JSON, Boolean, Float, ForeignKey, Index, String, Text, UniqueConstraint, true
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from assayr.db import Base, IdMixin, TimestampMixin
@@ -67,6 +67,10 @@ class Control(IdMixin, TimestampMixin, Base):
     status: Mapped[str] = mapped_column(String(30), default="not_started")
     sort_order: Mapped[int] = mapped_column(default=0)
     score: Mapped[float | None] = mapped_column(Float)
+    applicable: Mapped[bool] = mapped_column(Boolean, default=True, server_default=true())
+    soa_sources: Mapped[list | None] = mapped_column(JSON)
+    soa_justification: Mapped[str | None] = mapped_column(Text)
+    exclusion_reason: Mapped[str | None] = mapped_column(Text)
 
     owner: Mapped[User | None] = relationship(lazy="joined")
     slots: Mapped[list[EvidenceSlot]] = relationship(
