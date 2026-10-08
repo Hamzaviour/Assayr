@@ -13,6 +13,10 @@ dependencies = [
   "pg8000>=1.31",
   "argon2-cffi>=23.1",
   "typer>=0.12",
+  "pypdfium2>=4.30",
+  "python-docx>=1.1",
+  "openpyxl>=3.1",
+  "python-multipart>=0.0.9",
 ]
 
 [dependency-groups]
