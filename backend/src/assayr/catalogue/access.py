@@ -1,6 +1,9 @@
 import uuid
 from dataclasses import dataclass
 
+from fastapi import HTTPException, status
+from sqlalchemy.orm import Session
+
 from assayr.identity.models import User
 from assayr.identity.rbac import Perm, grant_for
 
@@ -35,3 +38,12 @@ def rights_for(
 
 def edit_rights(user: User, scope_id: uuid.UUID, owner_id: uuid.UUID | None) -> EditRights:
     return rights_for(user, scope_id, owner_id, Perm.CONTROLS_WRITE, Perm.CONTROLS_WRITE_OWN)
+
+
+def check_active_user(db: Session, user_id: uuid.UUID | None, label: str = "Owner") -> None:
+    """Owners and assignees must be people who can still sign in."""
+    if user_id is None:
+        return
+    person = db.get(User, user_id)
+    if person is None or not person.is_active:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, f"{label} must be an active user.")
