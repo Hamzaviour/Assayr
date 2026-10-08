@@ -11,6 +11,7 @@ from assayr.db import Base, utcnow
 from assayr.identity.models import RoleAssignment, User
 from assayr.identity.security import hash_password, normalize_email
 from assayr.main import create_app
+from assayr.risk.seed import ensure_methodology, ensure_risk_library
 
 TEST_DB_URL = os.environ.get("ASSAYR_TEST_DATABASE_URL", "sqlite+pysqlite:///:memory:")
 
@@ -65,6 +66,8 @@ def db(app):
 def seeded(db, settings):
     scope = ensure_default_scope(db, settings.org_name)
     seed_iso27001(db, scope)
+    ensure_methodology(db, utcnow())
+    ensure_risk_library(db)
     db.commit()
     return scope
 

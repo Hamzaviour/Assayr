@@ -14,6 +14,7 @@ from assayr.health import router as health_router
 from assayr.identity.auth_router import router as auth_router
 from assayr.identity.people_router import router as people_router
 from assayr.identity.users_router import router as users_router
+from assayr.risk.library_router import router as risk_library_router
 from assayr.scoring.router import router as scoring_router
 from assayr.storage import BlobStore
 
@@ -46,6 +47,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(auth_router, prefix="/api/v1")
     app.include_router(users_router, prefix="/api/v1")
     app.include_router(people_router, prefix="/api/v1")
+    app.include_router(risk_library_router, prefix="/api/v1")
     app.include_router(audit_router, prefix="/api/v1")
     app.include_router(catalogue_router, prefix="/api/v1")
     app.include_router(evidence_router, prefix="/api/v1")
