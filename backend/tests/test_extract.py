@@ -72,3 +72,10 @@ def test_unsupported_type_is_an_error(tmp_path):
         extract(write(tmp_path, "x.bin", b"\x00\x01"), None).error
         == "This file type isn't accepted as evidence."
     )
+
+
+def test_nul_bytes_are_removed_from_text(tmp_path):
+    """PostgreSQL rejects NUL in text columns; a stray NUL after the sniffed head must not break verification."""
+    data = b"Access review\n" + b"a" * 9000 + b"\x00tail"
+    result = extract(write(tmp_path, "n.txt", data), "text/plain")
+    assert "\x00" not in result.text and result.text.endswith("tail")

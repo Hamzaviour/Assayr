@@ -149,3 +149,28 @@ def test_verify_job_runs_through_the_queue(app, db, seeded, clock):
         db.scalar(select(func.count()).select_from(AuditLog).where(AuditLog.action == "evidence.verdict"))
         == 1
     )
+
+
+def test_verification_that_keeps_failing_goes_to_review(app, db, seeded, clock, monkeypatch):
+    """Evidence must never stay "Verifying" forever: when every attempt fails, a reviewer takes over."""
+    from assayr.evidence.models import ArtefactLink
+    from assayr.evidence.schemas import latest_run
+    from assayr.jobs import enqueue
+    from tests.evidence_helpers import run_jobs
+
+    def crash(*args, **kwargs):
+        raise RuntimeError("worker killed")
+
+    monkeypatch.setattr(engine, "decide", crash)
+    _, _, link = upload(db, app, seeded, "A.5.1", make_pdf(policy_text(clock().date()).split("\n")))
+    enqueue(db, "verify_link", {"link_id": str(link.id)}, now=clock())
+    db.commit()
+    for _ in range(3):
+        run_jobs(app)
+        clock.advance(minutes=5)
+    db.expire_all()
+    link = db.get(ArtefactLink, link.id)
+    assert link.state == "in_review"
+    run = latest_run(db, link)
+    assert [(r.code, r.status) for r in run.results] == [("V-ENGINE", "warn")]
+    assert run.verdict == "review"

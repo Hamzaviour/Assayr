@@ -10,7 +10,7 @@ from assayr.audit.service import SYSTEM, record
 from assayr.evidence.extract import Extracted, extract
 from assayr.evidence.models import ArtefactLink, ArtefactVersion, RuleResult, VerificationRun
 from assayr.identity.models import Organization, Scope
-from assayr.jobs import JobEnv, handler
+from assayr.jobs import JobEnv, handler, on_failure
 from assayr.scoring.service import recompute_control
 from assayr.verification.av import scan_file
 from assayr.verification.dates import best_evidence_date, find_dates
@@ -23,6 +23,54 @@ VERDICT_WORD = {"accept": "accepted", "review": "sent to review", "reject": "rej
 @handler("verify_link")
 def verify_link_job(db: Session, payload: dict, env: JobEnv) -> None:
     verify_link(db, uuid.UUID(payload["link_id"]), env)
+
+
+@on_failure("verify_link")
+def verify_link_failed(db: Session, payload: dict, env: JobEnv, error: str) -> None:
+    """Every attempt failed: hand the evidence to a reviewer instead of leaving it "Verifying"."""
+    link = db.get(ArtefactLink, uuid.UUID(payload["link_id"]))
+    if link is None or link.state != "verifying":
+        return
+    now = env.now()
+    run = VerificationRun(
+        link_id=link.id, started_at=now, finished_at=now, rules_version=RULES_VERSION, verdict="review"
+    )
+    db.add(run)
+    db.flush()
+    db.add(
+        RuleResult(
+            run_id=run.id,
+            seq=1,
+            code="V-ENGINE",
+            name="Automatic checks",
+            status="warn",
+            weight=0,
+            reason="The automatic checks couldn't finish on this file, so a reviewer will check it.",
+        )
+    )
+    link.state = "in_review"
+    control = link.slot.control
+    record(
+        db,
+        SYSTEM,
+        "evidence.verdict",
+        "artefact_link",
+        str(link.id),
+        diff={
+            "verdict": "review",
+            "confidence": None,
+            "control": control.code,
+            "slot": link.slot.name,
+            "error": error[:300],
+        },
+    )
+    recompute_control(
+        db,
+        control,
+        now,
+        env.settings,
+        trigger=f"Evidence {link.version.filename} sent to review (checks couldn't finish)",
+    )
 
 
 def supersede_older(db: Session, link: ArtefactLink) -> None:

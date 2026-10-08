@@ -68,7 +68,8 @@ def latest_run(db: Session, link: ArtefactLink) -> VerificationRun | None:
     return db.scalar(
         select(VerificationRun)
         .where(VerificationRun.link_id == link.id)
-        .order_by(VerificationRun.started_at.desc())
+        # A finished run beats a partial one a crashed worker left behind; then the newest.
+        .order_by(VerificationRun.finished_at.is_(None), VerificationRun.started_at.desc())
         .limit(1)
     )
 
