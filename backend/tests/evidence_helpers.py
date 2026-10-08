@@ -57,3 +57,28 @@ def run_jobs(app) -> int:
 
     env = JobEnv(settings=app.state.settings, store=app.state.store, now=app.state.clock)
     return run_pending(app.state.db.sessionmaker, env)
+
+
+def long_date(value) -> str:
+    return f"{value.day} {value.strftime('%B %Y')}"
+
+
+def policy_text(today, *, approved=True, dated=None):
+    """An information security policy that passes every rule for A.5.1's first slot when approved."""
+    dated = dated or today - timedelta(days=30)
+    lines = [
+        "Acme Financial Services",
+        "Information Security Policy",
+        "Version 3.0",
+        "Document owner: Sana Malik",
+    ]
+    if approved:
+        lines.append(f"Approved by: Tariq Qureshi, Chief Executive. Approval date: {long_date(dated)}")
+    else:
+        lines.append(f"Dated {long_date(dated)}")
+    lines += [
+        f"Next review: {long_date(today + timedelta(days=330))}",
+        "Objectives: protect the confidentiality, integrity and availability of information.",
+        "Responsibilities: every employee follows this information security policy.",
+    ]
+    return "\n".join(lines)
