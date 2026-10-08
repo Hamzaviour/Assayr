@@ -15,10 +15,23 @@ class EditRights:
         return self.all or self.own
 
 
-def edit_rights(user: User, scope_id: uuid.UUID, owner_id: uuid.UUID | None) -> EditRights:
-    """`all`: may edit any control in the scope. `own`: may edit this control because they own it."""
-    pairs = [(a.role, a.scope_id) for a in user.role_assignments]
+def _pairs(user: User) -> list[tuple[str, uuid.UUID | None]]:
+    return [(a.role, a.scope_id) for a in user.role_assignments]
+
+
+def has_perm(user: User, scope_id: uuid.UUID, perm: Perm) -> bool:
+    return grant_for(_pairs(user), perm).allows(scope_id)
+
+
+def rights_for(
+    user: User, scope_id: uuid.UUID, owner_id: uuid.UUID | None, all_perm: Perm, own_perm: Perm
+) -> EditRights:
+    """`all`: may edit any record of this kind in the scope. `own`: may edit this one because they own it."""
     return EditRights(
-        all=grant_for(pairs, Perm.CONTROLS_WRITE).allows(scope_id),
-        own=grant_for(pairs, Perm.CONTROLS_WRITE_OWN).allows(scope_id) and owner_id == user.id,
+        all=has_perm(user, scope_id, all_perm),
+        own=owner_id is not None and owner_id == user.id and has_perm(user, scope_id, own_perm),
     )
+
+
+def edit_rights(user: User, scope_id: uuid.UUID, owner_id: uuid.UUID | None) -> EditRights:
+    return rights_for(user, scope_id, owner_id, Perm.CONTROLS_WRITE, Perm.CONTROLS_WRITE_OWN)

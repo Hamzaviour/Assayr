@@ -26,15 +26,34 @@ def test_role_without_permission_grants_nothing():
 
 def test_unknown_role_strings_are_ignored():
     assert not grant_for([("legacy_role", None)], Perm.CONTROLS_READ).any
-    assert permissions_for([("legacy_role", None), ("viewer", None)]) == ["controls:read"]
+    assert permissions_for([("legacy_role", None), ("viewer", None)]) == [
+        "assets:read",
+        "controls:read",
+        "risks:read",
+        "soa:read",
+    ]
 
 
 def test_permissions_are_a_sorted_union():
     assert permissions_for([("platform_admin", None), ("isms_manager", None)]) == [
+        "assets:read",
+        "assets:write",
         "audit_log:read",
         "controls:read",
         "controls:write",
         "evidence:review",
+        "risks:accept_high",
+        "risks:read",
+        "risks:write",
         "settings:manage",
+        "soa:read",
+        "soa:write",
         "users:manage",
     ]
+
+
+def test_acceptance_permissions_follow_the_authority_levels():
+    assert "risks:accept_critical" in permissions_for([("executive", None)])
+    assert "risks:accept_high" in permissions_for([("isms_manager", None)])
+    assert "risks:accept_medium_own" in permissions_for([("risk_owner", None)])
+    assert "soa:approve" not in permissions_for([("isms_manager", None)])
