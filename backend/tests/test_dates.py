@@ -47,3 +47,18 @@ def test_no_dates():
 
 def test_format_day():
     assert format_day(date(2026, 2, 4)) == "4 Feb 2026"
+
+
+def test_document_control_table_columns_label_their_dates():
+    """Dates in a table row take their meaning from the column header, not from the nearest header word."""
+    text = "Version | Effective date | Next review date\n3.0 | 01/03/2026 | 01/03/2027"
+    assert [(f.value, f.label) for f in find_dates(text)] == [
+        (date(2026, 3, 1), "effective"),
+        (date(2027, 3, 1), "next_review"),
+    ]
+    assert best_evidence_date(find_dates(text), TODAY).value == date(2026, 3, 1)
+
+
+def test_markdown_tables_skip_the_separator_row():
+    text = "| Approval date | Next review |\n|---|---|\n| 2026-02-01 | 2027-02-01 |"
+    assert [f.label for f in find_dates(text)] == ["approval", "next_review"]

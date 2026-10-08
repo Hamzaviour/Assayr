@@ -63,6 +63,8 @@ _LABELS = [
     ("dated", "date"),
     ("date", "date"),
 ]
+_CELL_SPLIT = re.compile(r"\s*(?:\||\t)\s*")
+_TABLE_RULE = re.compile(r"^[\s|:+-]+$")
 _EVIDENCE_LABELS = {"approval", "effective", "issue", "as_of", "period", "date"}
 
 
@@ -88,7 +90,10 @@ def find_dates(text: str) -> list[FoundDate]:
             start = match.start()
             context = text[max(0, start - 60) : start].lower()
             excerpt = " ".join(text[max(0, start - 40) : match.end() + 5].split())
-            found[start] = FoundDate(value=value, label=_label(context), position=start, excerpt=excerpt)
+            in_table, label = _table_label(text, start)
+            if not in_table:
+                label = _label(context)
+            found[start] = FoundDate(value=value, label=label, position=start, excerpt=excerpt)
     return sorted(found.values(), key=lambda f: f.position)
 
 
@@ -115,6 +120,27 @@ def _to_date(match: re.Match, kind: str) -> date | None:
         return date(year, month, day)
     except (ValueError, KeyError):
         return None
+
+
+def _table_label(text: str, start: int) -> tuple[bool, str | None]:
+    """For a date in a table row (cells split by | or tabs), the label comes from its column's header cell."""
+    line_start = text.rfind("\n", 0, start) + 1
+    line_end = text.find("\n", start)
+    line = text[line_start : line_end if line_end >= 0 else len(text)]
+    if not _CELL_SPLIT.search(line):
+        return False, None
+    header = None
+    for previous in reversed(text[: max(line_start - 1, 0)].split("\n")):
+        if previous.strip() and not _TABLE_RULE.match(previous):
+            header = previous
+            break
+    if header is None:
+        return False, None
+    cells, headers = _CELL_SPLIT.split(line), _CELL_SPLIT.split(header)
+    if len(cells) != len(headers):
+        return False, None
+    column = len(_CELL_SPLIT.findall(line[: start - line_start]))
+    return True, _label(headers[column].lower())
 
 
 def _label(context: str) -> str | None:
