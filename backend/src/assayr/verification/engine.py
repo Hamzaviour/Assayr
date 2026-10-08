@@ -73,6 +73,15 @@ def verify_link_failed(db: Session, payload: dict, env: JobEnv, error: str) -> N
     )
 
 
+def set_expiry(link: ArtefactLink) -> None:
+    """Accepted evidence in a slot with a freshness window always expires; undated evidence counts from its upload."""
+    freshness = link.slot.freshness_days
+    start = link.evidence_date
+    if start is None and link.state == "accepted":
+        start = link.version.created_at.date()
+    link.expires_on = start + timedelta(days=freshness) if start and freshness else None
+
+
 def supersede_older(db: Session, link: ArtefactLink) -> None:
     older = db.scalars(
         select(ArtefactLink)
@@ -181,9 +190,7 @@ def verify_link(db: Session, link_id: uuid.UUID, env: JobEnv) -> VerificationRun
     link.confidence = decision.confidence
     link.state = VERDICT_STATE[decision.verdict]
     link.evidence_date = evidence_date
-    link.expires_on = (
-        evidence_date + timedelta(days=slot.freshness_days) if evidence_date and slot.freshness_days else None
-    )
+    set_expiry(link)
     if link.state == "accepted":
         supersede_older(db, link)
     record(

@@ -116,3 +116,18 @@ def test_a_file_that_failed_the_safety_checks_cannot_be_accepted(app, client, db
     assert response.json() == {
         "detail": "This file failed the file-type or malware check and can't be accepted. Ask for a new upload."
     }
+
+
+def test_accepted_evidence_without_a_date_expires_from_its_upload_date(app, client, db, seeded):
+    """A screenshot has no readable date; once accepted it must still need renewing within the slot's window."""
+    from datetime import date, timedelta
+
+    link_id = screenshot_in_review(app, db)
+    reviewer(client, db)
+    body = client.post(
+        f"/api/v1/artefact-links/{link_id}/decision",
+        json={"decision": "accept", "reason": "Shows the policy page."},
+    ).json()
+    uploaded = date.fromisoformat(body["uploaded_at"][:10])
+    assert body["evidence_date"] is None
+    assert body["expires_on"] == (uploaded + timedelta(days=365)).isoformat()

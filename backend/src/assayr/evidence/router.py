@@ -20,7 +20,7 @@ from assayr.identity.rbac import Grant, Perm
 from assayr.jobs import enqueue
 from assayr.scoring.service import recompute_control
 from assayr.storage import TooLargeError, safe_filename
-from assayr.verification.engine import supersede_older
+from assayr.verification.engine import set_expiry, supersede_older
 
 router = APIRouter(tags=["evidence"])
 NOT_FOUND = "Evidence not found."
@@ -244,6 +244,7 @@ def decide_link(
     link.decided_by_id = user.id
     link.decided_at = now
     link.decision_reason = reason or None
+    set_expiry(link)
     if link.state == "accepted":
         supersede_older(db, link)
     record(
