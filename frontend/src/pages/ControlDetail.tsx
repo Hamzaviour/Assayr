@@ -139,10 +139,10 @@ function EvidenceSlots({ control, canEdit }: { control: Detail; canEdit: boolean
     queryClient.invalidateQueries({ queryKey: ["readiness"] })
   }, [queryClient, control.code])
 
-  async function send(slotId: string, file: File) {
+  async function send(slotId: string, file: File, evidenceDate: string) {
     setErrors((e) => ({ ...e, [slotId]: "" }))
     try {
-      const link = await upload.mutateAsync({ slotId, file })
+      const link = await upload.mutateAsync({ slotId, file, evidenceDate })
       setActive((a) => ({ ...a, [slotId]: link.id }))
     } catch (err) {
       setErrors((e) => ({ ...e, [slotId]: err instanceof Error ? err.message : "Upload failed." }))
@@ -157,7 +157,7 @@ function EvidenceSlots({ control, canEdit }: { control: Detail; canEdit: boolean
       </div>
       <ul>
         {control.slots.map((slot) => (
-          <SlotRow key={slot.id} slot={slot} canEdit={canEdit} onFile={(f) => send(slot.id, f)}
+          <SlotRow key={slot.id} slot={slot} canEdit={canEdit} onFile={(f, d) => send(slot.id, f, d)}
             activeLinkId={active[slot.id]} error={errors[slot.id]} onDone={refresh} />
         ))}
       </ul>
@@ -168,12 +168,13 @@ function EvidenceSlots({ control, canEdit }: { control: Detail; canEdit: boolean
 function SlotRow({ slot, canEdit, onFile, activeLinkId, error, onDone }: {
   slot: Slot
   canEdit: boolean
-  onFile: (file: File) => void
+  onFile: (file: File, evidenceDate: string) => void
   activeLinkId?: string
   error?: string
   onDone: () => void
 }) {
   const [over, setOver] = useState(false)
+  const [evidenceDate, setEvidenceDate] = useState("")
   const meta = [
     slot.evidence_type,
     slot.freshness_days ? `Refresh every ${slot.freshness_days} days` : null,
@@ -185,7 +186,7 @@ function SlotRow({ slot, canEdit, onFile, activeLinkId, error, onDone }: {
     event.preventDefault()
     setOver(false)
     const file = event.dataTransfer.files[0]
-    if (file && canEdit) onFile(file)
+    if (file && canEdit) onFile(file, evidenceDate)
   }
 
   return (
@@ -205,11 +206,17 @@ function SlotRow({ slot, canEdit, onFile, activeLinkId, error, onDone }: {
         <div className="flex items-center gap-2">
           <SlotStatePill state={slot.state} artefactState={slot.artefact?.state} />
           {canEdit && (
+            <input type="date" value={evidenceDate} max={new Date().toISOString().slice(0, 10)}
+              onChange={(e) => setEvidenceDate(e.target.value)}
+              aria-label={`Evidence date for ${slot.name} (optional)`} title="Evidence date (optional)"
+              className="h-7 rounded-lg border border-line-2 bg-surface px-2 text-[12.5px] text-fg-2" />
+          )}
+          {canEdit && (
             <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-line-2 bg-surface px-2.5 py-1 text-[13px] font-medium hover:border-fg-3">
               <Icon name="upload" size={14} />
               {slot.artefact ? "New version" : "Upload"}
               <input type="file" className="sr-only" aria-label={`Upload evidence for ${slot.name}`}
-                onChange={(e) => { const f = e.target.files?.[0]; if (f) onFile(f); e.target.value = "" }} />
+                onChange={(e) => { const f = e.target.files?.[0]; if (f) onFile(f, evidenceDate); e.target.value = "" }} />
             </label>
           )}
         </div>

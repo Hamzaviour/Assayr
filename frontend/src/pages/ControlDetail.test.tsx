@@ -117,3 +117,21 @@ test("the owner attests that the control operates as described", async () => {
   const post = calls.find((c) => c.method === "POST")!
   expect(JSON.parse(String(post.init.body))).toEqual({ statement: "This control operates as described." })
 })
+
+test("the uploader can give the evidence date when the document doesn't show one clearly", async () => {
+  const calls = mockApi({
+    "GET /auth/me": () => json(200, ME),
+    "GET /controls/A.8.13": () => json(200, DETAIL),
+    "POST /controls/A.8.13/slots/s1/artefacts": () => json(202, { id: "l1" }),
+    "GET /artefact-links/l1": () => json(404, { detail: "gone" }),
+  })
+  renderApp("/controls/A.8.13")
+  await userEvent.type(await screen.findByLabelText("Evidence date for Backup policy (optional)"), "2026-09-07")
+  await userEvent.upload(
+    screen.getByLabelText("Upload evidence for Backup policy"),
+    new File(["%PDF-1.4"], "backup.pdf", { type: "application/pdf" }),
+  )
+  await vi.waitFor(() => expect(calls.some((c) => c.method === "POST")).toBe(true))
+  const body = calls.find((c) => c.method === "POST")!.init.body as FormData
+  expect(body.get("evidence_date")).toBe("2026-09-07")
+})

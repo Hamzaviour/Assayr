@@ -2,9 +2,10 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { api } from "./client"
 import type { ArtefactLink, ControlDetail, Readiness, ReviewItem } from "./types"
 
-export function uploadEvidence(code: string, slotId: string, file: File): Promise<ArtefactLink> {
+export function uploadEvidence(code: string, slotId: string, file: File, evidenceDate?: string): Promise<ArtefactLink> {
   const form = new FormData()
   form.set("file", file)
+  if (evidenceDate) form.set("evidence_date", evidenceDate)
   return api<ArtefactLink>(`/controls/${encodeURIComponent(code)}/slots/${slotId}/artefacts`, {
     method: "POST",
     body: form,
@@ -12,7 +13,10 @@ export function uploadEvidence(code: string, slotId: string, file: File): Promis
 }
 
 export function useUploadEvidence(code: string) {
-  return useMutation({ mutationFn: ({ slotId, file }: { slotId: string; file: File }) => uploadEvidence(code, slotId, file) })
+  return useMutation({
+    mutationFn: ({ slotId, file, evidenceDate }: { slotId: string; file: File; evidenceDate?: string }) =>
+      uploadEvidence(code, slotId, file, evidenceDate),
+  })
 }
 
 export function useLink(linkId: string) {
