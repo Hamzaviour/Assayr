@@ -104,3 +104,15 @@ def test_reviewing_needs_the_reviewer_permission(app, client, db, seeded):
     assert client.get("/api/v1/review-queue").status_code == 403
     url = f"/api/v1/artefact-links/{link_id}/decision"
     assert client.post(url, json={"decision": "accept", "reason": "x"}).status_code == 403
+
+
+def test_a_file_that_failed_the_safety_checks_cannot_be_accepted(app, client, db, seeded):
+    link_id = screenshot_in_review(app, db, file=("invoice.pdf", b"MZ\x90\x00 not a pdf", "application/pdf"))
+    reviewer(client, db)
+    response = client.post(
+        f"/api/v1/artefact-links/{link_id}/decision", json={"decision": "accept", "reason": "Looks fine"}
+    )
+    assert response.status_code == 422
+    assert response.json() == {
+        "detail": "This file failed the file-type or malware check and can't be accepted. Ask for a new upload."
+    }
