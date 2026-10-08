@@ -2,7 +2,7 @@ import { Link, useParams } from "@tanstack/react-router"
 import { useQueryClient } from "@tanstack/react-query"
 import { type DragEvent, type FormEvent, useCallback, useEffect, useState } from "react"
 import { IMPLEMENTATION_LABEL, useControl, useUpdateControl } from "../api/controls"
-import { useUploadEvidence } from "../api/evidence"
+import { useAttest, useUploadEvidence } from "../api/evidence"
 import type { ControlDetail as Detail, EvidenceSlot as Slot } from "../api/types"
 import { useMe } from "../auth/session"
 import { Button } from "../components/Button"
@@ -39,8 +39,12 @@ export function ControlDetailPage() {
             Owner: {c.owner?.full_name ?? `Unassigned (suggested: ${c.default_owner_role ?? "ISMS manager"})`} · Review:{" "}
             {c.review_frequency?.toLowerCase() ?? "not set"}
           </p>
+          <AttestationLine control={c} canEdit={canEdit} />
         </div>
-        <StatusPill status={c.status} />
+        <div className="flex items-center gap-2">
+          {c.score !== null && <span className="text-[13px] text-fg-2 tabular-nums">Score {Math.round(c.score)}</span>}
+          <StatusPill status={c.status} />
+        </div>
       </header>
       <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_300px]">
         <div className="grid content-start gap-4">
@@ -213,5 +217,41 @@ function SlotRow({ slot, canEdit, onFile, activeLinkId, error, onDone }: {
       {activeLinkId && <VerificationPanel linkId={activeLinkId} onDone={onDone} />}
       {error && <p role="alert" className="px-5 pb-3 text-[13px] text-bad">{error}</p>}
     </li>
+  )
+}
+
+function AttestationLine({ control, canEdit }: { control: Detail; canEdit: boolean }) {
+  const attest = useAttest(control.code)
+  const [open, setOpen] = useState(false)
+  const [statement, setStatement] = useState("This control operates as described.")
+  const a = control.attestation
+
+  async function confirm() {
+    await attest.mutateAsync(statement.trim())
+    setOpen(false)
+  }
+
+  return (
+    <div className="mt-2 grid gap-2 text-[13px] text-fg-2">
+      <p>
+        {a ? `Attested by ${a.by ?? "unknown"} on ${formatDate(a.attested_at)}, valid until ${formatDate(a.valid_until)}`
+           : "Not attested yet"}
+        {canEdit && !open && (
+          <Button variant="ghost" size="sm" className="ml-2" onClick={() => setOpen(true)}>Attest</Button>
+        )}
+      </p>
+      {open && (
+        <div className="grid max-w-xl gap-2">
+          <label htmlFor="attest-statement" className="font-medium text-fg">Statement</label>
+          <textarea id="attest-statement" rows={2} value={statement} onChange={(e) => setStatement(e.target.value)}
+            className="rounded-lg border border-line-2 bg-surface px-3 py-2 text-sm" />
+          {attest.isError && <p role="alert" className="text-bad">{attest.error.message}</p>}
+          <div className="flex gap-2">
+            <Button size="sm" onClick={confirm} disabled={attest.isPending || !statement.trim()}>Confirm attestation</Button>
+            <Button size="sm" variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
+          </div>
+        </div>
+      )}
+    </div>
   )
 }

@@ -57,7 +57,7 @@ export function ControlsPage() {
                 <th className="px-3.5 py-3 font-medium">ID</th>
                 <th className="px-3.5 py-3 font-medium">Control</th>
                 <th className="px-3.5 py-3 font-medium">Status</th>
-                <th className="px-3.5 py-3 font-medium">Evidence</th>
+                <th className="px-3.5 py-3 font-medium">Score</th>
                 <th className="px-3.5 py-3 font-medium">Owner</th>
               </tr>
             </thead>
@@ -71,7 +71,7 @@ export function ControlsPage() {
                     </Link>
                   </td>
                   <td className="px-3.5 py-2.5"><StatusPill status={c.status} /></td>
-                  <td className="whitespace-nowrap px-3.5 py-2.5 tabular-nums text-fg-2">0 / {c.evidence_required}</td>
+                  <td className="whitespace-nowrap px-3.5 py-2.5 tabular-nums text-fg-2">{c.score === null ? "—" : `${Math.round(c.score)}%`}</td>
                   <td className="whitespace-nowrap px-3.5 py-2.5 text-fg-2">{c.owner?.full_name ?? "Unassigned"}</td>
                 </tr>
               ))}

@@ -6,7 +6,7 @@ test("signing out ends the session and shows the sign-in page", async () => {
   let signedIn = true
   const calls = mockApi({
     "GET /auth/me": () => (signedIn ? json(200, ME) : json(401, { detail: "Not signed in." })),
-    "GET /controls/summary": () => json(200, { scope_id: "s", total: 93, by_status: { not_started: 93 }, by_theme: {} }),
+    "GET /readiness": () => json(200, { scope_id: "s", readiness: null, status_counts: {}, by_theme: {}, trend: [] }),
     "POST /auth/logout": () => {
       signedIn = false
       return json(204, null)
