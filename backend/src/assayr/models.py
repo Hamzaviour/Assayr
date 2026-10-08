@@ -8,4 +8,13 @@ from assayr.catalogue.models import (  # noqa: F401
     Framework,
     Requirement,
 )
+from assayr.evidence.models import (  # noqa: F401
+    Artefact,
+    ArtefactLink,
+    ArtefactVersion,
+    RuleResult,
+    VerificationRun,
+)
 from assayr.identity.models import Organization, RoleAssignment, Scope, User, UserSession  # noqa: F401
+from assayr.jobs import Job  # noqa: F401
+from assayr.scoring.models import Attestation, ScoreSnapshot, StatusTransition  # noqa: F401

@@ -13,3 +13,4 @@ deploy/assayr.env
 *.log
 .claude-flow/
 .remember/
+backend/data/

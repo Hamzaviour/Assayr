@@ -12,6 +12,7 @@ from assayr.db import Database, utcnow
 from assayr.health import router as health_router
 from assayr.identity.auth_router import router as auth_router
 from assayr.identity.users_router import router as users_router
+from assayr.storage import BlobStore
 
 _REQUEST_ID_UNSAFE = re.compile(r"[^A-Za-z0-9_-]")
 
@@ -28,6 +29,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.settings = settings
     app.state.db = Database(settings.database_url)
     app.state.clock = utcnow
+    app.state.store = BlobStore(settings.storage_dir)
 
     @app.middleware("http")
     async def request_id(request: Request, call_next):
