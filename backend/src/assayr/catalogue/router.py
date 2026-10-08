@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy import func, or_, select
@@ -16,10 +17,12 @@ from assayr.catalogue.schemas import (
     detail_out,
     summary_out,
 )
+from assayr.config import Settings
 from assayr.db import get_session
-from assayr.identity.deps import actor_for, current_user, require
+from assayr.identity.deps import actor_for, current_user, get_clock, require
 from assayr.identity.models import Scope, User
 from assayr.identity.rbac import Grant, Perm
+from assayr.scoring.service import latest_attestation, slot_views
 
 router = APIRouter(tags=["catalogue"])
 FORBIDDEN = "You don't have permission to do this."
@@ -49,6 +52,17 @@ def _get_control(db: Session, scope: Scope, code: str) -> Control:
     if control is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Control not found.")
     return control
+
+
+def control_detail(db: Session, control: Control, settings: Settings, now: datetime) -> ControlDetailOut:
+    attestation = latest_attestation(db, control)
+    attested_by = db.get(User, attestation.user_id) if attestation and attestation.user_id else None
+    return detail_out(
+        control,
+        slot_views(db, control, now.date(), settings),
+        attestation,
+        attested_by.full_name if attested_by else None,
+    )
 
 
 @router.get("/frameworks", response_model=list[FrameworkOut])
@@ -138,11 +152,13 @@ def controls_summary(
 @router.get("/controls/{code}", response_model=ControlDetailOut)
 def get_control(
     code: str,
+    request: Request,
     grant: Grant = Depends(require(Perm.CONTROLS_READ)),
     db: Session = Depends(get_session),
     scope_id: uuid.UUID | None = None,
 ) -> ControlDetailOut:
-    return detail_out(_get_control(db, resolve_scope(db, scope_id, grant), code))
+    control = _get_control(db, resolve_scope(db, scope_id, grant), code)
+    return control_detail(db, control, request.app.state.settings, get_clock(request)())
 
 
 @router.patch("/controls/{code}", response_model=ControlDetailOut)
@@ -185,4 +201,4 @@ def update_control(
         record(db, actor_for(request, user), "control.update", "control", control.code, diff=diff)
         db.commit()
         db.refresh(control)
-    return detail_out(control)
+    return control_detail(db, control, request.app.state.settings, get_clock(request)())

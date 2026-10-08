@@ -13,6 +13,7 @@ from assayr.evidence.router import router as evidence_router
 from assayr.health import router as health_router
 from assayr.identity.auth_router import router as auth_router
 from assayr.identity.users_router import router as users_router
+from assayr.scoring.router import router as scoring_router
 from assayr.storage import BlobStore
 
 _REQUEST_ID_UNSAFE = re.compile(r"[^A-Za-z0-9_-]")
@@ -46,4 +47,5 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(audit_router, prefix="/api/v1")
     app.include_router(catalogue_router, prefix="/api/v1")
     app.include_router(evidence_router, prefix="/api/v1")
+    app.include_router(scoring_router, prefix="/api/v1")
     return app

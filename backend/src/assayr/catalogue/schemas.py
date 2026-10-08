@@ -1,9 +1,12 @@
 import uuid
+from datetime import date, datetime
 from typing import Literal
 
 from pydantic import BaseModel, Field
 
 from assayr.catalogue.models import Control
+from assayr.scoring.models import Attestation
+from assayr.scoring.service import SlotView
 
 ImplementationStatus = Literal["not_started", "planned", "partial", "implemented"]
 
@@ -23,11 +26,29 @@ class ControlSummaryOut(BaseModel):
     implementation_status: str
     owner: OwnerOut | None
     evidence_required: int
+    score: float | None
 
 
 class ControlPage(BaseModel):
     items: list[ControlSummaryOut]
     next_cursor: int | None
+
+
+class SlotArtefactOut(BaseModel):
+    link_id: uuid.UUID
+    version_id: uuid.UUID
+    filename: str
+    state: str
+    confidence: float | None
+    evidence_date: date | None
+    expires_on: date | None
+
+
+class AttestationOut(BaseModel):
+    attested_at: datetime
+    valid_until: datetime
+    by: str | None
+    statement: str
 
 
 class SlotOut(BaseModel):
@@ -37,6 +58,8 @@ class SlotOut(BaseModel):
     required: bool
     freshness_days: int | None
     rules: list[str]
+    state: str = "missing"
+    artefact: SlotArtefactOut | None = None
 
 
 class RequirementRefOut(BaseModel):
@@ -51,6 +74,7 @@ class ControlDetailOut(ControlSummaryOut):
     implementation_text: str | None
     slots: list[SlotOut]
     requirements: list[RequirementRefOut]
+    attestation: AttestationOut | None = None
 
 
 class ControlStatsOut(BaseModel):
@@ -85,26 +109,56 @@ def summary_out(control: Control) -> ControlSummaryOut:
         implementation_status=control.implementation_status,
         owner=OwnerOut(id=control.owner.id, full_name=control.owner.full_name) if control.owner else None,
         evidence_required=sum(1 for s in control.slots if s.required),
+        score=control.score,
     )
 
 
-def detail_out(control: Control) -> ControlDetailOut:
+def detail_out(
+    control: Control,
+    views: list[SlotView] | None = None,
+    attestation: Attestation | None = None,
+    attested_by: str | None = None,
+) -> ControlDetailOut:
+    by_slot = {v.slot_id: v for v in (views or [])}
+
+    def slot_out(s) -> SlotOut:
+        view = by_slot.get(s.id)
+        link = view.link if view else None
+        return SlotOut(
+            id=s.id,
+            name=s.name,
+            evidence_type=s.evidence_type,
+            required=s.required,
+            freshness_days=s.freshness_days,
+            rules=s.rules,
+            state=view.state if view else "missing",
+            artefact=SlotArtefactOut(
+                link_id=link.id,
+                version_id=link.version_id,
+                filename=link.version.filename,
+                state=link.state,
+                confidence=link.confidence,
+                evidence_date=link.evidence_date,
+                expires_on=link.expires_on,
+            )
+            if link
+            else None,
+        )
+
     return ControlDetailOut(
         **summary_out(control).model_dump(),
         description=control.description,
         review_frequency=control.review_frequency,
         default_owner_role=control.default_owner_role,
         implementation_text=control.implementation_text,
-        slots=[
-            SlotOut(
-                id=s.id,
-                name=s.name,
-                evidence_type=s.evidence_type,
-                required=s.required,
-                freshness_days=s.freshness_days,
-                rules=s.rules,
-            )
-            for s in control.slots
-        ],
+        slots=[slot_out(s) for s in control.slots],
         requirements=[RequirementRefOut(ref=r.ref, title=r.title) for r in control.requirements],
+        attestation=AttestationOut(
+            attested_at=attestation.attested_at,
+            valid_until=attestation.valid_until,
+            by=attested_by,
+            statement=attestation.statement,
+        )
+        if attestation
+        else None,
     )
