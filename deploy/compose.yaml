@@ -1,5 +1,13 @@
 name: assayr
 
+x-assayr-env: &assayr-env
+  ASSAYR_DATABASE_URL: postgresql+pg8000://assayr:${POSTGRES_PASSWORD}@db:5432/assayr
+  ASSAYR_ORG_NAME: ${ASSAYR_ORG_NAME:-My Organization}
+  ASSAYR_SECURE_COOKIES: ${ASSAYR_SECURE_COOKIES:-false}
+  ASSAYR_STORAGE_DIR: /data/blobs
+  ASSAYR_MAX_UPLOAD_MB: ${ASSAYR_MAX_UPLOAD_MB:-100}
+  ASSAYR_CLAMAV_HOST: ${ASSAYR_CLAMAV_HOST:-}
+
 services:
   db:
     image: postgres:16-alpine
@@ -17,12 +25,23 @@ services:
 
   api:
     build: ../backend
-    environment:
-      ASSAYR_DATABASE_URL: postgresql+pg8000://assayr:${POSTGRES_PASSWORD}@db:5432/assayr
-      ASSAYR_ORG_NAME: ${ASSAYR_ORG_NAME:-My Organization}
-      ASSAYR_SECURE_COOKIES: ${ASSAYR_SECURE_COOKIES:-false}
+    environment: *assayr-env
+    volumes:
+      - blobs:/data/blobs
     depends_on:
       db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  worker:
+    build: ../backend
+    entrypoint: ["assayr"]
+    command: ["worker"]
+    environment: *assayr-env
+    volumes:
+      - blobs:/data/blobs
+    depends_on:
+      api:
         condition: service_healthy
     restart: unless-stopped
 
@@ -35,5 +54,11 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+  clamav:
+    image: clamav/clamav:stable
+    profiles: ["av"]
+    restart: unless-stopped
+
 volumes:
   dbdata:
+  blobs:

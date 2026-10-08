@@ -14,6 +14,7 @@ COPY --from=build /app /app
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod 0755 /usr/local/bin/docker-entrypoint.sh
 ENV PATH="/app/.venv/bin:$PATH" PYTHONUNBUFFERED=1
+RUN mkdir -p /data/blobs && chown assayr /data/blobs
 USER assayr
 EXPOSE 8000
 HEALTHCHECK --interval=10s --timeout=3s --retries=12 \
