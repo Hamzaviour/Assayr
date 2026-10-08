@@ -5,6 +5,7 @@ from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
 from assayr.audit.service import record
+from assayr.catalogue.access import edit_rights
 from assayr.catalogue.models import Control, Framework, Requirement
 from assayr.catalogue.schemas import (
     ControlDetailOut,
@@ -18,7 +19,7 @@ from assayr.catalogue.schemas import (
 from assayr.db import get_session
 from assayr.identity.deps import actor_for, current_user, require
 from assayr.identity.models import Scope, User
-from assayr.identity.rbac import Grant, Perm, grant_for
+from assayr.identity.rbac import Grant, Perm
 
 router = APIRouter(tags=["catalogue"])
 FORBIDDEN = "You don't have permission to do this."
@@ -156,13 +157,11 @@ def update_control(
 ) -> ControlDetailOut:
     scope = resolve_scope(db, scope_id, read_grant)
     control = _get_control(db, scope, code)
-    pairs = [(a.role, a.scope_id) for a in user.role_assignments]
-    can_write_all = grant_for(pairs, Perm.CONTROLS_WRITE).allows(scope.id)
-    can_write_own = grant_for(pairs, Perm.CONTROLS_WRITE_OWN).allows(scope.id) and control.owner_id == user.id
-    if not (can_write_all or can_write_own):
+    rights = edit_rights(user, scope.id, control.owner_id)
+    if not rights.any:
         raise HTTPException(status.HTTP_403_FORBIDDEN, FORBIDDEN)
     fields = body.model_fields_set
-    if "owner_id" in fields and not can_write_all:
+    if "owner_id" in fields and not rights.all:
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Only an ISMS manager can change the owner.")
 
     diff: dict[str, list] = {}
