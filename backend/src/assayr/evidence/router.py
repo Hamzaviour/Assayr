@@ -1,0 +1,150 @@
+import uuid
+from datetime import date
+
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile, status
+from fastapi.responses import FileResponse
+from sqlalchemy.orm import Session
+
+from assayr.audit.service import record
+from assayr.catalogue.access import edit_rights
+from assayr.catalogue.models import EvidenceSlot
+from assayr.catalogue.router import FORBIDDEN, _get_control, resolve_scope
+from assayr.db import get_session
+from assayr.evidence.extract import sniff
+from assayr.evidence.models import Artefact, ArtefactLink, ArtefactVersion
+from assayr.evidence.schemas import LinkOut, link_out
+from assayr.identity.deps import actor_for, current_user, get_clock, require
+from assayr.identity.models import User
+from assayr.identity.rbac import Grant, Perm
+from assayr.jobs import enqueue
+from assayr.scoring.service import recompute_control
+from assayr.storage import TooLargeError, safe_filename
+
+router = APIRouter(tags=["evidence"])
+NOT_FOUND = "Evidence not found."
+HEAD_BYTES = 8192
+
+
+@router.post("/controls/{code}/slots/{slot_id}/artefacts", response_model=LinkOut, status_code=202)
+def upload_evidence(
+    code: str,
+    slot_id: uuid.UUID,
+    request: Request,
+    file: UploadFile = File(...),
+    title: str | None = Form(None, max_length=300),
+    evidence_date: date | None = Form(None),
+    artefact_id: uuid.UUID | None = Form(None),
+    scope_id: uuid.UUID | None = None,
+    user: User = Depends(current_user),
+    read_grant: Grant = Depends(require(Perm.CONTROLS_READ)),
+    db: Session = Depends(get_session),
+) -> LinkOut:
+    settings = request.app.state.settings
+    store = request.app.state.store
+    now = get_clock(request)()
+    scope = resolve_scope(db, scope_id, read_grant)
+    control = _get_control(db, scope, code)
+    if not edit_rights(user, scope.id, control.owner_id).any:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, FORBIDDEN)
+    slot = db.get(EvidenceSlot, slot_id)
+    if slot is None or slot.control_id != control.id:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Evidence slot not found.")
+    if evidence_date and evidence_date > now.date():
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT, "The evidence date can't be in the future."
+        )
+    if artefact_id is not None:
+        artefact = db.get(Artefact, artefact_id)
+        if artefact is None or artefact.scope_id != scope.id:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "Artefact not found.")
+    head = file.file.read(HEAD_BYTES)
+    file.file.seek(0)
+    try:
+        blob = store.put(file.file, settings.max_upload_mb * 1024 * 1024)
+    except TooLargeError as exc:
+        raise HTTPException(413, f"The file is larger than the {settings.max_upload_mb} MB limit.") from exc
+    filename = safe_filename(file.filename or "")
+    if artefact_id is None:
+        artefact = Artefact(scope_id=scope.id, title=(title or filename)[:300], uploaded_by_id=user.id)
+        db.add(artefact)
+    version = ArtefactVersion(
+        version_no=max((v.version_no for v in artefact.versions), default=0) + 1,
+        sha256=blob.sha256,
+        size=blob.size,
+        filename=filename,
+        mime=sniff(head, filename),
+        evidence_date=evidence_date,
+        uploaded_by_id=user.id,
+        created_at=now,
+    )
+    artefact.versions.append(version)
+    db.flush()
+    link = ArtefactLink(version_id=version.id, slot_id=slot.id, state="verifying", created_at=now)
+    db.add(link)
+    db.flush()
+    enqueue(db, "verify_link", {"link_id": str(link.id)}, now)
+    record(
+        db,
+        actor_for(request, user),
+        "evidence.upload",
+        "artefact_link",
+        str(link.id),
+        diff={
+            "control": control.code,
+            "slot": slot.name,
+            "filename": filename,
+            "sha256": blob.sha256,
+            "size": blob.size,
+        },
+    )
+    recompute_control(db, control, now, settings, trigger=f"Evidence uploaded: {filename}")
+    db.commit()
+    db.refresh(link)
+    return link_out(db, link)
+
+
+@router.get("/artefact-links/{link_id}", response_model=LinkOut)
+def get_link(
+    link_id: uuid.UUID,
+    grant: Grant = Depends(require(Perm.CONTROLS_READ)),
+    db: Session = Depends(get_session),
+) -> LinkOut:
+    link = db.get(ArtefactLink, link_id)
+    if link is None or not grant.allows(link.slot.control.scope_id):
+        raise HTTPException(status.HTTP_404_NOT_FOUND, NOT_FOUND)
+    return link_out(db, link)
+
+
+@router.get("/artefact-versions/{version_id}/download")
+def download_version(
+    version_id: uuid.UUID,
+    request: Request,
+    user: User = Depends(current_user),
+    grant: Grant = Depends(require(Perm.CONTROLS_READ)),
+    db: Session = Depends(get_session),
+) -> FileResponse:
+    version = db.get(ArtefactVersion, version_id)
+    if version is None or not grant.allows(version.artefact.scope_id):
+        raise HTTPException(status.HTTP_404_NOT_FOUND, NOT_FOUND)
+    path = request.app.state.store.path_for(version.sha256)
+    if not path.exists():
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND,
+            "The stored file is missing. Ask an administrator to check the evidence store.",
+        )
+    record(
+        db,
+        actor_for(request, user),
+        "evidence.download",
+        "artefact_version",
+        str(version.id),
+        diff={"filename": version.filename},
+    )
+    db.commit()
+    return FileResponse(
+        path,
+        filename=version.filename,
+        media_type="application/octet-stream",
+        content_disposition_type="attachment",
+        headers={"X-Content-Type-Options": "nosniff"},
+    )
