@@ -1,0 +1,70 @@
+#!/usr/bin/env bash
+# Test double for docker. Records every call in $STUB_LOG and fakes the answers the installer needs.
+#   STUB_ARCH            architecture reported by docker info (default x86_64)
+#   STUB_MEM             memory in bytes reported by docker info (default 16 GiB)
+#   STUB_COMPOSE_VERSION version reported by docker compose version --short (default 2.29.0)
+#   STUB_IMAGES_PRESENT  space-separated image references that docker image inspect finds
+#   STUB_NO_DAEMON=1     docker info fails as if the daemon were stopped
+#   STUB_FAIL_ON         fail any call whose arguments contain this text ...
+#   STUB_FAIL_TIMES      ... only this many times (default: every time)
+set -euo pipefail
+printf '%s\n' "$*" >>"${STUB_LOG:?STUB_LOG must be set}"
+
+if [ -n "${STUB_FAIL_ON:-}" ]; then
+  case "$*" in
+    *"$STUB_FAIL_ON"*)
+      count_file="$STUB_LOG.failures"
+      count="$(cat "$count_file" 2>/dev/null || echo 0)"
+      if [ -z "${STUB_FAIL_TIMES:-}" ] || [ "$count" -lt "$STUB_FAIL_TIMES" ]; then
+        echo $((count + 1)) >"$count_file"
+        echo "stub: failing on purpose: $*" >&2
+        exit 1
+      fi
+      ;;
+  esac
+fi
+
+last="${!#}"
+case "${1:-}" in
+  info)
+    [ "${STUB_NO_DAEMON:-0}" != 1 ] || exit 1
+    case "$*" in
+      *Architecture*) echo "${STUB_ARCH:-x86_64}" ;;
+      *MemTotal*) echo "${STUB_MEM:-17179869184}" ;;
+    esac
+    ;;
+  image)
+    if [ "${2:-}" = inspect ]; then
+      case " ${STUB_IMAGES_PRESENT:-} " in
+        *" $last "*)
+          case "$*" in *--format*) echo "sha256:stub-$last" ;; esac
+          exit 0
+          ;;
+      esac
+      exit 1
+    fi
+    ;;
+  save)
+    # docker save -o FILE REF
+    echo "stub image $last" >"$3"
+    ;;
+  compose)
+    case "$*" in
+      *"compose version"*) echo "${STUB_COMPOSE_VERSION:-2.29.0}" ;;
+      *"config --images"*)
+        printf '%s\n' "assayr-api:${ASSAYR_VERSION:-dev}" "assayr-web:${ASSAYR_VERSION:-dev}" \
+          postgres:16-alpine clamav/clamav:1.4
+        ;;
+      *pg_dump*) echo "stub database dump" ;;
+      *" run "*)
+        prev="" host=""
+        for arg in "$@"; do
+          if [ "$prev" = -v ]; then host="${arg%%:/backup*}"; fi
+          prev="$arg"
+        done
+        case "$*" in *"-cf /backup/blobs.tar"*) echo "stub evidence files" >"$host/blobs.tar" ;; esac
+        ;;
+    esac
+    ;;
+esac
+exit 0
