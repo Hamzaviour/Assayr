@@ -99,7 +99,7 @@ jobs:
           scripts/build-bundle.sh 99.1.0 "$ARCH" dist/test --no-archive
       - name: Remove the images so the installer must load them from the bundles
         run: |
-          images="$(ASSAYR_VERSION="$VERSION" POSTGRES_PASSWORD=unused docker compose -f deploy/compose.yaml --profile av config --images)"
+          images="$(ASSAYR_VERSION="$VERSION" POSTGRES_PASSWORD=unused docker compose -f deploy/compose.yaml --profile av config --images | sort -u)"
           # shellcheck disable=SC2086
           docker image rm $images assayr-api:99.0.0 assayr-web:99.0.0 assayr-api:99.1.0 assayr-web:99.1.0
       - name: End-to-end test

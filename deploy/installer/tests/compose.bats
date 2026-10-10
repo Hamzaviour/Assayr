@@ -21,7 +21,7 @@ compose_config() {
 @test "malware scanning is an optional profile with a pinned image" {
   run compose_config -f "$REPO_ROOT/deploy/compose.yaml" --profile av
   [ "$status" -eq 0 ]
-  [[ "$output" == *"image: clamav/clamav:1.4"* ]]
+  [[ "$output" == *"image: clamav/clamav-debian:1.4"* ]]
 }
 
 @test "the HTTPS override serves TLS on the HTTPS port with the certificates mounted" {

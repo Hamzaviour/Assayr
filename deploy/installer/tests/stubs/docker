@@ -53,7 +53,7 @@ case "${1:-}" in
       *"compose version"*) echo "${STUB_COMPOSE_VERSION:-2.29.0}" ;;
       *"config --images"*)
         printf '%s\n' "assayr-api:${ASSAYR_VERSION:-dev}" "assayr-web:${ASSAYR_VERSION:-dev}" \
-          postgres:16-alpine clamav/clamav:1.4
+          postgres:16-alpine clamav/clamav-debian:1.4
         ;;
       *pg_dump*) echo "stub database dump" ;;
       *" run "*)
