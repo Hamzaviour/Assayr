@@ -262,11 +262,7 @@ def risk_detail(db: Session, risk: Risk, user: User) -> RiskDetailOut:
     if latest is not None and risk.closed_at is None:
         required = band_for(definition_of(db, latest), latest.current_l, latest.current_c)["authority"]
         held = held_authority(user, risk.scope_id, risk.owner_id == user.id)
-        ready = (
-            draft is None
-            and risk.status != "accepted"
-            and not (risk.treatment_option == "modify" and open_actions(actions))
-        )
+        ready = draft is None and risk.status != "accepted" and not open_actions(actions)
         can_accept = ready and authority_allows(held, required)
     links = sorted(risk.control_links, key=lambda link: link.control.sort_order)
     accepted_latest = acceptance is not None and latest is not None and acceptance.assessment_id == latest.id

@@ -87,6 +87,19 @@ def test_acceptance_waits_for_open_actions(client, db, seeded, clock):
     assert response.json() == {"detail": "Finish the treatment actions before accepting the residual risk."}
 
 
+def test_switching_treatment_does_not_skip_open_actions(client, db, seeded, clock):
+    manager(client, db)
+    code = assessed_risk(client, likelihood=4, consequence=4)["code"]
+    client.post(f"/api/v1/risks/{code}/treatment", json={"option": "modify"})
+    client.post(f"/api/v1/risks/{code}/actions", json={"title": "Segment the network"})
+    response = client.post(f"/api/v1/risks/{code}/treatment", json={"option": "retain"})
+    assert response.status_code == 409
+    assert response.json() == {
+        "detail": "Finish or cancel the open treatment actions before changing the treatment."
+    }
+    assert client.get(f"/api/v1/risks/{code}").json()["treatment_option"] == "modify"
+
+
 def test_actions_need_the_modify_option(client, db, seeded, clock):
     manager(client, db)
     code = assessed_risk(client, likelihood=3, consequence=3)["code"]
