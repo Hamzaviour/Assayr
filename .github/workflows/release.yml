@@ -1,10 +1,21 @@
 name: release
 
 # A tag v<version> builds both bundles, tests them end to end and publishes a GitHub Release.
-# Run by hand with a version to build and test without publishing.
+# A branch push that changes the installer, or a run by hand with a version, builds and tests
+# without publishing (branch pushes use the version in backend/pyproject.toml).
 on:
   push:
     tags: ["v*"]
+    branches: ["**"]
+    paths:
+      - "deploy/**"
+      - "scripts/build-bundle.sh"
+      - ".github/workflows/release.yml"
+      - "backend/Dockerfile"
+      - "backend/docker-entrypoint.sh"
+      - "frontend/Dockerfile"
+      - "frontend/Caddyfile*"
+      - "frontend/site.caddy"
   workflow_dispatch:
     inputs:
       version:
@@ -54,7 +65,13 @@ jobs:
       - uses: actions/checkout@v4
       - name: Work out the version
         run: |
-          if [ "$GITHUB_REF_TYPE" = tag ]; then v="${GITHUB_REF_NAME#v}"; else v="$INPUT_VERSION"; fi
+          if [ "$GITHUB_REF_TYPE" = tag ]; then
+            v="${GITHUB_REF_NAME#v}"
+          elif [ -n "$INPUT_VERSION" ]; then
+            v="$INPUT_VERSION"
+          else
+            v="$(sed -n 's/^version = "\(.*\)"$/\1/p' backend/pyproject.toml)"
+          fi
           [[ "$v" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "Not a version: $v" >&2; exit 1; }
           if [ "$GITHUB_REF_TYPE" = tag ]; then
             grep -q "^version = \"$v\"" backend/pyproject.toml || { echo "backend/pyproject.toml is not $v" >&2; exit 1; }
