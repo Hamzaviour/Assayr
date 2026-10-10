@@ -17,8 +17,21 @@ JAR="$work/cookies"
 export ASSAYR_HOSTNAME=localhost ASSAYR_ORG_NAME="E2E Org" ASSAYR_ADMIN_EMAIL="$EMAIL" ASSAYR_ADMIN_PASSWORD="$PASSWORD"
 
 cleanup() {
+  local status=$?
+  if [ "$status" -ne 0 ] && [ -f "$dir/assayr.env" ]; then diagnostics; fi
   if [ -f "$dir/assayr" ]; then "$dir/assayr" uninstall --delete-data --yes >/dev/null 2>&1 || true; fi
   rm -rf "$work"
+}
+# diagnostics — what the containers were doing when a step failed.
+diagnostics() {
+  local files=(-f "$dir/compose.yaml")
+  if [ -f "$dir/compose.https.yaml" ]; then files+=(-f "$dir/compose.https.yaml"); fi
+  echo "--- containers" >&2
+  docker compose --project-directory "$dir" --env-file "$dir/assayr.env" "${files[@]}" --profile av ps -a >&2 || true
+  echo "--- container logs (last 60 lines each)" >&2
+  docker compose --project-directory "$dir" --env-file "$dir/assayr.env" "${files[@]}" --profile av logs --tail 60 >&2 || true
+  echo "--- install.log (last 80 lines)" >&2
+  tail -n 80 "$dir/install.log" >&2 || true
 }
 trap cleanup EXIT
 
