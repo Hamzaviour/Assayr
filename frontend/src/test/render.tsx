@@ -10,7 +10,10 @@ export const ME: Me = {
   full_name: "Sana Malik",
   is_active: true,
   roles: [{ role: "isms_manager", scope_id: null }],
-  permissions: ["audit_log:read", "controls:read", "controls:write"],
+  permissions: [
+    "assets:read", "assets:write", "audit_log:read", "controls:read", "controls:write", "evidence:review",
+    "risks:accept_high", "risks:read", "risks:write", "soa:read", "soa:write",
+  ],
 }
 
 export const json = (status: number, body: unknown) =>
