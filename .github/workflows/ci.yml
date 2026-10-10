@@ -52,6 +52,15 @@ jobs:
       - run: npm test
       - run: npm run build
 
+  installer:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y bats shellcheck
+      - run: deploy/installer/tests/run.sh
+        env:
+          ASSAYR_REQUIRE_SHELLCHECK: "1"
+
   smoke:
     needs: [backend, frontend]
     runs-on: ubuntu-latest
