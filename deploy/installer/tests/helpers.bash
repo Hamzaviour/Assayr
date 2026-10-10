@@ -49,3 +49,15 @@ make_bundle() {
     "$REPO_ROOT/scripts/build-bundle.sh" "$1" amd64 "$2" --no-archive >/dev/null
   printf '%s\n' "$2/assayr-$1"
 }
+
+# install_fixture BUNDLE DIR [OPTIONS] — non-interactive install with the docker stub.
+# STUB_IMAGES_PRESENT defaults to the bundle's images (set it to "" to make install load them).
+install_fixture() {
+  local bundle="$1" dir="$2"
+  shift 2
+  ASSAYR_HOSTNAME="${ASSAYR_HOSTNAME:-localhost}" ASSAYR_ORG_NAME="${ASSAYR_ORG_NAME-Test Org}" \
+    ASSAYR_ADMIN_EMAIL="${ASSAYR_ADMIN_EMAIL-admin@example.com}" \
+    ASSAYR_ADMIN_PASSWORD="${ASSAYR_ADMIN_PASSWORD:-test-password-123}" \
+    STUB_IMAGES_PRESENT="${STUB_IMAGES_PRESENT-$(stub_images "$(cat "$bundle/VERSION")")}" \
+    "$bundle/assayr" install --dir "$dir" --non-interactive --https-port 18443 --http-port 18080 "$@"
+}
