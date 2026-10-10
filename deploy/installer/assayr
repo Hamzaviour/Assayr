@@ -21,6 +21,8 @@ BUNDLE_DIR=""
 . "$SCRIPT_DIR/lib/backup.sh"
 # shellcheck source=lib/cmd_install.sh
 . "$SCRIPT_DIR/lib/cmd_install.sh"
+# shellcheck source=lib/cmd_upgrade.sh
+. "$SCRIPT_DIR/lib/cmd_upgrade.sh"
 # shellcheck source=lib/cmd_misc.sh
 . "$SCRIPT_DIR/lib/cmd_misc.sh"
 # shellcheck source=lib/main.sh
