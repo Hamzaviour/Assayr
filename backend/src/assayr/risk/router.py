@@ -1,7 +1,10 @@
 import uuid
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from fastapi.responses import Response
+from openpyxl import Workbook
+from pydantic import BaseModel
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
@@ -11,6 +14,7 @@ from assayr.catalogue.access import EditRights, check_active_user, has_perm, rig
 from assayr.catalogue.models import Control
 from assayr.catalogue.router import FORBIDDEN, _like, resolve_scope
 from assayr.db import get_session
+from assayr.exports import add_sheet, xlsx_response
 from assayr.identity.deps import actor_for, current_user, get_clock, require
 from assayr.identity.models import User
 from assayr.identity.rbac import Grant, Perm
@@ -24,10 +28,12 @@ from assayr.risk.methodology import (
     suggest_current,
 )
 from assayr.risk.models import (
+    MethodologyVersion,
     Risk,
     RiskAcceptance,
     RiskAssessment,
     RiskControl,
+    RiskSnapshot,
     RiskTemplate,
     Threat,
     Vulnerability,
@@ -42,6 +48,7 @@ from assayr.risk.schemas import (
     RiskDetailOut,
     RiskRowOut,
     RiskUpdateIn,
+    SnapshotIn,
     TreatmentIn,
 )
 from assayr.risk.service import (
@@ -58,6 +65,7 @@ from assayr.risk.service import (
     risk_detail,
     risk_row,
 )
+from assayr.risk.snapshots import compare_rows, level_text, snapshot_rows
 from assayr.tasks.models import Task
 
 router = APIRouter(tags=["risks"])
@@ -642,3 +650,212 @@ def close_risk(
     record(db, actor_for(request, user), "risk.close", "risk", risk.code, reason=risk.close_reason)
     db.commit()
     return risk_detail(db, risk, user)
+
+
+class SnapshotSummaryOut(BaseModel):
+    id: uuid.UUID
+    label: str
+    taken_at: datetime
+    taken_by: str | None
+    methodology_version: int
+    risk_count: int
+
+
+class SnapshotOut(SnapshotSummaryOut):
+    rows: list[dict]
+
+
+class SnapshotChangeOut(BaseModel):
+    field: str
+    before: str | None
+    after: str | None
+
+
+class SnapshotChangedRiskOut(BaseModel):
+    code: str
+    title: str
+    changes: list[SnapshotChangeOut]
+
+
+class SnapshotCompareOut(BaseModel):
+    base: SnapshotSummaryOut
+    head: SnapshotSummaryOut
+    added: list[str]
+    removed: list[str]
+    changed: list[SnapshotChangedRiskOut]
+
+
+def _summary(db: Session, snapshot: RiskSnapshot) -> SnapshotSummaryOut:
+    taker = db.get(User, snapshot.taken_by_id) if snapshot.taken_by_id else None
+    return SnapshotSummaryOut(
+        id=snapshot.id,
+        label=snapshot.label,
+        taken_at=snapshot.taken_at,
+        taken_by=taker.full_name if taker else None,
+        methodology_version=db.get(MethodologyVersion, snapshot.methodology_version_id).version_no,
+        risk_count=len(snapshot.rows),
+    )
+
+
+def _snapshot(db: Session, grant: Grant, snapshot_id: uuid.UUID) -> RiskSnapshot:
+    snapshot = db.get(RiskSnapshot, snapshot_id)
+    if snapshot is None or not grant.allows(snapshot.scope_id):
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Snapshot not found.")
+    return snapshot
+
+
+@router.post("/risk-snapshots", response_model=SnapshotOut, status_code=status.HTTP_201_CREATED)
+def create_snapshot(
+    body: SnapshotIn,
+    request: Request,
+    user: User = Depends(current_user),
+    grant: Grant = Depends(require(Perm.RISKS_READ)),
+    db: Session = Depends(get_session),
+    scope_id: uuid.UUID | None = None,
+) -> SnapshotOut:
+    scope = resolve_scope(db, scope_id, grant)
+    if not has_perm(user, scope.id, Perm.RISKS_WRITE):
+        raise HTTPException(status.HTTP_403_FORBIDDEN, FORBIDDEN)
+    snapshot = RiskSnapshot(
+        scope_id=scope.id,
+        label=body.label.strip(),
+        taken_at=get_clock(request)(),
+        taken_by_id=user.id,
+        methodology_version_id=require_methodology(db).id,
+        rows=snapshot_rows(db, scope.id),
+    )
+    db.add(snapshot)
+    db.flush()
+    record(
+        db,
+        actor_for(request, user),
+        "risk.snapshot",
+        "risk_snapshot",
+        str(snapshot.id),
+        diff={"label": snapshot.label, "risks": len(snapshot.rows)},
+    )
+    db.commit()
+    return SnapshotOut(**_summary(db, snapshot).model_dump(), rows=snapshot.rows)
+
+
+@router.get("/risk-snapshots", response_model=list[SnapshotSummaryOut])
+def list_snapshots(
+    grant: Grant = Depends(require(Perm.RISKS_READ)),
+    db: Session = Depends(get_session),
+    scope_id: uuid.UUID | None = None,
+) -> list[SnapshotSummaryOut]:
+    scope = resolve_scope(db, scope_id, grant)
+    snapshots = db.scalars(
+        select(RiskSnapshot).where(RiskSnapshot.scope_id == scope.id).order_by(RiskSnapshot.taken_at.desc())
+    )
+    return [_summary(db, s) for s in snapshots]
+
+
+@router.get("/risk-snapshots/compare", response_model=SnapshotCompareOut)
+def compare_snapshots(
+    base: uuid.UUID,
+    head: uuid.UUID,
+    grant: Grant = Depends(require(Perm.RISKS_READ)),
+    db: Session = Depends(get_session),
+) -> SnapshotCompareOut:
+    before, after = _snapshot(db, grant, base), _snapshot(db, grant, head)
+    return SnapshotCompareOut(
+        base=_summary(db, before), head=_summary(db, after), **compare_rows(before.rows, after.rows)
+    )
+
+
+@router.get("/risk-snapshots/{snapshot_id}", response_model=SnapshotOut)
+def get_snapshot(
+    snapshot_id: uuid.UUID,
+    grant: Grant = Depends(require(Perm.RISKS_READ)),
+    db: Session = Depends(get_session),
+) -> SnapshotOut:
+    snapshot = _snapshot(db, grant, snapshot_id)
+    return SnapshotOut(**_summary(db, snapshot).model_dump(), rows=snapshot.rows)
+
+
+TREATMENT_LABEL = {"modify": "Modify", "retain": "Retain", "avoid": "Avoid", "share": "Share"}
+
+
+@router.get("/risk-register/export.xlsx")
+def export_register(
+    request: Request,
+    user: User = Depends(current_user),
+    grant: Grant = Depends(require(Perm.RISKS_READ)),
+    db: Session = Depends(get_session),
+    scope_id: uuid.UUID | None = None,
+) -> Response:
+    scope = resolve_scope(db, scope_id, grant)
+    risks = list(db.scalars(select(Risk).where(Risk.scope_id == scope.id).order_by(Risk.seq)).unique())
+    register, plan = [], []
+    for risk in risks:
+        row = risk_row(db, risk)
+        register.append(
+            [
+                row.code,
+                row.title,
+                row.category,
+                row.owner.full_name if row.owner else None,
+                row.status.replace("_", " "),
+                level_text(row.inherent.model_dump()) if row.inherent else None,
+                level_text(row.current.model_dump()) if row.current else None,
+                level_text(row.target.model_dump()) if row.target else None,
+                TREATMENT_LABEL.get(row.treatment_option or "", None),
+                row.review_due.isoformat() if row.review_due else None,
+                row.acceptance_expires.date().isoformat() if row.acceptance_expires else None,
+            ]
+        )
+        for task in risk_actions(db, risk) or [None]:
+            if task is None and risk.treatment_option is None:
+                continue
+            plan.append(
+                [
+                    risk.code,
+                    TREATMENT_LABEL.get(risk.treatment_option or "", None),
+                    risk.treatment_note,
+                    risk.treatment_budget,
+                    risk.treatment_due.isoformat() if risk.treatment_due else None,
+                    task.title if task else None,
+                    task.assignee.full_name if task and task.assignee else None,
+                    task.due.isoformat() if task and task.due else None,
+                    task.status.replace("_", " ") if task else None,
+                ]
+            )
+    workbook = Workbook()
+    add_sheet(
+        workbook,
+        "Register",
+        [
+            "Code",
+            "Risk",
+            "Category",
+            "Owner",
+            "Status",
+            "Inherent",
+            "Current",
+            "Target",
+            "Treatment",
+            "Next review",
+            "Acceptance expires",
+        ],
+        register,
+    )
+    add_sheet(
+        workbook,
+        "Treatment plan",
+        [
+            "Risk",
+            "Treatment",
+            "Decision or note",
+            "Budget",
+            "Due",
+            "Action",
+            "Assignee",
+            "Action due",
+            "Action status",
+        ],
+        plan,
+    )
+    record(db, actor_for(request, user), "risk.export", "risk", None, diff={"risks": len(risks)})
+    db.commit()
+    return xlsx_response(workbook, "risk-register.xlsx")
