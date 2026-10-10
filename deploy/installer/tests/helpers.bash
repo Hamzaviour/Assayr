@@ -27,3 +27,18 @@ skip_on_windows() {
 file_mode() {
   ls -ld "$1" | cut -c2-10
 }
+
+# use_docker_stub — run the installer against tests/stubs/docker, as root on Linux, with no
+# free-disk requirement. Every docker call is recorded in $STUB_LOG.
+use_docker_stub() {
+  export PATH="$BATS_TEST_DIRNAME/stubs:$PATH"
+  export STUB_LOG="$BATS_TEST_TMPDIR/docker.log"
+  : >"$STUB_LOG"
+  export ASSAYR_UNAME_S=Linux ASSAYR_PROC_VERSION="$BATS_TEST_TMPDIR/no-proc-version" ASSAYR_EUID=0
+  export ASSAYR_MIN_FREE_GB=0
+}
+
+# stub_images VERSION — the four image references a bundle of VERSION contains.
+stub_images() {
+  echo "assayr-api:$1 assayr-web:$1 postgres:16-alpine clamav/clamav:1.4"
+}
