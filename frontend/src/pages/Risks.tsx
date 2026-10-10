@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router"
 import { type FormEvent, useState } from "react"
 import { RISK_STATUS_LABEL, TREATMENT_LABEL, useMethodology, useRisks } from "../api/risks"
 import type { RiskRow } from "../api/types"
+import { useMe } from "../auth/session"
 import { Button } from "../components/Button"
 import { Heatmap } from "../components/Heatmap"
 import { LevelPill, RiskStatusPill } from "../components/LevelPill"
@@ -26,6 +27,8 @@ function RiskLink({ risk }: { risk: RiskRow }) {
 }
 
 export function RisksPage() {
+  const me = useMe()
+  const canCreate = me.data?.permissions.includes("risks:write") ?? false
   const [view, setView] = useState<View>("table")
   const [matrix, setMatrix] = useState<Matrix>("current")
   const [typed, setTyped] = useState("")
@@ -52,6 +55,11 @@ export function RisksPage() {
           <Segmented label="View" options={VIEWS} value={view} onChange={setView} />
           <Link to="/risks/snapshots" className={linkClass}>Snapshots</Link>
           <a href="/api/v1/risk-register/export.xlsx" className={linkClass}>Export XLSX</a>
+          {canCreate && (
+            <Link to="/risks/new" className="rounded-lg bg-primary px-2.5 py-1 text-[13px] font-medium text-on-primary hover:bg-primary-hover">
+              New risk
+            </Link>
+          )}
         </div>
       </header>
       <section className="rounded-xl border border-line bg-surface">

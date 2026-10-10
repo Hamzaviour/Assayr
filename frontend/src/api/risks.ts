@@ -115,7 +115,7 @@ export function useSaveAssessment(code: string) {
 }
 
 export function useFinalizeAssessment(code: string) {
-  return useRiskMutation(() => send<RiskDetail>(`${path(code)}/assessment/finalize`, "POST"))
+  return useRiskMutation((_body: void) => send<RiskDetail>(`${path(code)}/assessment/finalize`, "POST"))
 }
 
 export function useSetTreatment(code: string) {

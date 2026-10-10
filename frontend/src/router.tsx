@@ -6,6 +6,8 @@ import { DashboardPage } from "./pages/Dashboard"
 import { LoginPage } from "./pages/Login"
 import { ReviewQueuePage } from "./pages/ReviewQueue"
 import { RiskDetailPage } from "./pages/RiskDetail"
+import { RiskNewPage } from "./pages/RiskNew"
+import { RiskWizardPage } from "./pages/RiskWizard"
 import { RisksPage } from "./pages/Risks"
 import { RiskSnapshotsPage } from "./pages/RiskSnapshots"
 import { Styleguide } from "./pages/Styleguide"
@@ -37,11 +39,13 @@ const evidenceRoute = createRoute({ getParentRoute: () => appRoute, path: "/evid
 const risksRoute = createRoute({ getParentRoute: () => appRoute, path: "/risks", component: RisksPage })
 const riskSnapshotsRoute = createRoute({ getParentRoute: () => appRoute, path: "/risks/snapshots", component: RiskSnapshotsPage })
 const riskRoute = createRoute({ getParentRoute: () => appRoute, path: "/risks/$code", component: RiskDetailPage })
+const riskNewRoute = createRoute({ getParentRoute: () => appRoute, path: "/risks/new", component: RiskNewPage })
+const riskAssessRoute = createRoute({ getParentRoute: () => appRoute, path: "/risks/$code/assess", component: RiskWizardPage })
 const styleguideRoute = createRoute({ getParentRoute: () => appRoute, path: "/styleguide", component: Styleguide })
 
 export const routeTree = rootRoute.addChildren([
   loginRoute,
-  appRoute.addChildren([dashboardRoute, controlsRoute, controlRoute, evidenceRoute, risksRoute, riskSnapshotsRoute, riskRoute, styleguideRoute]),
+  appRoute.addChildren([dashboardRoute, controlsRoute, controlRoute, evidenceRoute, risksRoute, riskNewRoute, riskSnapshotsRoute, riskRoute, riskAssessRoute, styleguideRoute]),
 ])
 
 export function createAppRouter(history?: RouterHistory) {
