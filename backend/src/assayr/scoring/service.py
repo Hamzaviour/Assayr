@@ -131,7 +131,10 @@ def recompute_control(
     attestation = latest_attestation(db, control)
     attested = attestation is not None and attestation.valid_until > now
     has_any_link = any(v.link is not None for v in views)
-    result = evaluate(control.implementation_status, views, attested, has_any_link)
+    if not control.applicable:
+        result = ControlScore(status="excluded", score=0.0, views=views, attested=attested)
+    else:
+        result = evaluate(control.implementation_status, views, attested, has_any_link)
     if result.status != control.status:
         db.add(
             StatusTransition(
@@ -143,7 +146,7 @@ def recompute_control(
             )
         )
         control.status = result.status
-    control.score = result.score
+    control.score = None if result.status == "excluded" else result.score
     return result
 
 
