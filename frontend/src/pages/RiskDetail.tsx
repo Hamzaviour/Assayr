@@ -41,7 +41,15 @@ export function RiskDetailPage() {
             {r.review_due ? ` · Next review ${formatDate(r.review_due)}` : ""}
           </p>
         </div>
-        <div className="flex items-center gap-2"><RiskStatusPill status={r.status} /></div>
+        <div className="flex items-center gap-2">
+          {r.can_edit && !r.closed_at && (
+            <Link to="/risks/$code/assess" params={{ code: r.code }}
+              className="rounded-lg bg-primary px-3 py-1.5 text-[13px] font-medium text-on-primary hover:bg-primary-hover">
+              {r.draft ? "Continue assessment" : r.latest ? "Reassess" : "Assess"}
+            </Link>
+          )}
+          <RiskStatusPill status={r.status} />
+        </div>
       </header>
       <Levels risk={r} />
       <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_320px]">

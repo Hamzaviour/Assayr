@@ -1,0 +1,11 @@
+grep: frontend/package.json;: No such file or directory
+grep: P=.superpowers/sdd/2026-10-08-phase-1b-risk-and-soa/progress.md;: No such file or directory
+grep: printf: No such file or directory
+grep: %s\n: No such file or directory
+grep: Task 12: Ruling: AppShell.test pinned Risks as an unavailable module; the plan enables Risks, so the test now checks Policies (still unavailable until 1c) - cost if wrong: none: No such file or directory
+grep: Task 12: Ruling: treatment radios took the help text into their accessible name, so the test's radio "Modify" was not found; added aria-label with the option name (help stays as aria-describedby) - cost if wrong: none: No such file or directory
+grep: ;: No such file or directory
+grep: 12: No such file or directory
+grep: 7d45173ae5a1e86e57b7f0c2c4bd9ce1bc4a3a83: No such file or directory
+grep: feat(web): risk register with table, board and heatmap; risk detail and snapshots: No such file or directory
+grep: ft: No such file or directory
