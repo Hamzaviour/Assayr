@@ -33,5 +33,10 @@ for _ in $(seq 1 60); do
 done
 [ "$state" != "verifying" ] || { echo "Evidence was never verified (is the worker running?)" >&2; exit 1; }
 echo "Evidence verified by the worker: $state"
+curl -fsS -b "$JAR" "$BASE/api/v1/risk-methodology" | grep -q '"key":"critical"' \
+  || { echo "The risk methodology is missing (did assayr seed run?)" >&2; exit 1; }
+soa_rows="$(curl -fsS -b "$JAR" "$BASE/api/v1/soa" | grep -o '"code":"A\.[0-9.]*"' | wc -l)"
+[ "$soa_rows" -eq 93 ] || { echo "Expected 93 controls in the SoA, got $soa_rows" >&2; exit 1; }
+echo "Risk methodology and SoA served"
 compose exec -T api assayr audit-verify
 echo "Smoke test passed: stack is up, sign-in works and 93 controls are seeded."

@@ -3,6 +3,10 @@
 On-premise GRC for ISO/IEC 27001: keep every control, piece of evidence and risk on your own servers.
 Product specs, brand and design live in the Obsidian vault at `../Assayr-Vault` (start at `00-Home/Home.md`).
 
+What it covers today: the ISO/IEC 27001:2022 catalogue with evidence slots, evidence upload with automatic verification and review,
+derived control status and readiness, a risk register with a guided assessment wizard, treatment and residual-risk acceptance,
+an asset inventory, and a Statement of Applicability with traceability checks and executive approval.
+
 ## Layout
 
 | Path | What |
@@ -65,7 +69,7 @@ The stack serves plain HTTP on port 8080 for evaluation. Put it behind TLS and s
 | Command | Purpose |
 |---|---|
 | `assayr migrate` | Apply database migrations |
-| `assayr seed` | Load the ISO/IEC 27001:2022 catalogue (safe to repeat) |
+| `assayr seed` | Load the ISO/IEC 27001:2022 catalogue, the risk methodology and the threat, vulnerability and template libraries (safe to repeat) |
 | `assayr create-admin --email …` | Create an administrator (password from prompt or `ASSAYR_ADMIN_PASSWORD`) |
 | `assayr audit-verify` | Check the audit trail's hash chain (exit code 2 if broken) |
 | `assayr worker [--once]` | Run background jobs (evidence verification, scheduled status checks) |
