@@ -1,4 +1,5 @@
 # Shared setup for the installer tests. Load with: load helpers
+bats_require_minimum_version 1.5.0 # for run ! and run -N
 REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/../../.." && pwd)"
 INSTALLER="$REPO_ROOT/deploy/installer"
 
