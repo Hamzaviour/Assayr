@@ -107,3 +107,136 @@ export interface Readiness {
   by_theme: Record<string, number | null>
   trend: { date: string; readiness: number }[]
 }
+
+export interface Level { likelihood: number; consequence: number; score: number; band: string; band_label: string }
+export interface Band {
+  key: string
+  label: string
+  min: number
+  max: number
+  above_appetite: boolean
+  treatment_required: boolean
+  authority: string
+  review_days: number
+  rule: string
+}
+export interface Methodology {
+  version_no: number
+  name: string
+  likelihood: { level: number; label: string; guidance: string }[]
+  consequence: {
+    levels: { level: number; label: string }[]
+    dimensions: { key: string; label: string; guidance: string[] }[]
+  }
+  bands: Band[]
+}
+export interface LibraryItem { code: string; name: string; category: string; description: string | null; is_custom: boolean }
+export interface RiskTemplate {
+  code: string
+  title: string
+  scenario: string
+  category: string
+  threat_codes: string[]
+  vulnerability_codes: string[]
+  control_codes: string[]
+  likelihood: number
+  consequence: Record<string, number>
+}
+export interface RiskLibrary { threats: LibraryItem[]; vulnerabilities: LibraryItem[]; templates: RiskTemplate[] }
+export interface RiskRow {
+  id: string
+  code: string
+  title: string
+  category: string | null
+  approach: string
+  owner: Owner | null
+  status: string
+  inherent: Level | null
+  current: Level | null
+  target: Level | null
+  treatment_option: string | null
+  progress: { done: number; total: number }
+  review_due: string | null
+  acceptance_expires: string | null
+}
+export interface Assessment {
+  id: string
+  likelihood: number | null
+  consequence: Record<string, number>
+  inherent: Level | null
+  suggested: Level | null
+  current: Level | null
+  current_reason: string | null
+  target: Level | null
+  rationale: string | null
+  finalized_at: string | null
+  assessed_by: string | null
+  methodology_version: number
+}
+export interface RiskTask {
+  id: string
+  title: string
+  assignee: Owner | null
+  due: string | null
+  status: string
+  done_at: string | null
+}
+export interface RiskAcceptance {
+  band: string
+  score: number
+  authority: string
+  statement: string
+  accepted_by: string | null
+  accepted_at: string
+  expires_at: string
+}
+export interface RiskDetail extends RiskRow {
+  description: string | null
+  template_code: string | null
+  threats: { code: string; name: string }[]
+  vulnerabilities: { code: string; name: string }[]
+  assets: { id: string; code: string; name: string }[]
+  controls: { code: string; title: string; status: string; axis: string }[]
+  draft: Assessment | null
+  latest: Assessment | null
+  history: Assessment[]
+  treatment: { option: string | null; note: string | null; budget: string | null; due: string | null }
+  actions: RiskTask[]
+  acceptance: RiskAcceptance | null
+  required_authority: string | null
+  can_accept: boolean
+  can_edit: boolean
+  closed_at: string | null
+  close_reason: string | null
+}
+export interface SnapshotSummary {
+  id: string
+  label: string
+  taken_at: string
+  taken_by: string | null
+  methodology_version: number
+  risk_count: number
+}
+export interface SnapshotCompare {
+  base: SnapshotSummary
+  head: SnapshotSummary
+  added: string[]
+  removed: string[]
+  changed: { code: string; title: string; changes: { field: string; before: string | null; after: string | null }[] }[]
+}
+export interface Asset {
+  id: string
+  code: string
+  name: string
+  type: string
+  owner: Owner | null
+  classification: string
+  confidentiality: number
+  integrity: number
+  availability: number
+  criticality: number
+  location: string | null
+  description: string | null
+  lifecycle: string
+}
+export interface Person { id: string; full_name: string; email: string; roles: string[] }

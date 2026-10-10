@@ -29,3 +29,7 @@
   --review: #b39bff; --review-soft: #261a45; --idle: #95a0b8; --idle-soft: #1b2340; --na: #6e7894;
   color-scheme: dark;
 }
+
+:root {
+  --heat-1: #cdebd8; --heat-2: #e4efb0; --heat-3: #fce38a; --heat-4: #f8a35b; --heat-5: #e2483d; --on-heat: #1b2233;
+}

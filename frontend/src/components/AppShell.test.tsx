@@ -25,5 +25,5 @@ test("navigation marks the current page and lists upcoming modules as unavailabl
   })
   renderApp("/controls")
   expect(await screen.findByRole("link", { name: "Controls" })).toHaveAttribute("aria-current", "page")
-  expect(screen.getByText("Risks").closest("[aria-disabled]")).toHaveAttribute("aria-disabled", "true")
+  expect(screen.getByText("Policies").closest("[aria-disabled]")).toHaveAttribute("aria-disabled", "true")
 })
