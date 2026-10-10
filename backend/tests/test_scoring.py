@@ -126,3 +126,14 @@ def test_readiness_and_daily_snapshots(db, seeded, app, settings):
 
 def test_readiness_is_none_without_controls():
     assert weighted_readiness([]) is None
+
+
+def test_excluded_controls_drop_out_of_readiness(db, seeded, settings):
+    control = control_with_slots(db)
+    control.applicable = False
+    result = recompute_control(
+        db, control, utcnow(), settings, trigger="Excluded in the Statement of Applicability"
+    )
+    assert (result.status, control.status, control.score) == ("excluded", "excluded", None)
+    controls = list(db.scalars(select(Control)))
+    assert weighted_readiness(controls) == weighted_readiness([c for c in controls if c.code != control.code])
