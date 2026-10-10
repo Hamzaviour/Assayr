@@ -18,7 +18,7 @@ setup() {
   [ ! -e "$b/compose.build.yaml" ]
   [ "$(grep -c . "$b/images/IMAGES.txt")" -eq 4 ]
   grep -q "^assayr-api_1.2.3.tar assayr-api:1.2.3 sha256:" "$b/images/IMAGES.txt"
-  grep -q "^clamav_clamav_1.4.tar clamav/clamav:1.4 sha256:" "$b/images/IMAGES.txt"
+  grep -q "^clamav_clamav-debian_1.4.tar clamav/clamav-debian:1.4 sha256:" "$b/images/IMAGES.txt"
   [ -f "$b/images/postgres_16-alpine.tar" ]
   run verify_bundle "$b"
   [ "$status" -eq 0 ]
@@ -34,7 +34,7 @@ setup() {
 }
 
 @test "a bundle can't be built without the Assayr images" {
-  STUB_IMAGES_PRESENT="assayr-web:1.2.3 postgres:16-alpine clamav/clamav:1.4" \
+  STUB_IMAGES_PRESENT="assayr-web:1.2.3 postgres:16-alpine clamav/clamav-debian:1.4" \
     run "$REPO_ROOT/scripts/build-bundle.sh" 1.2.3 amd64 "$OUT" --no-archive
   [ "$status" -eq 1 ]
   [[ "$output" == *"Image assayr-api:1.2.3 is missing; build it first."* ]]

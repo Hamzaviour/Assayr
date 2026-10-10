@@ -40,7 +40,7 @@ use_docker_stub() {
 
 # stub_images VERSION — the four image references a bundle of VERSION contains.
 stub_images() {
-  echo "assayr-api:$1 assayr-web:$1 postgres:16-alpine clamav/clamav:1.4"
+  echo "assayr-api:$1 assayr-web:$1 postgres:16-alpine clamav/clamav-debian:1.4"
 }
 
 # make_bundle VERSION OUTDIR — build a bundle folder with the docker stub; prints its path.
