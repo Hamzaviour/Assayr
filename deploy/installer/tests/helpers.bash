@@ -42,3 +42,10 @@ use_docker_stub() {
 stub_images() {
   echo "assayr-api:$1 assayr-web:$1 postgres:16-alpine clamav/clamav:1.4"
 }
+
+# make_bundle VERSION OUTDIR — build a bundle folder with the docker stub; prints its path.
+make_bundle() {
+  STUB_IMAGES_PRESENT="$(stub_images "$1")" \
+    "$REPO_ROOT/scripts/build-bundle.sh" "$1" amd64 "$2" --no-archive >/dev/null
+  printf '%s\n' "$2/assayr-$1"
+}
