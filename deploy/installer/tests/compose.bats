@@ -18,6 +18,13 @@ compose_config() {
   [[ "$output" != *"build:"* ]]
 }
 
+@test "every service has a health check, because up --wait refuses services without one" {
+  run compose_config -f "$REPO_ROOT/deploy/compose.yaml"
+  [ "$status" -eq 0 ]
+  [[ "$output" != *"disable: true"* ]]
+  [[ "$output" == *"kill -0 1"* ]]
+}
+
 @test "malware scanning is an optional profile with a pinned image" {
   run compose_config -f "$REPO_ROOT/deploy/compose.yaml" --profile av
   [ "$status" -eq 0 ]
