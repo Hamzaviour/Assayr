@@ -1,0 +1,144 @@
+name: release
+
+# A tag v<version> builds both bundles, tests them end to end and publishes a GitHub Release.
+# A branch push that changes the installer, or a run by hand with a version, builds and tests
+# without publishing (branch pushes use the version in backend/pyproject.toml).
+on:
+  push:
+    tags: ["v*"]
+    branches: ["**"]
+    paths:
+      - "deploy/**"
+      - "scripts/build-bundle.sh"
+      - ".github/workflows/release.yml"
+      - "backend/Dockerfile"
+      - "backend/uv.lock"
+      - "frontend/package-lock.json"
+      - "backend/docker-entrypoint.sh"
+      - "frontend/Dockerfile"
+      - "frontend/Caddyfile*"
+      - "frontend/site.caddy"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to build and test (not published), e.g. 0.2.0"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  installer-checks:
+    strategy:
+      matrix:
+        os: [ubuntu-24.04, macos-14]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install bats and shellcheck
+        run: |
+          if [ "$RUNNER_OS" = macOS ]; then
+            brew install bats-core shellcheck
+          else
+            sudo apt-get update && sudo apt-get install -y bats shellcheck
+          fi
+      - name: Installer checks (on macOS with the system bash 3.2 first on PATH)
+        env:
+          ASSAYR_REQUIRE_SHELLCHECK: "1"
+        run: |
+          if [ "$RUNNER_OS" = macOS ]; then export PATH="/bin:/usr/bin:$PATH"; bash --version | head -n1; fi
+          deploy/installer/tests/run.sh
+
+  bundle:
+    needs: installer-checks
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-24.04
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    env:
+      ARCH: ${{ matrix.arch }}
+      INPUT_VERSION: ${{ inputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Work out the version
+        run: |
+          if [ "$GITHUB_REF_TYPE" = tag ]; then
+            v="${GITHUB_REF_NAME#v}"
+          elif [ -n "$INPUT_VERSION" ]; then
+            v="$INPUT_VERSION"
+          else
+            v="$(sed -n 's/^version = "\(.*\)"$/\1/p' backend/pyproject.toml)"
+          fi
+          [[ "$v" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "Not a version: $v" >&2; exit 1; }
+          if [ "$GITHUB_REF_TYPE" = tag ]; then
+            grep -q "^version = \"$v\"" backend/pyproject.toml || { echo "backend/pyproject.toml is not $v" >&2; exit 1; }
+            grep -q "\"version\": \"$v\"" frontend/package.json || { echo "frontend/package.json is not $v" >&2; exit 1; }
+          fi
+          echo "VERSION=$v" >>"$GITHUB_ENV"
+      - name: Build the Assayr images
+        run: |
+          docker build -t "assayr-api:$VERSION" backend
+          docker build -t "assayr-web:$VERSION" frontend
+      - name: ClamAV works offline
+        run: deploy/installer/tests/clamav-offline.sh
+      - name: Build the bundle
+        run: scripts/build-bundle.sh "$VERSION" "$ARCH" dist
+      - name: Build the test bundles (a newer working version and a newer broken one)
+        run: |
+          docker tag "assayr-api:$VERSION" assayr-api:99.0.0
+          docker tag "assayr-web:$VERSION" assayr-web:99.0.0
+          printf 'FROM assayr-api:%s\nENTRYPOINT ["sh", "-c", "echo broken on purpose; exit 1"]\n' "$VERSION" \
+            | docker build -t assayr-api:99.1.0 -
+          docker tag "assayr-web:$VERSION" assayr-web:99.1.0
+          scripts/build-bundle.sh 99.0.0 "$ARCH" dist/test --no-archive
+          scripts/build-bundle.sh 99.1.0 "$ARCH" dist/test --no-archive
+      - name: Remove the images so the installer must load them from the bundles
+        run: |
+          images="$(ASSAYR_VERSION="$VERSION" POSTGRES_PASSWORD=unused docker compose -f deploy/compose.yaml --profile av config --images | sort -u)"
+          # shellcheck disable=SC2086
+          docker image rm $images assayr-api:99.0.0 assayr-web:99.0.0 assayr-api:99.1.0 assayr-web:99.1.0
+      - name: End-to-end test
+        run: sudo deploy/installer/tests/e2e.sh "dist/assayr-$VERSION-linux-$ARCH-offline.tar.gz" dist/test/assayr-99.0.0 dist/test/assayr-99.1.0
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bundle-${{ matrix.arch }}
+          path: dist/assayr-*-offline.tar.gz
+          retention-days: 7
+          if-no-files-found: error
+
+  publish:
+    if: github.ref_type == 'tag'
+    needs: bundle
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: bundle-*
+          path: dist
+          merge-multiple: true
+      - name: Create the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          cd dist
+          sha256sum assayr-*.tar.gz >SHA256SUMS.txt
+          {
+            echo "Offline installer bundles for Assayr ${TAG#v}."
+            echo
+            echo "- linux-amd64: Linux x86-64 servers, Windows (Docker Desktop with WSL2), Intel Macs"
+            echo "- linux-arm64: Apple Silicon Macs, arm64 Linux servers"
+            echo
+            echo "Unpack the bundle and read README-INSTALL.md. Check the download against these SHA-256 checksums:"
+            echo
+            echo '```'
+            cat SHA256SUMS.txt
+            echo '```'
+          } >notes.md
+          gh release create "$TAG" assayr-*.tar.gz SHA256SUMS.txt --repo "$GITHUB_REPOSITORY" \
+            --title "Assayr ${TAG#v}" --notes-file notes.md

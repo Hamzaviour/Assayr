@@ -1,0 +1,9 @@
+# HTTPS for the web service: Caddy serves TLS on 8443 (published on ASSAYR_HTTPS_PORT) with the
+# certificate in ASSAYR_CERTS_DIR, and port 8080 redirects to HTTPS.
+services:
+  web:
+    command: ["caddy", "run", "--config", "/etc/caddy/Caddyfile.https", "--adapter", "caddyfile"]
+    ports:
+      - "${ASSAYR_HTTPS_PORT:-443}:8443"
+    volumes:
+      - ${ASSAYR_CERTS_DIR:-./certs}:/certs:ro

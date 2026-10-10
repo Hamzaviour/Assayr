@@ -14,5 +14,8 @@ def service_block(name: str) -> str:
 
 
 def test_worker_does_not_inherit_the_api_http_healthcheck():
-    """The image's HEALTHCHECK probes the API port; the worker serves no HTTP and would be reported unhealthy."""
-    assert re.search(r"healthcheck:\n\s+disable: true", service_block("worker"))
+    """The image's HEALTHCHECK probes the API port; the worker serves no HTTP and would be reported unhealthy.
+    It has its own process check instead of none, because docker compose up --wait refuses services without one."""
+    worker = service_block("worker")
+    assert re.search(r'healthcheck:\n\s+test: \["CMD-SHELL", "kill -0 1"\]', worker)
+    assert "readyz" not in worker
