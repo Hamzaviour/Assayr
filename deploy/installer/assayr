@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# Assayr installer and administration command. Run ./assayr help for the commands.
+set -euo pipefail
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+BUNDLE_DIR=""
+# shellcheck source=lib/common.sh
+. "$SCRIPT_DIR/lib/common.sh"
+# shellcheck source=lib/platform.sh
+. "$SCRIPT_DIR/lib/platform.sh"
+# shellcheck source=lib/envfile.sh
+. "$SCRIPT_DIR/lib/envfile.sh"
+# shellcheck source=lib/bundle.sh
+. "$SCRIPT_DIR/lib/bundle.sh"
+# shellcheck source=lib/checks.sh
+. "$SCRIPT_DIR/lib/checks.sh"
+# shellcheck source=lib/certs.sh
+. "$SCRIPT_DIR/lib/certs.sh"
+# shellcheck source=lib/compose.sh
+. "$SCRIPT_DIR/lib/compose.sh"
+# shellcheck source=lib/cmd_misc.sh
+. "$SCRIPT_DIR/lib/cmd_misc.sh"
+# shellcheck source=lib/main.sh
+. "$SCRIPT_DIR/lib/main.sh"
+main "$@"
