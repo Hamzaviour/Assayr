@@ -12,6 +12,8 @@ on:
       - "scripts/build-bundle.sh"
       - ".github/workflows/release.yml"
       - "backend/Dockerfile"
+      - "backend/uv.lock"
+      - "frontend/package-lock.json"
       - "backend/docker-entrypoint.sh"
       - "frontend/Dockerfile"
       - "frontend/Caddyfile*"
