@@ -7,7 +7,7 @@ import { toggleTheme } from "../lib/theme"
 import { Button } from "./Button"
 import { Icon } from "./icons"
 
-type NavItem = { label: string; icon: string; to?: "/" | "/controls" | "/evidence" | "/risks" | "/assets" }
+type NavItem = { label: string; icon: string; to?: "/" | "/controls" | "/evidence" | "/soa" | "/risks" | "/assets" }
 const NAV: { group: string | null; items: NavItem[] }[] = [
   { group: null, items: [{ label: "Home", icon: "home", to: "/" }] },
   {
@@ -15,7 +15,7 @@ const NAV: { group: string | null; items: NavItem[] }[] = [
     items: [
       { label: "Controls", icon: "controls", to: "/controls" },
       { label: "Evidence", icon: "evidence", to: "/evidence" },
-      { label: "SoA", icon: "soa" },
+      { label: "SoA", icon: "soa", to: "/soa" },
       { label: "Policies", icon: "policy" },
     ],
   },

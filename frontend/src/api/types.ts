@@ -240,3 +240,37 @@ export interface Asset {
   lifecycle: string
 }
 export interface Person { id: string; full_name: string; email: string; roles: string[] }
+
+export interface SoaSource { kind: string; label: string; ref: string | null }
+export interface SoaItem {
+  code: string
+  title: string
+  theme: string | null
+  applicable: boolean
+  sources: SoaSource[]
+  justification: string | null
+  exclusion_reason: string | null
+  implementation_status: string
+  status: string
+  evidence_verified: number
+  evidence_required: number
+  owner: string | null
+}
+export interface SoaChecks {
+  orphans: string[]
+  excluded_mitigating: { code: string; risks: string[] }[]
+  untreated_risks: string[]
+  ok: boolean
+}
+export interface Soa { items: SoaItem[]; checks: SoaChecks }
+export interface SoaVersion {
+  version_no: number
+  status: string
+  prepared_by: string | null
+  prepared_at: string
+  decided_by: string | null
+  decided_at: string | null
+  decision_note: string | null
+  applicable: number
+  excluded: number
+}
