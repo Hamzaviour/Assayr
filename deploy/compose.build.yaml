@@ -1,0 +1,8 @@
+# Development only: build the Assayr images from source instead of running installed ones.
+services:
+  api:
+    build: ../backend
+  worker:
+    build: ../backend
+  web:
+    build: ../frontend
