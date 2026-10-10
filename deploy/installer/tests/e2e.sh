@@ -85,7 +85,7 @@ step "Install"
 "$bundle/assayr" install --dir "$dir" --non-interactive --https-port 8443 --http-port 8080
 "$REPO/deploy/smoke-checks.sh" "$BASE" "$EMAIL" "$PASSWORD"
 code="$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/)"
-[ "$code" = 308 ] || fail "plain HTTP should redirect to HTTPS (got $code)"
+[ "$code" = 301 ] || fail "plain HTTP should redirect permanently to HTTPS (got $code)"
 "$dir/assayr" status
 
 step "Installing twice is refused"
