@@ -115,3 +115,58 @@ cmd_uninstall() {
   rm -rf "${ASSAYR_DIR:?}"
   echo "Assayr has been removed."
 }
+
+cmd_backup() {
+  local dest="$ASSAYR_DIR/backups"
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --to)
+        need_value "$1" "${2:-}"
+        dest="$2"
+        shift 2
+        ;;
+      *) die "Unknown option for backup: $1" ;;
+    esac
+  done
+  info "Backing up Assayr"
+  do_backup "$dest" || die "The backup failed. Nothing was written."
+  info "Backup written to $BACKUP_FILE"
+  echo "It contains the database password and the HTTPS private key: keep it where only administrators can read it."
+}
+
+cmd_restore() {
+  local file="" work backup_version installed created safety
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      -*) die "Unknown option for restore: $1" ;;
+      *)
+        file="$1"
+        shift
+        ;;
+    esac
+  done
+  [ -n "$file" ] || die "Give the backup file: ./assayr restore FILE"
+  [ -f "$file" ] || die "Backup file not found: $file"
+  work="$(mktemp -d "$ASSAYR_DIR/backups/.restore.XXXXXX")"
+  # shellcheck disable=SC2064 # expand $work now
+  trap "rm -rf '$work'" EXIT
+  read_backup "$file" "$work" || die "This backup can't be used: $RESTORE_PROBLEM"
+  backup_version="$(env_get version "$RESTORE_FOLDER/manifest.txt")"
+  created="$(env_get created "$RESTORE_FOLDER/manifest.txt")"
+  installed="$(bundle_value "$ASSAYR_DIR" VERSION)"
+  if version_gt "$backup_version" "$installed"; then
+    die "This backup was made by Assayr $backup_version, which is newer than the installed $installed. Upgrade to $backup_version or later first."
+  fi
+  confirm_word restore "Restoring replaces all current Assayr data with the backup taken at $created (Assayr $backup_version)."
+  info "Taking a safety backup of the current data"
+  do_backup "$ASSAYR_DIR/backups" || die "The safety backup failed, so nothing was restored."
+  safety="$BACKUP_FILE"
+  info "Restoring the database and the evidence files"
+  restore_data "$RESTORE_FOLDER" \
+    || die "The restore failed. The data from just before it is in $safety. To put it back: $(sudo_prefix)$ASSAYR_DIR/assayr restore $safety"
+  if audit_ok; then
+    info "Restore complete. The audit trail is intact."
+  else
+    warn "Restore complete, but the audit trail check failed. See $ASSAYR_LOG"
+  fi
+}
