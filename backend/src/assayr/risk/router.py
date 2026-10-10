@@ -496,6 +496,11 @@ def set_treatment(
     require_open(risk)
     if latest_assessment(db, risk) is None:
         raise HTTPException(status.HTTP_409_CONFLICT, "Finish the assessment before choosing a treatment.")
+    if body.option != "modify" and open_actions(risk_actions(db, risk)):
+        raise HTTPException(
+            status.HTTP_409_CONFLICT,
+            "Finish or cancel the open treatment actions before changing the treatment.",
+        )
     note = (body.note or "").strip()
     if body.option == "avoid" and not note:
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "Record the decision to avoid the risk.")
@@ -584,7 +589,7 @@ def accept_risk(
         raise HTTPException(status.HTTP_409_CONFLICT, "Finish the assessment before accepting the risk.")
     if draft_assessment(db, risk) is not None:
         raise HTTPException(status.HTTP_409_CONFLICT, "Finish the reassessment before accepting the risk.")
-    if risk.treatment_option == "modify" and open_actions(risk_actions(db, risk)):
+    if open_actions(risk_actions(db, risk)):
         raise HTTPException(
             status.HTTP_409_CONFLICT, "Finish the treatment actions before accepting the residual risk."
         )

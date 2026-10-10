@@ -270,7 +270,7 @@ function Acceptance({ risk }: { risk: RiskDetail }) {
   const accept = useAcceptRisk(risk.code)
   const [statement, setStatement] = useState("")
   const a = risk.acceptance
-  const actionsOpen = risk.treatment.option === "modify" && risk.actions.some((t) => !["done", "cancelled"].includes(t.status))
+  const actionsOpen = risk.actions.some((t) => !["done", "cancelled"].includes(t.status))
 
   function submit(event: FormEvent) {
     event.preventDefault()
