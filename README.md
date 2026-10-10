@@ -49,20 +49,31 @@ npm test
 
 ## Run the full stack
 
-Requires Docker.
+Requires Docker. Builds the images from source:
 
 ```bash
 cd deploy
 cp assayr.env.example assayr.env      # then set POSTGRES_PASSWORD
-docker compose --env-file assayr.env up -d --build --wait
-docker compose --env-file assayr.env exec api assayr create-admin --email you@example.com
+docker compose --env-file assayr.env -f compose.yaml -f compose.build.yaml up -d --build --wait
+docker compose --env-file assayr.env -f compose.yaml -f compose.build.yaml exec api assayr create-admin --email you@example.com
 # open http://localhost:8080
 ```
 
 `deploy/smoke.sh` runs the same steps end to end and tears the stack down.
 
-The stack serves plain HTTP on port 8080 for evaluation. Put it behind TLS and set
-`ASSAYR_SECURE_COOKIES=true` before real use.
+## Install for customers
+
+Customers install from an offline bundle, not from source. Pushing a tag `v<version>` (matching
+`backend/pyproject.toml` and `frontend/package.json`) runs `.github/workflows/release.yml`, which
+builds `assayr-<version>-linux-amd64-offline.tar.gz` and `…-linux-arm64-…`, tests each end to end
+(install, backup/restore, upgrade, rollback) and publishes them as a GitHub Release. Branch
+pushes that change the installer or the images, and runs by hand with a version, build and test
+without publishing.
+
+Inside a bundle, `./assayr install` sets everything up; `deploy/installer/README-INSTALL.md` is
+the customer guide and `deploy/installer/MANUAL-CHECKS.md` the Docker Desktop checklist.
+Installer unit tests: `deploy/installer/tests/run.sh`. To build a bundle locally (Docker needed):
+build `assayr-api:<v>` and `assayr-web:<v>`, then `scripts/build-bundle.sh <v> amd64 dist`.
 
 ## Administration
 
