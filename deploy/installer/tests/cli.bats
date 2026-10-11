@@ -103,3 +103,15 @@ setup() {
   grep -q "image rm assayr-api:1.2.3 assayr-web:1.2.3" "$STUB_LOG"
   [ ! -e "$dir" ]
 }
+
+@test "uninstall --delete-data removes only what the installer created" {
+  local b dir="$BATS_TEST_TMPDIR/install"
+  b="$(make_bundle 1.2.3 "$OUT")"
+  install_fixture "$b" "$dir" >/dev/null
+  echo "added later by someone" >"$dir/notes.txt"
+  run "$dir/assayr" uninstall --delete-data --yes
+  [ "$status" -eq 0 ]
+  [ -f "$dir/notes.txt" ]
+  [ ! -e "$dir/assayr.env" ] && [ ! -e "$dir/lib" ] && [ ! -e "$dir/backups" ] && [ ! -e "$dir/certs" ]
+  [[ "$output" == *"$dir still holds files Assayr didn't create"* ]]
+}

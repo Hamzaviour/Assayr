@@ -91,6 +91,10 @@ code="$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/)"
 step "Installing twice is refused"
 expect_failure "already installed" "$bundle/assayr" install --dir "$dir" --non-interactive
 
+step "A second installation on the same machine is refused"
+expect_failure "already has an Assayr installation"   "$bundle/assayr" install --dir "$work/second" --non-interactive --https-port 8444 --http-port 8081
+[ ! -e "$work/second" ] || fail "the refused second installation created $work/second"
+
 step "Backup and restore"
 sign_in
 create_risk "Before the backup"

@@ -19,18 +19,18 @@ do_backup() {
   dest="$(cd "$dest" && pwd)"
   if [ -e "$dest/$name.tar.gz" ]; then name="$name-2"; fi
   work="$(mktemp -d "$dest/.backup.XXXXXX")" || return 1
-  mkdir "$work/$name"
-  if ! backup_parts "$work/$name"; then
+  # An interrupted backup must not leave the dump behind; the archive only appears, by rename,
+  # once it is complete.
+  remove_on_exit "$work"
+  if ! mkdir "$work/$name" || ! backup_parts "$work/$name" \
+    || ! printf 'version=%s\ncreated=%s\n' "$version" "$stamp" >"$work/$name/manifest.txt" \
+    || ! write_sums "$work/$name" \
+    || ! (umask 077 && tar -C "$work" -czf "$work/$name.tar.gz" "$name") \
+    || ! chmod 600 "$work/$name.tar.gz" \
+    || ! mv "$work/$name.tar.gz" "$dest/$name.tar.gz"; then
     rm -rf "$work"
     return 1
   fi
-  printf 'version=%s\ncreated=%s\n' "$version" "$stamp" >"$work/$name/manifest.txt"
-  write_sums "$work/$name"
-  if ! (umask 077 && tar -C "$work" -czf "$dest/$name.tar.gz" "$name"); then
-    rm -rf "$work" "$dest/$name.tar.gz"
-    return 1
-  fi
-  chmod 600 "$dest/$name.tar.gz"
   rm -rf "$work"
   BACKUP_FILE="$dest/$name.tar.gz"
 }
@@ -42,15 +42,18 @@ backup_parts() {
   assayr_compose exec -T db pg_dump -U assayr -d assayr -Fc >"$part/db.dump" 2>>"${ASSAYR_LOG:-/dev/null}" || return 1
   run_logged assayr_compose run --rm --no-deps -T --user root --entrypoint tar -v "$part:/backup" api \
     -C /data/blobs -cf /backup/blobs.tar . || return 1
-  cp "$ASSAYR_DIR/assayr.env" "$part/assayr.env"
-  cp -R "$ASSAYR_DIR/certs" "$part/certs"
+  cp "$ASSAYR_DIR/assayr.env" "$part/assayr.env" || return 1
+  cp -R "$ASSAYR_DIR/certs" "$part/certs" || return 1
   cp -R "$ASSAYR_DIR/license" "$part/license"
 }
+
+# The parts a restore can't do without; each must exist and be in the checksum list.
+BACKUP_REQUIRED="manifest.txt db.dump blobs.tar"
 
 # read_backup ARCHIVE WORKDIR — unpack and check a backup. Sets RESTORE_FOLDER, or sets
 # RESTORE_PROBLEM and returns 1.
 read_backup() {
-  local archive="$1" work="$2" folder problem
+  local archive="$1" work="$2" folder problem part
   RESTORE_FOLDER=""
   RESTORE_PROBLEM=""
   if ! tar -C "$work" -xzf "$archive" 2>/dev/null; then
@@ -66,6 +69,16 @@ read_backup() {
     RESTORE_PROBLEM="$problem"
     return 1
   fi
+  for part in $BACKUP_REQUIRED; do
+    if [ ! -f "$folder/$part" ]; then
+      RESTORE_PROBLEM="$part is missing."
+      return 1
+    fi
+    if ! awk -v want="./$part" '$2 == want { found = 1 } END { exit !found }' "$folder/SHA256SUMS" 2>/dev/null; then
+      RESTORE_PROBLEM="$part is not in its checksum list."
+      return 1
+    fi
+  done
   RESTORE_FOLDER="$folder"
 }
 

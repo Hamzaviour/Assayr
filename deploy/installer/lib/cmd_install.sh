@@ -49,9 +49,15 @@ cmd_install() {
   dir="${dir:-$(default_install_dir "$platform")}"
   [ ! -f "$dir/assayr.env" ] \
     || die "Assayr is already installed in $dir. To move to a newer version, run ./assayr upgrade from the new bundle."
+  # uninstall --delete-data removes what install created and then the folder only if it is empty,
+  # but a folder of other files must never become an install folder.
+  if [ -d "$dir" ] && [ -n "$(ls -A "$dir")" ]; then
+    die "$dir isn't empty. Choose a new or empty folder with --dir."
+  fi
 
   info "Checking this machine"
   check_docker "$platform"
+  check_no_other_installation
   check_arch "$(bundle_value "$BUNDLE_DIR" ARCH)"
   check_disk "$dir"
   check_memory
@@ -90,6 +96,20 @@ cmd_install() {
     || die "Assayr is running, but creating the administrator failed. Try again with: $(sudo_prefix)$ASSAYR_DIR/assayr create-admin"
   ASSAYR_RETRY_HINT=""
   print_install_summary "$web_mode"
+}
+
+# check_no_other_installation — every installation uses the compose project "assayr", so a second
+# one would take over the first one's containers and data volumes.
+check_no_other_installation() {
+  local volume
+  for volume in assayr_dbdata assayr_blobs; do
+    if docker volume inspect "$volume" >/dev/null 2>&1; then
+      die "Docker on this machine already has an Assayr installation (its data volume $volume exists). Only one installation per machine is supported. To move it to this version, run ./assayr upgrade --dir <its folder>. To remove it and all its data, run assayr uninstall --delete-data from its folder."
+    fi
+  done
+  if [ -n "$(docker ps -a -q --filter label=com.docker.compose.project=assayr 2>/dev/null)" ]; then
+    die "Docker on this machine already has an Assayr installation (its containers exist). Only one installation per machine is supported. To move it to this version, run ./assayr upgrade --dir <its folder>. To remove it, run assayr uninstall from its folder."
+  fi
 }
 
 collect_install_answers() {
