@@ -7,6 +7,10 @@
 #   STUB_NO_DAEMON=1     docker info fails as if the daemon were stopped
 #   STUB_FAIL_ON         fail any call whose arguments contain this text ...
 #   STUB_FAIL_TIMES      ... only this many times (default: every time)
+#   STUB_BLOCK_ON        sleep 5 seconds in any call whose arguments contain this text
+#   STUB_STALE_IMAGES    image references whose ID differs from the one the bundle recorded
+#   STUB_VOLUMES_PRESENT space-separated volume names that docker volume inspect finds
+#   STUB_CONTAINERS      container IDs that docker ps -a lists (another installation's)
 set -euo pipefail
 printf '%s\n' "$*" >>"${STUB_LOG:?STUB_LOG must be set}"
 
@@ -24,6 +28,10 @@ if [ -n "${STUB_FAIL_ON:-}" ]; then
   esac
 fi
 
+if [ -n "${STUB_BLOCK_ON:-}" ]; then
+  case "$*" in *"$STUB_BLOCK_ON"*) sleep 5 ;; esac
+fi
+
 last="${!#}"
 case "${1:-}" in
   info)
@@ -37,12 +45,27 @@ case "${1:-}" in
     if [ "${2:-}" = inspect ]; then
       case " ${STUB_IMAGES_PRESENT:-} " in
         *" $last "*)
-          case "$*" in *--format*) echo "sha256:stub-$last" ;; esac
+          case "$*" in
+            *--format*)
+              case " ${STUB_STALE_IMAGES:-} " in
+                *" $last "*) echo "sha256:older-$last" ;;
+                *) echo "sha256:stub-$last" ;;
+              esac
+              ;;
+          esac
           exit 0
           ;;
       esac
       exit 1
     fi
+    ;;
+  volume)
+    case " ${STUB_VOLUMES_PRESENT:-} " in *" $last "*) exit 0 ;; esac
+    exit 1
+    ;;
+  ps)
+    # shellcheck disable=SC2086 # one container ID per word
+    if [ -n "${STUB_CONTAINERS:-}" ]; then printf '%s\n' $STUB_CONTAINERS; fi
     ;;
   save)
     # docker save -o FILE REF

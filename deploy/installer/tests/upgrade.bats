@@ -88,3 +88,43 @@ setup() {
   [ "$status" -eq 1 ]
   [[ "$output" == *"No Assayr installation found in $BATS_TEST_TMPDIR/elsewhere."* ]]
 }
+
+@test "a half-written copy of the old program files is ignored" {
+  mkdir -p "$DIR/.previous.tmp/lib"
+  echo "partial" >"$DIR/.previous.tmp/lib/common.sh"
+  run "$NEW/assayr" upgrade --dir "$DIR"
+  [ "$status" -eq 0 ]
+  [ ! -e "$DIR/.previous.tmp" ]
+  [ "$(cat "$DIR/VERSION")" = 1.3.0 ]
+  grep -q "^ask() {" "$DIR/lib/common.sh"
+}
+
+@test "an upgrade interrupted after it finished is not undone" {
+  "$NEW/assayr" upgrade --dir "$DIR" >/dev/null
+  mkdir "$DIR/.previous.done"
+  cp "$OLD/VERSION" "$DIR/.previous.done/VERSION"
+  run "$NEW/assayr" upgrade --dir "$DIR"
+  [ "$status" -eq 1 ]
+  [[ "$output" == *"Assayr 1.3.0 is installed and this bundle is 1.3.0."* ]]
+  [ ! -e "$DIR/.previous.done" ]
+  [ "$(env_get ASSAYR_VERSION "$DIR/assayr.env")" = 1.3.0 ]
+}
+
+@test "putting back an interrupted upgrade restores the version and warns about the database" {
+  mkdir "$DIR/.previous"
+  cp -R "$DIR/lib" "$DIR/assayr.env" "$DIR/VERSION" "$DIR/.previous/"
+  echo 1.3.0 >"$DIR/VERSION"
+  run "$NEW/assayr" upgrade --dir "$DIR"
+  [ "$status" -eq 0 ]
+  [[ "$output" == *"An earlier upgrade did not finish."* ]]
+  [[ "$output" == *"may already have been changed by the new version"* ]]
+  [ "$(cat "$DIR/VERSION")" = 1.3.0 ]
+}
+
+@test "an image whose tag exists but whose content differs is loaded again" {
+  STUB_STALE_IMAGES="clamav/clamav-debian:1.4" run "$NEW/assayr" upgrade --dir "$DIR"
+  [ "$status" -eq 0 ]
+  grep -qF "load -i $NEW/images/clamav_clamav-debian_1.4.tar" "$STUB_LOG"
+  run grep -c "load -i $NEW/images/postgres_16-alpine.tar" "$STUB_LOG"
+  [ "$output" = 0 ]
+}

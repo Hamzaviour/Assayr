@@ -79,17 +79,24 @@ It installs to `~/assayr` inside Ubuntu.
 
 ### Install without questions
 
-Give every answer as an environment variable and add `--non-interactive`:
+Give every answer as an environment variable and add `--non-interactive`. Read the
+administrator password into the environment first, so it never appears on a command line, in
+the process list or in your shell history:
 
 ```bash
-sudo ASSAYR_HOSTNAME=grc.example.local ASSAYR_ORG_NAME="Example Bank" \
-  ASSAYR_ADMIN_EMAIL=isms@example.com ASSAYR_ADMIN_PASSWORD='a long password' \
+read -r -s -p "Administrator password: " ASSAYR_ADMIN_PASSWORD; echo
+export ASSAYR_ADMIN_PASSWORD
+sudo --preserve-env=ASSAYR_ADMIN_PASSWORD \
+  ASSAYR_HOSTNAME=grc.example.local ASSAYR_ORG_NAME="Example Bank" \
+  ASSAYR_ADMIN_EMAIL=isms@example.com \
   ASSAYR_TLS_CERT=/root/grc.crt ASSAYR_TLS_KEY=/root/grc.key \
   ./assayr install --non-interactive
+unset ASSAYR_ADMIN_PASSWORD
 ```
 
-Leave out `ASSAYR_TLS_CERT` and `ASSAYR_TLS_KEY` for a self-signed certificate. Other options:
-`--dir DIR` (another install folder), `--license FILE`, `--https-port N`, `--http-port N`,
+On macOS and in WSL, where the install doesn't use `sudo`, run the same command without
+`sudo --preserve-env=ASSAYR_ADMIN_PASSWORD`. Leave out `ASSAYR_TLS_CERT` and `ASSAYR_TLS_KEY` for a self-signed certificate. Other options:
+`--dir DIR` (another install folder, new or empty; one installation per machine), `--license FILE`, `--https-port N`, `--http-port N`,
 `ASSAYR_MALWARE_SCAN=false` (no ClamAV; saves about 2 GB of memory), and `--http` (plain HTTP on
 port 8080 for evaluation, or behind your own HTTPS proxy — set `ASSAYR_BEHIND_TLS_PROXY=yes` then).
 

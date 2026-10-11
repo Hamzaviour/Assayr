@@ -29,6 +29,21 @@ die() {
   exit 1
 }
 
+# Temporary paths removed when the command ends, however it ends (one per line). main sets the
+# traps that call run_cleanup.
+ASSAYR_CLEANUP=""
+
+remove_on_exit() {
+  ASSAYR_CLEANUP="$ASSAYR_CLEANUP$1"$'\n'
+}
+
+run_cleanup() {
+  local path
+  while IFS= read -r path; do
+    if [ -n "$path" ]; then rm -rf "$path"; fi
+  done <<<"$ASSAYR_CLEANUP"
+}
+
 # log_to FILE — from now on, record every step and command output in FILE (owner-only).
 log_to() {
   ASSAYR_LOG="$1"
