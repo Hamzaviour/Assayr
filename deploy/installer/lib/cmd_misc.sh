@@ -89,7 +89,7 @@ cmd_create_admin() {
 }
 
 cmd_uninstall() {
-  local delete=0 version
+  local delete=0 version item
   while [ $# -gt 0 ]; do
     case "$1" in
       --delete-data)
@@ -105,15 +105,23 @@ cmd_uninstall() {
     info "Done. The data, settings and backups are kept in $ASSAYR_DIR and in Docker volumes. To bring Assayr back: $(sudo_prefix)$ASSAYR_DIR/assayr start"
     return 0
   fi
-  confirm_word delete "This permanently deletes Assayr and all its data: the database, the evidence files, the settings, the certificates and every backup in $ASSAYR_DIR."
+  confirm_word delete "This permanently deletes Assayr and all its data: the database, the evidence files, the settings, the certificates and every backup in $ASSAYR_DIR/backups."
   version="$(bundle_value "$ASSAYR_DIR" VERSION 2>/dev/null || true)"
   run_logged assayr_compose down -v --remove-orphans || die "Removing the containers and data volumes failed."
   if [ -n "$version" ]; then
     run_logged docker image rm "assayr-api:$version" "assayr-web:$version" || true
   fi
   ASSAYR_LOG=""
-  rm -rf "${ASSAYR_DIR:?}"
-  echo "Assayr has been removed."
+  # Only what install and upgrade create; anything else in the folder stays.
+  # shellcheck disable=SC2086 # PROGRAM_FILES is a word list
+  for item in $PROGRAM_FILES VERSION assayr.env certs license backups install.log .previous .previous.tmp .previous.done; do
+    rm -rf "${ASSAYR_DIR:?}/$item"
+  done
+  if rmdir "$ASSAYR_DIR" 2>/dev/null; then
+    echo "Assayr has been removed."
+  else
+    echo "Assayr has been removed. $ASSAYR_DIR still holds files Assayr didn't create, so it was left in place."
+  fi
 }
 
 cmd_backup() {
@@ -148,8 +156,7 @@ cmd_restore() {
   [ -n "$file" ] || die "Give the backup file: ./assayr restore FILE"
   [ -f "$file" ] || die "Backup file not found: $file"
   work="$(mktemp -d "$ASSAYR_DIR/backups/.restore.XXXXXX")"
-  # shellcheck disable=SC2064 # expand $work now
-  trap "rm -rf '$work'" EXIT
+  remove_on_exit "$work"
   read_backup "$file" "$work" || die "This backup can't be used: $RESTORE_PROBLEM"
   backup_version="$(env_get version "$RESTORE_FOLDER/manifest.txt")"
   created="$(env_get created "$RESTORE_FOLDER/manifest.txt")"
