@@ -4,6 +4,9 @@
 main() {
   local command="${1:-help}" dir="" args=()
   if [ $# -gt 0 ]; then shift; fi
+  trap run_cleanup EXIT
+  trap 'exit 130' INT
+  trap 'exit 143' TERM
   while [ $# -gt 0 ]; do
     case "$1" in
       --dir)

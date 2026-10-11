@@ -123,3 +123,24 @@ repack_backup() {
   [ "$status" -eq 1 ]
   [[ "$output" == *"The restore failed. The data from just before it is in $DIR/backups/assayr-1.2.3-"* ]]
 }
+
+@test "restore refuses a backup whose checksum list leaves out a part" {
+  "$DIR/assayr" backup >/dev/null
+  local file
+  file="$(only_backup)"
+  repack_backup "$file" "rm db.dump && grep -v ' ./db.dump$' SHA256SUMS >S && mv S SHA256SUMS"
+  run "$DIR/assayr" restore "$file" --yes
+  [ "$status" -eq 1 ]
+  [[ "$output" == *"This backup can't be used: db.dump is missing."* ]]
+  run grep -c dropdb "$STUB_LOG"
+  [ "$output" = 0 ]
+}
+
+@test "a backup stopped part-way leaves no archive and no temporary folder" {
+  STUB_BLOCK_ON=pg_dump "$DIR/assayr" backup >/dev/null 2>&1 &
+  local pid=$! i
+  for i in $(seq 1 50); do grep -q pg_dump "$STUB_LOG" && break; sleep 0.2; done
+  kill -TERM "$pid"
+  wait "$pid" || true
+  [ -z "$(find "$DIR/backups" -mindepth 1)" ]
+}

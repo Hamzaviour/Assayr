@@ -47,9 +47,14 @@ cmd_upgrade() {
   load_images "$BUNDLE_DIR" || die "Loading the images failed; nothing else was changed."
 
   info "Installing the $new program files"
-  mkdir "$ASSAYR_DIR/.previous"
-  copy_program_files "$ASSAYR_DIR" "$ASSAYR_DIR/.previous"
-  cp "$ASSAYR_DIR/assayr.env" "$ASSAYR_DIR/.previous/assayr.env"
+  # The old program files, settings and version are copied to .previous.tmp and only become
+  # .previous, the copy an interrupted upgrade is put back from, once complete.
+  rm -rf "$ASSAYR_DIR/.previous.tmp"
+  mkdir "$ASSAYR_DIR/.previous.tmp"
+  copy_program_files "$ASSAYR_DIR" "$ASSAYR_DIR/.previous.tmp"
+  cp "$ASSAYR_DIR/assayr.env" "$ASSAYR_DIR/VERSION" "$ASSAYR_DIR/.previous.tmp/"
+  printf '%s\n' "$backup" >"$ASSAYR_DIR/.previous.tmp/BACKUP"
+  mv "$ASSAYR_DIR/.previous.tmp" "$ASSAYR_DIR/.previous"
   copy_program_files "$BUNDLE_DIR" "$ASSAYR_DIR"
   env_set ASSAYR_VERSION "$new" "$ASSAYR_DIR/assayr.env"
   added="$(env_merge_defaults "$ASSAYR_DIR/assayr.env.example" "$ASSAYR_DIR/assayr.env")"
@@ -57,8 +62,10 @@ cmd_upgrade() {
 
   info "Starting Assayr $new (the database is migrated on start)"
   if start_stack && api_ready && audit_ok; then
+    # The rename marks the upgrade as done: from here an interruption is finished, not undone.
+    mv "$ASSAYR_DIR/.previous" "$ASSAYR_DIR/.previous.done"
     cp "$BUNDLE_DIR/VERSION" "$ASSAYR_DIR/VERSION"
-    rm -rf "$ASSAYR_DIR/.previous"
+    rm -rf "$ASSAYR_DIR/.previous.done"
     run_logged docker image rm "assayr-api:$old" "assayr-web:$old" || true
     info "Assayr is now $new and running at $(install_url). The backup taken before the upgrade is $backup"
     return 0
@@ -70,13 +77,27 @@ cmd_upgrade() {
   die "The upgrade to $new failed and the automatic rollback failed too. Your data is safe in $backup. Restore it with the $old bundle's command: ./assayr restore $backup"
 }
 
-# finish_interrupted_upgrade — an upgrade stopped half-way leaves .previous/: put it back.
+# finish_interrupted_upgrade — tidy up after an upgrade that was stopped part-way:
+#   .previous.tmp   stopped while copying the old files; nothing was changed yet
+#   .previous.done  stopped after the new version started fine; finish recording it
+#   .previous       stopped in between; put the old program files, settings and version back
 finish_interrupted_upgrade() {
-  [ -d "$ASSAYR_DIR/.previous" ] || return 0
-  warn "An earlier upgrade did not finish. Putting back the program files and settings of Assayr $(bundle_value "$ASSAYR_DIR" VERSION) first."
-  copy_program_files "$ASSAYR_DIR/.previous" "$ASSAYR_DIR"
-  cp "$ASSAYR_DIR/.previous/assayr.env" "$ASSAYR_DIR/assayr.env"
-  rm -rf "$ASSAYR_DIR/.previous"
+  local previous="$ASSAYR_DIR/.previous" old backup current
+  rm -rf "$ASSAYR_DIR/.previous.tmp"
+  if [ -d "$ASSAYR_DIR/.previous.done" ]; then
+    current="$(env_get ASSAYR_VERSION "$ASSAYR_DIR/assayr.env")"
+    if [ -n "$current" ]; then printf '%s\n' "$current" >"$ASSAYR_DIR/VERSION"; fi
+    rm -rf "$ASSAYR_DIR/.previous.done"
+  fi
+  [ -d "$previous" ] || return 0
+  old="$(bundle_value "$previous" VERSION || bundle_value "$ASSAYR_DIR" VERSION)"
+  backup="$(cat "$previous/BACKUP" 2>/dev/null || true)"
+  warn "An earlier upgrade did not finish. Putting back the program files and settings of Assayr $old first."
+  warn "The database may already have been changed by the new version. If Assayr $old doesn't work afterwards, restore ${backup:-the backup taken before that upgrade (the newest assayr-$old-*.tar.gz in $ASSAYR_DIR/backups from before it)}."
+  copy_program_files "$previous" "$ASSAYR_DIR"
+  cp "$previous/assayr.env" "$ASSAYR_DIR/assayr.env"
+  if [ -f "$previous/VERSION" ]; then cp "$previous/VERSION" "$ASSAYR_DIR/VERSION"; fi
+  rm -rf "$previous"
 }
 
 # rollback_upgrade BACKUP_FILE — previous program files and settings, then the data from BACKUP_FILE.

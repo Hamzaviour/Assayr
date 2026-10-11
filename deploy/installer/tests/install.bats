@@ -143,3 +143,24 @@ setup() {
   [ -f "$HOME/assayr/assayr.env" ]
   [[ "$output" == *"for evaluation"* ]]
 }
+
+@test "install refuses when Docker already holds another Assayr installation's data or containers" {
+  STUB_VOLUMES_PRESENT=assayr_dbdata run install_fixture "$BUNDLE" "$DIR"
+  [ "$status" -eq 1 ]
+  [[ "$output" == *"Docker on this machine already has an Assayr installation"* ]]
+  [ ! -e "$DIR" ]
+  run grep -c -- "up -d" "$STUB_LOG"
+  [ "$output" = 0 ]
+  STUB_CONTAINERS="0123abcd" run install_fixture "$BUNDLE" "$DIR"
+  [ "$status" -eq 1 ]
+  [[ "$output" == *"already has an Assayr installation"* ]]
+}
+
+@test "install refuses a folder that already holds other files" {
+  mkdir -p "$DIR"
+  echo "someone else's file" >"$DIR/notes.txt"
+  run install_fixture "$BUNDLE" "$DIR"
+  [ "$status" -eq 1 ]
+  [[ "$output" == *"$DIR isn't empty."* ]]
+  [ ! -e "$DIR/assayr.env" ]
+}

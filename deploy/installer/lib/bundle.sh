@@ -84,12 +84,16 @@ copy_program_files() {
   done
 }
 
-# load_images BUNDLE — docker load every image listed in images/IMAGES.txt that isn't loaded yet.
+# load_images BUNDLE — docker load every image listed in images/IMAGES.txt unless Docker already
+# has that exact image. Tags such as postgres:16-alpine and clamav/clamav-debian:1.4 stay the same
+# across releases while their content (security fixes, virus signatures) changes, so the image ID
+# recorded in the bundle decides, not the tag.
 load_images() {
-  local bundle="$1" file ref
-  while read -r file ref _; do
+  local bundle="$1" file ref id current
+  while read -r file ref id; do
     [ -n "$file" ] || continue
-    if docker image inspect "$ref" >/dev/null 2>&1; then
+    current="$(docker image inspect --format '{{.Id}}' "$ref" 2>/dev/null || true)"
+    if [ -n "$current" ] && { [ -z "$id" ] || [ "$current" = "$id" ]; }; then
       info "Image $ref is already loaded"
     else
       info "Loading image $ref"
