@@ -63,6 +63,10 @@ docker compose --env-file assayr.env -f compose.yaml -f compose.build.yaml exec 
 
 ## Install for customers
 
+Windows Server: run `Assayr-Setup-<version>.exe` from the same GitHub Release (native Windows services,
+no Docker); the customer guide is `deploy/windows/README-INSTALL-WINDOWS.md` and
+`deploy/windows/build.ps1` + `deploy/windows/assayr.iss` build it.
+
 Customers install from an offline bundle, not from source. Pushing a tag `v<version>` (matching
 `backend/pyproject.toml` and `frontend/package.json`) runs `.github/workflows/release.yml`, which
 builds `assayr-<version>-linux-amd64-offline.tar.gz` and `…-linux-arm64-…`, tests each end to end
