@@ -115,16 +115,117 @@ jobs:
           retention-days: 7
           if-no-files-found: error
 
+  clamav-signatures:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Copy the bundled virus signatures out of the ClamAV image
+        run: |
+          mkdir sigs
+          docker run --rm --entrypoint sh -v "$PWD/sigs:/out" clamav/clamav-debian:1.4 \
+            -c 'cp /var/lib/clamav/*.c?d /out/'
+          ls -l sigs
+          ls sigs/*.c?d >/dev/null
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: clamav-signatures
+          path: sigs/
+          retention-days: 1
+          if-no-files-found: error
+
+  windows:
+    needs: clamav-signatures
+    runs-on: windows-2022
+    env:
+      INPUT_VERSION: ${{ inputs.version }}
+      INNO_URL: https://github.com/jrsoftware/issrc/releases/download/is-7_1_0/innosetup-7.1.0-x64.exe
+      INNO_SHA256: 0362a383ed217d4c4239b5933866dd96d3eb2102737da92f80f6057a4b40df2f
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: clamav-signatures
+          path: sigs
+      - name: Work out the version
+        run: |
+          if ($env:GITHUB_REF_TYPE -eq 'tag') { $v = $env:GITHUB_REF_NAME.TrimStart('v') }
+          elseif ($env:INPUT_VERSION) { $v = $env:INPUT_VERSION }
+          else { $v = (Select-String -Path backend/pyproject.toml -Pattern '^version = "(.*)"$').Matches[0].Groups[1].Value }
+          if ($v -notmatch '^\d+\.\d+\.\d+$') { throw "Not a version: $v" }
+          if ($env:GITHUB_REF_TYPE -eq 'tag') {
+            if (-not (Select-String -Path backend/pyproject.toml -Pattern "^version = `"$v`"" -Quiet)) { throw "backend/pyproject.toml is not $v" }
+          }
+          "VERSION=$v" >> $env:GITHUB_ENV
+      - name: Install Inno Setup
+        run: |
+          Invoke-WebRequest $env:INNO_URL -OutFile "$env:RUNNER_TEMP\inno.exe"
+          if ((Get-FileHash "$env:RUNNER_TEMP\inno.exe" -Algorithm SHA256).Hash.ToLower() -ne $env:INNO_SHA256) { throw "Inno Setup download does not match its SHA-256" }
+          Start-Process "$env:RUNNER_TEMP\inno.exe" -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/CURRENTUSER', "/DIR=$env:RUNNER_TEMP\inno" -Wait
+          "ISCC=$env:RUNNER_TEMP\inno\ISCC.exe" >> $env:GITHUB_ENV
+      - name: Backend tests on Windows
+        working-directory: backend
+        run: |
+          uv sync --python 3.12 --frozen
+          uv run pytest -q -W error
+      - name: Stage
+        run: ./deploy/windows/build.ps1 -Version $env:VERSION -Out build -Signatures sigs
+      - name: Build the installer and the test installers (a newer working one and a newer broken one)
+        run: |
+          & $env:ISCC /Q "/DVersion=$env:VERSION" /DStage=build\stage /DOutDir=dist deploy\windows\assayr.iss
+          if ($LASTEXITCODE) { throw "ISCC failed" }
+          function Set-PackageVersion([string] $stage, [string] $version) {
+            $info = Get-ChildItem "$stage\python\Lib\site-packages\assayr-*.dist-info" -Directory
+            (Get-Content "$($info.FullName)\METADATA") -replace '^Version: .*$', "Version: $version" | Set-Content "$($info.FullName)\METADATA"
+            Rename-Item $info.FullName "assayr-$version.dist-info"
+          }
+          Copy-Item -Recurse build\stage build\stage99
+          Set-PackageVersion build\stage99 99.0.0
+          & $env:ISCC /Q /DVersion=99.0.0 /DStage=build\stage99 /DOutDir=dist\test deploy\windows\assayr.iss
+          if ($LASTEXITCODE) { throw "ISCC failed (99.0.0)" }
+          Rename-Item build\stage99 stage991
+          Set-PackageVersion build\stage991 99.1.0
+          Add-Content build\stage991\python\Lib\site-packages\assayr\main.py "`nraise SystemExit('broken on purpose')"
+          & $env:ISCC /Q /DVersion=99.1.0 /DStage=build\stage991 /DOutDir=dist\test deploy\windows\assayr.iss
+          if ($LASTEXITCODE) { throw "ISCC failed (99.1.0)" }
+      - name: Sign
+        env:
+          WINDOWS_SIGNING_CERT: ${{ secrets.WINDOWS_SIGNING_CERT }}
+          WINDOWS_SIGNING_PASSWORD: ${{ secrets.WINDOWS_SIGNING_PASSWORD }}
+        run: |
+          if (-not $env:WINDOWS_SIGNING_CERT) { Write-Host 'No signing certificate configured; the installer stays unsigned.'; exit 0 }
+          [IO.File]::WriteAllBytes("$env:RUNNER_TEMP\sign.pfx", [Convert]::FromBase64String($env:WINDOWS_SIGNING_CERT))
+          $signtool = (Get-ChildItem "${env:ProgramFiles(x86)}\Windows Kits\10\bin\*\x64\signtool.exe" | Sort-Object FullName | Select-Object -Last 1).FullName
+          & $signtool sign /f "$env:RUNNER_TEMP\sign.pfx" /p $env:WINDOWS_SIGNING_PASSWORD /fd SHA256 /tr http://timestamp.digicert.com /td SHA256 "dist\Assayr-Setup-$env:VERSION.exe"
+          $code = $LASTEXITCODE
+          Remove-Item "$env:RUNNER_TEMP\sign.pfx"
+          if ($code) { throw "signtool failed" }
+      - name: End-to-end test
+        run: ./deploy/windows/tests/e2e.ps1 -Setup "dist\Assayr-Setup-$env:VERSION.exe" -Newer dist\test\Assayr-Setup-99.0.0.exe -Broken dist\test\Assayr-Setup-99.1.0.exe
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: windows-installer
+          path: dist/Assayr-Setup-*.exe
+          retention-days: 7
+          if-no-files-found: error
+
   publish:
     if: github.ref_type == 'tag'
-    needs: bundle
+    needs: [bundle, windows]
     runs-on: ubuntu-24.04
     permissions:
       contents: write # only this job publishes the release
     steps:
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
-          pattern: bundle-*
+          pattern: "{bundle-*,windows-installer}"
           path: dist
           merge-multiple: true
       - name: Create the release
@@ -133,18 +234,19 @@ jobs:
           TAG: ${{ github.ref_name }}
         run: |
           cd dist
-          sha256sum assayr-*.tar.gz >SHA256SUMS.txt
+          sha256sum assayr-*.tar.gz Assayr-Setup-*.exe >SHA256SUMS.txt
           {
-            echo "Offline installer bundles for Assayr ${TAG#v}."
+            echo "Offline installers for Assayr ${TAG#v}."
             echo
-            echo "- linux-amd64: Linux x86-64 servers, Windows (Docker Desktop with WSL2), Intel Macs"
+            echo "- Assayr-Setup-${TAG#v}.exe: Windows Server 2019/2022/2025 (run it and follow the wizard; see README-INSTALL-WINDOWS.md)"
+            echo "- linux-amd64: Linux x86-64 servers, Intel Macs"
             echo "- linux-arm64: Apple Silicon Macs, arm64 Linux servers"
             echo
-            echo "Unpack the bundle and read README-INSTALL.md. Check the download against these SHA-256 checksums:"
+            echo "Linux: unpack the bundle and read README-INSTALL.md. Check the download against these SHA-256 checksums:"
             echo
             echo '```'
             cat SHA256SUMS.txt
             echo '```'
           } >notes.md
-          gh release create "$TAG" assayr-*.tar.gz SHA256SUMS.txt --repo "$GITHUB_REPOSITORY" \
+          gh release create "$TAG" assayr-*.tar.gz Assayr-Setup-*.exe SHA256SUMS.txt --repo "$GITHUB_REPOSITORY" \
             --title "Assayr ${TAG#v}" --notes-file notes.md
