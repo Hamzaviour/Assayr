@@ -148,3 +148,26 @@ def test_permission_denied_says_run_as_administrator(tmp_path, monkeypatch):
     monkeypatch.setattr(wincli.InstallConfig, "load", staticmethod(denied))
     result = runner.invoke(app, ["win", "status", "--data-dir", str(tmp_path)])
     assert result.exit_code == 1 and "administrator" in result.output.lower()
+
+
+def test_restore_reports_complete_only_once_assayr_answers(tmp_path, monkeypatch):
+    c = saved_config(tmp_path)
+
+    class Source:
+        version, created, folder = "0.3.0", "x", tmp_path
+
+    order = []
+    monkeypatch.setattr(wincli, "read_backup", lambda f, w: Source())
+    monkeypatch.setattr(wincli.provision, "make_backup", lambda cfg, r: cfg.backups_dir / "safety.tar.gz")
+    monkeypatch.setattr(wincli.provision, "_assayr", lambda *a, **k: None)
+    monkeypatch.setattr(wincli.services, "stop", lambda *a, **k: None)
+    monkeypatch.setattr(wincli.services, "start_all", lambda cfg, r: order.append("start"))
+    monkeypatch.setattr(wincli, "restore_data", lambda *a, **k: None)
+    monkeypatch.setattr(
+        wincli, "wait_healthy", lambda url, timeout, version: order.append("healthy") or version
+    )
+    result = runner.invoke(
+        app, ["win", "restore", str(tmp_path / "b.tar.gz"), "--yes", "--data-dir", str(c.data_dir)]
+    )
+    assert result.exit_code == 0, result.output
+    assert order == ["start", "healthy"] and "Restore complete" in result.output

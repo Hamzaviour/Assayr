@@ -8,6 +8,7 @@ from pathlib import Path
 import typer
 
 from assayr.backup import BackupError, read_backup, restore_data, version_tuple
+from assayr.healthcheck import HealthError, wait_healthy
 from assayr.pgtools import PgError, PgTools
 from assayr.signatures import SignatureError, update_signatures
 from assayr.windows import provision, services
@@ -245,6 +246,10 @@ def restore(file: Path, data_dir: Path = DATA_DIR, yes: bool = typer.Option(Fals
     finally:
         shutil.rmtree(work, ignore_errors=True)
     services.start_all(cfg, r)
+    try:
+        wait_healthy(cfg.health_url, 180, cfg.version)
+    except HealthError as exc:
+        _fail(f"The data was restored, but Assayr did not start: {exc}. See {cfg.logs_dir}")
     typer.echo("Restore complete.")
 
 
