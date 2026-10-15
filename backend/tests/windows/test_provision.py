@@ -180,3 +180,16 @@ def test_finish_upgrade_health_failure_raises(tmp_path):
 
     with pytest.raises(ProvisionError, match="down"):
         provision.finish_upgrade(c, FakeRunner(), wait=unhealthy)
+
+
+def test_reinstall_over_kept_data_skips_create_admin(tmp_path):
+    c = make_cfg(tmp_path)
+    c.db_dir.mkdir(parents=True)
+    (c.db_dir / "PG_VERSION").write_text("16")
+    c.env_file.write_text('POSTGRES_PASSWORD="old"\n')
+    r = FakeRunner(fail_on="create-admin")
+    provision.install(
+        c, "a@b.c", "a-very-long-password", CertChoice("self-signed"), r, wait=healthy, token=lambda n: "new"
+    )
+    assert not any("create-admin" in cmd for cmd in flat(r))
+    assert any("-m assayr migrate" in cmd for cmd in flat(r))

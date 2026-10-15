@@ -176,6 +176,7 @@ def install(
         ):
             d.mkdir(parents=True, exist_ok=True)
         db_password = _env_password(cfg) or token(32)
+        reusing_data = (cfg.db_dir / "PG_VERSION").exists()  # reinstall over a kept data folder
         _certs(cfg, cert, pfx_password)
         _copy_signatures(cfg)
         _write_files(cfg, db_password)
@@ -185,7 +186,8 @@ def install(
         _start_db(cfg, runner, db_password)
         _assayr(cfg, runner, "migrate")
         _assayr(cfg, runner, "seed")
-        _assayr(cfg, runner, "create-admin", "--email", admin_email, ASSAYR_ADMIN_PASSWORD=admin_password)
+        if not reusing_data:
+            _assayr(cfg, runner, "create-admin", "--email", admin_email, ASSAYR_ADMIN_PASSWORD=admin_password)
         _firewall(cfg, runner, add=True)
         services.start_all(cfg, runner)
         _schedule_backup(cfg, runner)
