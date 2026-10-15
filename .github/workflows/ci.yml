@@ -67,3 +67,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: deploy/smoke.sh
+
+  backend-windows:
+    runs-on: windows-2022
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --python 3.12 --frozen
+      - run: uv run pytest -q -W error
