@@ -4,7 +4,6 @@ import signal
 import time
 from datetime import timedelta
 from pathlib import Path
-from pathlib import Path
 
 import typer
 from sqlalchemy import select
