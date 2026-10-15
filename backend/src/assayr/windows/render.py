@@ -56,7 +56,7 @@ def render_env(cfg: InstallConfig, db_password: str) -> str:
         "ASSAYR_SECURE_COOKIES": "true" if secure else "false",
         "ASSAYR_MALWARE_SCAN": "true" if cfg.malware_scan else "false",
         "ASSAYR_CLAMAV_HOST": "127.0.0.1" if cfg.malware_scan else "",
-        "ASSAYR_CLAMAV_PORT": "3310",
+        "ASSAYR_CLAMAV_PORT": str(cfg.clamav_port),
         "ASSAYR_STORAGE_DIR": str(cfg.blobs_dir),
     }
     lines = ["# Assayr settings. Restart Assayr after changing this file."]
@@ -85,7 +85,7 @@ def render_caddyfile(cfg: InstallConfig) -> str:
 
 def render_clamd_conf(cfg: InstallConfig) -> str:
     return (
-        "TCPSocket 3310\nTCPAddr 127.0.0.1\n"
+        f"TCPSocket {cfg.clamav_port}\nTCPAddr 127.0.0.1\n"
         f'DatabaseDirectory "{cfg.clamav_db_dir}"\n'
         f'LogFile "{cfg.logs_dir / "clamd.log"}"\nLogFileMaxSize 10M\nLogRotate yes\n'
         "StreamMaxLength 110M\nMaxFileSize 110M\nMaxScanSize 400M\n"

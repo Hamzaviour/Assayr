@@ -90,3 +90,17 @@ def test_seed_loads_the_risk_library(cli_db):
     assert first.exit_code == 0
     assert "Risk library: 40 threats, 60 vulnerabilities and 25 templates added." in first.output
     assert "Risk library: 0 threats, 0 vulnerabilities and 0 templates added." in run("seed").output
+
+
+def test_create_admin_if_no_admin_skips_when_one_exists(cli_db):
+    run("migrate")
+    first = run(
+        "create-admin", "--email", "a@acme.com", "--if-no-admin", "--password", "a-very-long-password"
+    )
+    assert first.exit_code == 0, first.output
+    second = run(
+        "create-admin", "--email", "b@acme.com", "--if-no-admin", "--password", "a-very-long-password"
+    )
+    assert second.exit_code == 0 and "already exists" in second.output
+    with Session(cli_db) as session:
+        assert [u.email for u in session.scalars(select(User))] == ["a@acme.com"]

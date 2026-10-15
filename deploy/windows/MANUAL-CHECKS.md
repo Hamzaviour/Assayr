@@ -26,3 +26,7 @@ uninstall on Windows Server 2022. These checks cover what it cannot.
    `[Convert]::ToBase64String([IO.File]::ReadAllBytes("cert.pfx"))`) and `WINDOWS_SIGNING_PASSWORD`.
 3. The release workflow's Sign step then signs `Assayr-Setup-<version>.exe`. To sign the uninstaller
    too, pass `/DSignTool=...` to ISCC with a configured sign tool (see the Inno Setup `SignTool` docs).
+
+## Clean server without the Visual C++ runtime
+
+- [ ] On a fresh Windows Server 2022 VM **without** the VC++ 2015-2022 redistributable, the install succeeds (PostgreSQL uses the runtime DLLs bundled in `pgsqlin`).

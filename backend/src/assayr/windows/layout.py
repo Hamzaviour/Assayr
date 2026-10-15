@@ -20,6 +20,7 @@ class InstallConfig:
     malware_scan: bool = True
     pg_port: int = 5432
     api_port: int = 8000
+    clamav_port: int = 3310
     version: str = ""
 
     def __post_init__(self) -> None:
