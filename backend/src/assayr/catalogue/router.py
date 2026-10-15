@@ -107,12 +107,14 @@ def list_controls(
         )
     if owner == "me":
         stmt = stmt.where(Control.owner_id == user.id)
+    elif owner == "none":
+        stmt = stmt.where(Control.owner_id.is_(None))
     elif owner:
         try:
             stmt = stmt.where(Control.owner_id == uuid.UUID(owner))
         except ValueError as exc:
             raise HTTPException(
-                status.HTTP_422_UNPROCESSABLE_CONTENT, "owner must be 'me' or a user id."
+                status.HTTP_422_UNPROCESSABLE_CONTENT, "owner must be 'me', 'none' or a user id."
             ) from exc
     if cursor is not None:
         stmt = stmt.where(Control.sort_order > cursor)

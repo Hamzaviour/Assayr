@@ -132,3 +132,13 @@ def test_list_filters_and_read_only_roles(client, db, seeded):
     assert len(client.get("/api/v1/risks").json()) == 2
     assert client.post("/api/v1/risks", json={"title": "x"}).status_code == 403
     assert client.get("/api/v1/risks/R-404").status_code == 404
+
+
+def test_owner_none_lists_unassigned_risks(client, db, seeded):
+    manager(client, db)
+    me = client.get("/api/v1/auth/me").json()
+    mine = new_risk(client, title="Owned")
+    client.patch(f"/api/v1/risks/{mine['code']}", json={"owner_id": me["id"]})
+    new_risk(client, title="Nobody's")
+    titles = [r["title"] for r in client.get("/api/v1/risks?owner=none").json()]
+    assert titles == ["Nobody's"]

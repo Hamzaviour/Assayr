@@ -113,12 +113,14 @@ def list_risks(
         stmt = stmt.where(Risk.status == status_)
     if owner == "me":
         stmt = stmt.where(Risk.owner_id == user.id)
+    elif owner == "none":
+        stmt = stmt.where(Risk.owner_id.is_(None))
     elif owner:
         try:
             stmt = stmt.where(Risk.owner_id == uuid.UUID(owner))
         except ValueError as exc:
             raise HTTPException(
-                status.HTTP_422_UNPROCESSABLE_CONTENT, "owner must be 'me' or a user id."
+                status.HTTP_422_UNPROCESSABLE_CONTENT, "owner must be 'me', 'none' or a user id."
             ) from exc
     if q and q.strip():
         like = _like(q.strip())

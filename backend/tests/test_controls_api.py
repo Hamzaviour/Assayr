@@ -133,3 +133,9 @@ def test_frameworks_lists_iso27001(client, db, seeded):
     frameworks = client.get("/api/v1/frameworks").json()
     assert frameworks[0]["code"] == "ISO27001:2022"
     assert frameworks[0]["requirement_count"] == 41 + 4 + 93
+
+
+def test_owner_none_lists_unowned_controls(client, db, seeded):
+    manager(client, db)
+    page = client.get("/api/v1/controls?owner=none&limit=200").json()
+    assert len(page["items"]) == 93
