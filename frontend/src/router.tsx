@@ -30,9 +30,10 @@ const dashboardRoute = createRoute({ getParentRoute: () => appRoute, path: "/", 
 const controlsRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "/controls",
-  validateSearch: (search: Record<string, unknown>): { theme?: string; q?: string } => ({
+  validateSearch: (search: Record<string, unknown>): { theme?: string; q?: string; owner?: string } => ({
     theme: typeof search.theme === "string" && search.theme ? search.theme : undefined,
     q: typeof search.q === "string" && search.q ? search.q : undefined,
+    owner: search.owner === "none" || search.owner === "me" ? search.owner : undefined,
   }),
   component: ControlsPage,
 })

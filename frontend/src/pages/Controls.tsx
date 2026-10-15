@@ -11,7 +11,7 @@ export function ControlsPage() {
   const search = useSearch({ from: "/app/controls" })
   const navigate = useNavigate({ from: "/controls" })
   const [query, setQuery] = useState(search.q ?? "")
-  const controls = useControls({ theme: search.theme, q: search.q })
+  const controls = useControls({ theme: search.theme, q: search.q, owner: search.owner })
   const rows = controls.data?.pages.flatMap((p) => p.items) ?? []
 
   function onSearch(event: FormEvent) {
@@ -37,6 +37,19 @@ export function ControlsPage() {
             <option value="">All themes</option>
             {THEMES.map((t) => <option key={t} value={t}>{t}</option>)}
           </select>
+          {search.owner === "none" && (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-primary-soft px-2.5 py-1 text-[12.5px] text-primary">
+              Unassigned only
+              <button
+                type="button"
+                aria-label="Show all owners"
+                onClick={() => navigate({ search: (prev) => ({ ...prev, owner: undefined }) })}
+                className="rounded-full px-1 hover:bg-surface"
+              >
+                ×
+              </button>
+            </span>
+          )}
           <form onSubmit={onSearch} className="ml-auto flex min-w-0 flex-1 justify-end gap-2" role="search">
             <label htmlFor="control-search" className="sr-only">Search controls</label>
             <input

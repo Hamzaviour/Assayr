@@ -38,3 +38,17 @@ test("lists controls, loads more and filters by theme through the URL", async ()
   expect(router.state.location.search).toEqual({ theme: "People" })
   expect(calls.some((c) => c.url.searchParams.get("theme") === "People")).toBe(true)
 })
+
+test("the unowned filter from the dashboard reaches the API and can be cleared", async () => {
+  const calls = mockApi({
+    "GET /auth/me": () => json(200, ME),
+    "GET /controls": () => json(200, { items: [row(1, "A.5.1", "Policies for information security")], next_cursor: null }),
+  })
+  renderApp("/controls?owner=none")
+  await screen.findByText("Policies for information security")
+  expect(calls.some((c) => c.url.searchParams.get("owner") === "none")).toBe(true)
+  await userEvent.click(screen.getByRole("button", { name: "Show all owners" }))
+  await screen.findByText("Policies for information security")
+  const lists = calls.filter((c) => c.url.pathname.endsWith("/controls"))
+  expect(lists[lists.length - 1].url.searchParams.has("owner")).toBe(false)
+})

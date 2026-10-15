@@ -9,7 +9,7 @@ export const IMPLEMENTATION_LABEL: Record<string, string> = {
   implemented: "Implemented",
 }
 
-export function useControls(filters: { theme?: string; q?: string }) {
+export function useControls(filters: { theme?: string; q?: string; owner?: string }) {
   return useInfiniteQuery({
     queryKey: ["controls", filters],
     initialPageParam: undefined as number | undefined,
@@ -17,6 +17,7 @@ export function useControls(filters: { theme?: string; q?: string }) {
       const params = new URLSearchParams()
       if (filters.theme) params.set("theme", filters.theme)
       if (filters.q) params.set("q", filters.q)
+      if (filters.owner) params.set("owner", filters.owner)
       if (pageParam !== undefined) params.set("cursor", String(pageParam))
       const query = params.toString()
       return api<ControlPage>(`/controls${query ? `?${query}` : ""}`)
