@@ -19,6 +19,7 @@ export function Donut({ segments, label, centre }: { segments: Segment[]; label:
     <figure className="flex flex-col items-center gap-2">
       <svg viewBox="0 0 100 100" className="size-40" role="img" aria-label={label}>
         <circle cx="50" cy="50" r={R} fill="none" stroke="var(--subtle)" strokeWidth="12" />
+        <g className="spin-in">
         {arcs.map(({ s, length, offset: start }) => (
           <circle
             key={s.key}
@@ -35,6 +36,7 @@ export function Donut({ segments, label, centre }: { segments: Segment[]; label:
             <title>{`${s.label}: ${s.value}`}</title>
           </circle>
         ))}
+        </g>
         {centre && (
           <text x="50" y="55" textAnchor="middle" fill="var(--text)" fontSize="15" fontWeight="700">
             {centre}

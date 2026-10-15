@@ -29,7 +29,7 @@ export function LineChart({
         ))}
         {points.length > 0 && <path d={area} fill="var(--primary-soft)" />}
         {points.length > 0 && (
-          <path d={line} fill="none" stroke="var(--chart-1)" strokeWidth="2.5" vectorEffect="non-scaling-stroke" />
+          <path d={line} pathLength={1} className="draw" fill="none" stroke="var(--chart-1)" strokeWidth="2.5" vectorEffect="non-scaling-stroke" />
         )}
         {points.map((p, i) => (
           <circle key={`${i}-${p.x}`} cx={xAt(i)} cy={yAt(p.y)} r="2.5" fill="var(--chart-1)">

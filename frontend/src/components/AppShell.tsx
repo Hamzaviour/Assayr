@@ -24,7 +24,8 @@ const NAV: { group: string | null; items: NavItem[] }[] = [
   { group: "Assure", items: [{ label: "Audits", icon: "audit" }] },
 ]
 
-const itemClass = "flex items-center gap-2.5 rounded-lg px-2.5 py-[7px] font-medium"
+const itemClass =
+  "relative flex items-center gap-2.5 rounded-lg px-2.5 py-[8px] font-medium transition-colors duration-200"
 
 export function AppShell({ me, children }: { me: Me; children: ReactNode }) {
   const logout = useLogout()
@@ -39,15 +40,15 @@ export function AppShell({ me, children }: { me: Me; children: ReactNode }) {
 
   return (
     <div className="grid h-full grid-cols-1 md:grid-cols-[236px_minmax(0,1fr)]">
-      <nav aria-label="Main navigation" className="hidden flex-col gap-1 border-r border-line bg-surface px-3 py-4 md:flex">
-        <div className="flex items-center gap-2.5 px-2 pb-4">
-          <img src="/favicon.svg" alt="" width={28} height={28} />
-          <span className="font-display text-[21px] font-extrabold tracking-tight">assayr</span>
+      <nav aria-label="Main navigation" className="brand-rail hidden flex-col gap-1 px-3 py-4 text-on-brand-2 md:flex">
+        <div className="flex items-center gap-2.5 px-2 pb-5">
+          <img src="/favicon.svg" alt="" width={30} height={30} className="rounded-lg ring-1 ring-white/25" />
+          <span className="font-display text-[22px] font-extrabold tracking-tight text-on-brand">assayr</span>
         </div>
         {NAV.map((section) => (
           <div key={section.group ?? "top"} className="grid gap-0.5">
             {section.group && (
-              <p className="px-2.5 pb-1.5 pt-4 text-[11px] font-medium uppercase tracking-[0.08em] text-fg-3">
+              <p className="px-2.5 pb-1.5 pt-4 text-[11px] font-semibold uppercase tracking-[0.1em] text-on-brand-3">
                 {section.group}
               </p>
             )}
@@ -57,26 +58,36 @@ export function AppShell({ me, children }: { me: Me; children: ReactNode }) {
                   key={item.label}
                   to={item.to}
                   activeOptions={{ exact: item.to === "/" }}
-                  className={`${itemClass} text-fg-2 hover:bg-subtle hover:text-fg data-[status=active]:bg-primary-soft data-[status=active]:text-primary`}
+                  className={`${itemClass} group text-on-brand-2 hover:bg-[var(--brand-hover)] hover:text-on-brand data-[status=active]:bg-[var(--brand-active)] data-[status=active]:text-on-brand`}
                 >
                   <Icon name={item.icon} size={18} />
                   <span>{item.label}</span>
+                  <span
+                    aria-hidden="true"
+                    className="ml-auto size-1.5 scale-0 rounded-full bg-gold transition-transform duration-300 group-data-[status=active]:scale-100"
+                  />
                 </Link>
               ) : (
-                <span key={item.label} aria-disabled="true" className={`${itemClass} cursor-default text-fg-3`}>
+                <span key={item.label} aria-disabled="true" className={`${itemClass} cursor-default text-on-brand-3`}>
                   <Icon name={item.icon} size={18} />
                   <span>{item.label}</span>
-                  <span className="ml-auto font-mono text-[10px]">soon</span>
+                  <span className="ml-auto rounded-full border border-white/20 px-1.5 text-[10px] font-medium">soon</span>
                 </span>
               ),
             )}
           </div>
         ))}
-        <p className="mt-auto border-t border-line px-2.5 pt-3 text-xs text-fg-3">On-prem · no data leaves your network</p>
+        <p className="mt-auto flex items-center gap-2 border-t border-white/15 px-2.5 pt-3 text-xs text-on-brand-3">
+          <Icon name="shield" size={15} />
+          On-prem · no data leaves your network
+        </p>
       </nav>
       <div className="flex min-w-0 flex-col overflow-hidden">
         <header className="flex items-center gap-3 border-b border-line bg-surface px-4 py-2.5 md:px-6">
-          <span className="font-display text-lg font-extrabold tracking-tight md:hidden">assayr</span>
+          <span className="flex items-center gap-2 md:hidden">
+            <img src="/favicon.svg" alt="" width={24} height={24} />
+            <span className="font-display text-lg font-extrabold tracking-tight text-brand">assayr</span>
+          </span>
           <div className="ml-auto flex items-center gap-2">
             <Button variant="ghost" size="sm" onClick={() => toggleTheme()} aria-label="Toggle light or dark theme">
               <Icon name="theme" />

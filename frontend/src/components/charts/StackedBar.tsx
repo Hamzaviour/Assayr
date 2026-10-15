@@ -7,6 +7,7 @@ export function StackedBar({ segments, label }: { segments: Segment[]; label: st
   return (
     <div>
       <div role="img" aria-label={label} className="flex h-3 w-full overflow-hidden rounded-full bg-subtle">
+        <div className="grow-x flex h-full w-full">
         {total > 0 &&
           segments
             .filter((s) => s.value > 0)
@@ -17,6 +18,7 @@ export function StackedBar({ segments, label }: { segments: Segment[]; label: st
                 style={{ width: `${(s.value / total) * 100}%`, background: s.color }}
               />
             ))}
+        </div>
       </div>
       <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-1.5 text-[12.5px] text-fg-2" aria-hidden="true">
         {segments.map((s) => (

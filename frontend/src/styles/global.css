@@ -26,6 +26,13 @@
   --color-chart-5: var(--chart-5);
   --color-chart-6: var(--chart-6);
   --color-on-primary: var(--on-primary);
+  --color-brand: var(--brand);
+  --color-brand-deep: var(--brand-deep);
+  --color-brand-bright: var(--brand-bright);
+  --color-on-brand: var(--on-brand);
+  --color-on-brand-2: var(--on-brand-2);
+  --color-on-brand-3: var(--on-brand-3);
+  --color-gold: var(--gold);
   --color-ink: var(--ink);
   --color-brass: var(--brass);
   --color-ok: var(--ok);
@@ -58,3 +65,38 @@ h1, h2, h3 { text-wrap: balance; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
+
+/* Motion: one authored entrance (rise + unblur) staggered by --i, plus growth for data marks.
+   Content is visible by default; the global reduced-motion rule above collapses every duration. */
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(10px); filter: blur(3px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+@keyframes grow-x { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes grow-y { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+@keyframes draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes spin-in { from { opacity: 0; transform: rotate(-90deg) scale(0.92); } to { opacity: 1; transform: none; } }
+@keyframes drift {
+  0% { background-position: 0% 0%, 100% 100%, 0 0; }
+  50% { background-position: 60% 40%, 40% 60%, 0 0; }
+  100% { background-position: 0% 0%, 100% 100%, 0 0; }
+}
+.rise { animation: rise-in 700ms var(--ease-out) both; animation-delay: calc(var(--i, 0) * 70ms); }
+.grow-x { transform-origin: left center; animation: grow-x 900ms var(--ease-out) both; animation-delay: calc(150ms + var(--i, 0) * 60ms); }
+.grow-y { transform-box: fill-box; transform-origin: bottom; animation: grow-y 900ms var(--ease-out) both; animation-delay: calc(200ms + var(--i, 0) * 80ms); }
+.draw { stroke-dasharray: 1; animation: draw 1400ms var(--ease-out) both; animation-delay: 250ms; }
+.spin-in { transform-origin: center; animation: spin-in 900ms var(--ease-out) both; animation-delay: 200ms; }
+.lift { transition: transform 300ms var(--ease-out), box-shadow 300ms var(--ease-out); box-shadow: var(--shadow-card); }
+.lift:hover { transform: translateY(-2px); box-shadow: var(--shadow-lift); }
+
+/* The maroon world: a slow light drifting over a fine diagonal weave. */
+.brand-surface {
+  background-color: var(--brand);
+  background-image:
+    radial-gradient(60% 70% at 15% 10%, color-mix(in oklab, var(--brand-glow) 70%, transparent), transparent 70%),
+    radial-gradient(55% 60% at 90% 95%, color-mix(in oklab, var(--brand-deep) 90%, transparent), transparent 70%),
+    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px 14px);
+  background-size: 160% 160%, 160% 160%, auto;
+  animation: drift 22s ease-in-out infinite;
+}
+.brand-rail { background: linear-gradient(180deg, var(--brand) 0%, var(--brand-deep) 100%); }

@@ -17,7 +17,7 @@ export function BarChart({ bars, label }: { bars: Segment[]; label: string }) {
           const x = GAP + i * (width + GAP)
           return (
             <g key={b.key}>
-              <rect data-bar x={x} y={H - height} width={width} height={height} rx="4" fill={b.color}>
+              <rect data-bar className="grow-y" style={{ "--i": i } as React.CSSProperties} x={x} y={H - height} width={width} height={height} rx="4" fill={b.color}>
                 <title>{`${b.label}: ${b.value}`}</title>
               </rect>
               <text x={x + width / 2} y={H + 14} textAnchor="middle" fill="var(--text-2)" fontSize="10">

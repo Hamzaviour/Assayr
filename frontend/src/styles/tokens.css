@@ -19,10 +19,18 @@
     --chart-1: #e0577c; --chart-2: #2dd4bf; --chart-3: #fbbf24; --chart-4: #94a3b8; --chart-5: #4ade80; --chart-6: #6b7280;
     --ok: #4cc17e; --ok-soft: #0f2e1e; --warn: #e6a645; --warn-soft: #33260f; --bad: #f26b66; --bad-soft: #3a1517;
     --review: #b39bff; --review-soft: #261a45; --idle: #95a0b8; --idle-soft: #1b2340; --na: #6e7894;
+    --brand: #6e1030; --brand-deep: #2c0613; --brand-bright: #8f1a42; --brand-glow: #b1305a;
+    --on-brand-2: #f0cfda; --on-brand-3: #d79cb0;
+    --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 14px rgba(0, 0, 0, 0.25);
+    --shadow-lift: 0 2px 4px rgba(0, 0, 0, 0.35), 0 14px 32px rgba(0, 0, 0, 0.4);
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
+  --brand: #6e1030; --brand-deep: #2c0613; --brand-bright: #8f1a42; --brand-glow: #b1305a;
+  --on-brand-2: #f0cfda; --on-brand-3: #d79cb0;
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 14px rgba(0, 0, 0, 0.25);
+  --shadow-lift: 0 2px 4px rgba(0, 0, 0, 0.35), 0 14px 32px rgba(0, 0, 0, 0.4);
   --canvas: #0a0f1f; --surface: #11172a; --subtle: #182037; --line: #252f4d; --line-2: #37426c;
   --text: #edf0f7; --text-2: #aeb6ca; --text-3: #8690a8;
   --primary: #e0577c; --primary-hover: #ea7a98; --primary-soft: #3a1220; --on-primary: #1a0610;
@@ -35,4 +43,14 @@
 :root {
   --chart-1: #8a1538; --chart-2: #0f766e; --chart-3: #d97706; --chart-4: #475569; --chart-5: #16a34a; --chart-6: #9ca3af;
   --heat-1: #cdebd8; --heat-2: #e4efb0; --heat-3: #fce38a; --heat-4: #f8a35b; --heat-5: #e2483d; --on-heat: #1b2233;
+}
+
+:root {
+  --brand: #8a1538; --brand-deep: #5c0d25; --brand-bright: #a8204a; --brand-glow: #c2335f;
+  --on-brand: #ffffff; --on-brand-2: #f6dbe3; --on-brand-3: #e3aebf;
+  --brand-hover: rgba(255, 255, 255, 0.09); --brand-active: rgba(255, 255, 255, 0.16); --brand-line: rgba(255, 255, 255, 0.14);
+  --gold: #d9b65a;
+  --shadow-card: 0 1px 2px rgba(60, 10, 25, 0.04), 0 4px 14px rgba(60, 10, 25, 0.06);
+  --shadow-lift: 0 2px 4px rgba(60, 10, 25, 0.06), 0 14px 32px rgba(60, 10, 25, 0.12);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 }
