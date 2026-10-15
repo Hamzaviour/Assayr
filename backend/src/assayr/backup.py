@@ -104,3 +104,61 @@ def create_backup(
         raise BackupError(f"The backup failed: {exc}") from exc
     finally:
         shutil.rmtree(work, ignore_errors=True)
+
+
+@dataclass(frozen=True)
+class RestoreSource:
+    folder: Path
+    version: str
+    created: str
+
+
+def version_tuple(v: str) -> tuple[int, int, int]:
+    major, minor, patch = (int(x) for x in v.split("."))
+    return major, minor, patch
+
+
+def _manifest(path: Path) -> dict[str, str]:
+    pairs = (line.partition("=") for line in path.read_text(encoding="utf-8").splitlines())
+    return {k.strip(): v.strip() for k, _, v in pairs if k.strip()}
+
+
+def read_backup(archive: Path, work: Path) -> RestoreSource:
+    """Unpack and check a backup made by either installer. Raises BackupError with the reason."""
+    work.mkdir(parents=True, exist_ok=True)
+    try:
+        with tarfile.open(archive, "r:gz") as tar:
+            tar.extractall(work, filter="data")
+    except (tarfile.TarError, OSError, EOFError) as exc:
+        raise BackupError("it can't be unpacked.") from exc
+    folders = sorted(p for p in work.iterdir() if p.is_dir() and p.name.startswith("assayr-"))
+    if not folders or not (folders[0] / "manifest.txt").is_file():
+        raise BackupError("it has no manifest.")
+    folder = folders[0]
+    if problem := verify_sums(folder):
+        raise BackupError(problem)
+    listed = (folder / "SHA256SUMS").read_text(encoding="utf-8")
+    for part in REQUIRED:
+        if not (folder / part).is_file():
+            raise BackupError(f"{part} is missing.")
+        if f"  ./{part}\n" not in listed and f"  {part}\n" not in listed:
+            raise BackupError(f"{part} is not in its checksum list.")
+    manifest = _manifest(folder / "manifest.txt")
+    return RestoreSource(
+        folder=folder, version=manifest.get("version", ""), created=manifest.get("created", "")
+    )
+
+
+def restore_data(source: RestoreSource, blobs_dir: Path, db) -> None:
+    """Replace the database and the evidence files. Settings and certificates are left alone."""
+    db.recreate_database()
+    db.restore(source.folder / "db.dump")
+    if blobs_dir.exists():
+        for child in blobs_dir.iterdir():
+            if child.is_dir():
+                shutil.rmtree(child)
+            else:
+                child.unlink()
+    blobs_dir.mkdir(parents=True, exist_ok=True)
+    with tarfile.open(source.folder / "blobs.tar") as tar:
+        tar.extractall(blobs_dir, filter="data")
