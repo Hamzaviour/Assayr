@@ -141,6 +141,7 @@ class RiskDetailOut(RiskRowOut):
     required_authority: str | None
     can_accept: bool
     can_edit: bool
+    can_assign: bool
     closed_at: datetime | None
     close_reason: str | None
 

@@ -70,3 +70,58 @@ def test_framework_row_breaks_down_by_theme(client, db, seeded):
     assert set(groups) == {"Organizational", "People", "Physical", "Technological"}
     assert sum(g["total"] for g in groups.values()) == 93
     assert groups["People"] == {"name": "People", "total": 8, "compliant": 0, "readiness": None}
+
+
+def test_trend_keeps_the_last_snapshot_of_each_day(client, db, seeded):
+    from datetime import timedelta
+
+    from assayr.scoring.models import ScoreSnapshot
+
+    manager(client, db)
+    now = utcnow()
+    for hours, value in ((-30, 5.0), (-2, 10.0), (-1, 12.0)):
+        db.add(
+            ScoreSnapshot(
+                scope_id=seeded.id, taken_at=now + timedelta(hours=hours), readiness=value, status_counts={}
+            )
+        )
+    db.commit()
+    trend = client.get("/api/v1/dashboard").json()["trend"]
+    dates = [p["date"] for p in trend]
+    assert len(dates) == len(set(dates))
+    assert trend[-1]["readiness"] == 12.0
+
+
+def test_expired_and_expiring_accepted_evidence_needs_attention(app, client, db, seeded):
+    from datetime import timedelta
+
+    manager(client, db)
+    control = db.scalar(select(Control).where(Control.code == "A.8.13"))
+    today = utcnow().date()
+    for days, name in ((-10, "expired"), (5, "expiring"), (200, "fresh")):
+        link = add_link(
+            db,
+            app.state.store,
+            control.slots[0],
+            scope_id=seeded.id,
+            state="accepted",
+            evidence_date=today,
+            filename=f"{name}.pdf",
+        )
+        link.expires_on = today + timedelta(days=days)
+    db.commit()
+    assert client.get("/api/v1/dashboard").json()["evidence"] == {"needs_attention": 2, "ok": 1, "total": 3}
+
+
+def test_excluded_controls_are_not_counted(client, db, seeded):
+    manager(client, db)
+    controls = db.scalars(select(Control).where(Control.theme == "People")).all()
+    for c in controls[:2]:
+        c.status = "excluded"
+    db.commit()
+    body = client.get("/api/v1/dashboard").json()
+    iso = body["frameworks"][0]
+    assert iso["total"] == 91 and iso["excluded"] == 2
+    people = next(g for g in iso["groups"] if g["name"] == "People")
+    assert people["total"] == 6
+    assert body["unowned_controls"] == 91

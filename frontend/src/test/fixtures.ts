@@ -60,7 +60,7 @@ export function riskDetail(overrides: Partial<RiskDetail> = {}): RiskDetail {
     controls: [{ code: "A.8.13", title: "Information backup", status: "compliant", axis: "likelihood" }],
     draft: null, latest: null, history: [],
     treatment: { option: null, note: null, budget: null, due: null },
-    actions: [], acceptance: null, required_authority: "isms_manager", can_accept: true, can_edit: true,
+    actions: [], acceptance: null, required_authority: "isms_manager", can_accept: true, can_edit: true, can_assign: true,
     closed_at: null, close_reason: null,
     ...overrides,
   }

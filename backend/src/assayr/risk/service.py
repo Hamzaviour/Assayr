@@ -293,6 +293,7 @@ def risk_detail(db: Session, risk: Risk, user: User) -> RiskDetailOut:
         required_authority=required,
         can_accept=can_accept,
         can_edit=rights.any and risk.closed_at is None,
+        can_assign=rights.all and risk.closed_at is None,
         closed_at=risk.closed_at,
         close_reason=risk.close_reason,
     )

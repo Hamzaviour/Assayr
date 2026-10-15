@@ -206,6 +206,7 @@ export interface RiskDetail extends RiskRow {
   required_authority: string | null
   can_accept: boolean
   can_edit: boolean
+  can_assign: boolean
   closed_at: string | null
   close_reason: string | null
 }

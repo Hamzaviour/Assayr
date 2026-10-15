@@ -1,4 +1,5 @@
 import { screen, within } from "@testing-library/react"
+import { METHODOLOGY } from "../test/fixtures"
 import { json, ME, mockApi, renderApp } from "../test/render"
 
 const dashboard = (overrides = {}) => ({
@@ -11,11 +12,12 @@ const dashboard = (overrides = {}) => ({
       compliant: 40,
       readiness: 52.4,
       status_counts: { compliant: 40, in_review: 12, in_progress: 20, at_risk: 0, non_compliant: 0, not_started: 21 },
+      excluded: 0,
       groups: [],
     },
   ],
   evidence: { needs_attention: 3, ok: 30, total: 33 },
-  risks: { open: 4, in_progress: 2, closed: 5, total: 11, by_level: { low: 3, medium: 5, high: 2, critical: 1 } },
+  risks: { open: 4, in_progress: 2, closed: 5, total: 11, by_level: { very_low: 1, low: 2, medium: 5, high: 2, critical: 1 } },
   unowned_controls: 7,
   trend: [
     { date: "2026-10-01", readiness: 40 },
@@ -25,7 +27,11 @@ const dashboard = (overrides = {}) => ({
 })
 
 function setup(body: unknown = dashboard()) {
-  mockApi({ "GET /auth/me": () => json(200, ME), "GET /dashboard": () => json(200, body) })
+  mockApi({
+    "GET /auth/me": () => json(200, ME),
+    "GET /dashboard": () => json(200, body),
+    "GET /risk-methodology": () => json(200, METHODOLOGY),
+  })
   renderApp("/")
 }
 
@@ -76,6 +82,7 @@ test("a fresh install explains the next step and shows no NaN", async () => {
           compliant: 0,
           readiness: null,
           status_counts: { not_started: 93 },
+          excluded: 0,
           groups: [],
         },
       ],
@@ -98,4 +105,15 @@ test("a single day of history explains that the trend builds up", async () => {
   setup(dashboard({ trend: [{ date: "2026-10-16", readiness: 12 }] }))
   expect(await screen.findByText(/Today: 12%/)).toBeInTheDocument()
   expect(screen.getByText(/The trend line appears after the second daily snapshot/)).toBeInTheDocument()
+})
+
+test("risk levels follow the methodology, including very low", async () => {
+  setup()
+  const cell = await screen.findByRole("cell", { name: "Very low" })
+  expect(cell.nextSibling).toHaveTextContent("1")
+})
+
+test("excluded controls are shown apart from the total", async () => {
+  setup(dashboard({ frameworks: [{ ...dashboard().frameworks[0], total: 87, excluded: 6 }] }))
+  expect(await screen.findByText(/6 excluded/)).toBeInTheDocument()
 })

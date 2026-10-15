@@ -9,12 +9,14 @@ export function OwnerPicker({
   onChange,
   label,
   disabled,
+  busy,
 }: {
   value: string | null
   current?: Owner | null
   onChange: (id: string | null) => void
   label: string
   disabled?: boolean
+  busy?: boolean
 }) {
   const people = usePeople()
   const active = people.data ?? []
@@ -23,7 +25,8 @@ export function OwnerPicker({
     <select
       aria-label={label}
       value={value ?? ""}
-      disabled={disabled || people.isPending}
+      aria-busy={busy || people.isPending}
+      disabled={disabled}
       onChange={(e) => onChange(e.target.value || null)}
       className="rounded-lg border border-line-2 bg-surface px-2.5 py-1.5 text-[13px] focus-visible:outline-2 focus-visible:outline-primary"
     >

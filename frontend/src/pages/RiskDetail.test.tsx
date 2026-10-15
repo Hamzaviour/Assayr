@@ -86,7 +86,12 @@ test("an editor assigns and clears the owner", async () => {
   const picker = await screen.findByRole("combobox", { name: "Risk owner" })
   await screen.findByRole("option", { name: "Bilal Khan" })
   await userEvent.selectOptions(picker, "u2")
+  expect(calls.filter((c) => c.method === "PATCH")).toHaveLength(0)  // choosing is not saving
+  await userEvent.click(screen.getByRole("button", { name: "Save owner" }))
+  await screen.findByRole("option", { name: "Bilal Khan" })
   await userEvent.selectOptions(picker, "")
+  await userEvent.click(await screen.findByRole("button", { name: "Save owner" }))
+  await vi.waitFor(() => expect(calls.filter((c) => c.method === "PATCH")).toHaveLength(2))
   const patches = calls.filter((c) => c.method === "PATCH").map((c) => JSON.parse(String(c.init.body)))
   expect(patches).toEqual([{ owner_id: "u2" }, { owner_id: null }])
 })
@@ -101,8 +106,8 @@ test("a deactivated owner is still shown", async () => {
   expect(await screen.findByRole("option", { name: "Old Owner (inactive)" })).toBeInTheDocument()
 })
 
-test("someone who cannot edit sees the owner as text", async () => {
-  mockApi({ ...base, "GET /risks/R-001": () => json(200, riskDetail({ can_edit: false })) })
+test("someone who cannot reassign sees the owner as text", async () => {
+  mockApi({ ...base, "GET /risks/R-001": () => json(200, riskDetail({ can_assign: false })) })
   renderApp("/risks/R-001")
   expect(await screen.findByText(/Owner: Sana Malik/)).toBeInTheDocument()
   expect(screen.queryByRole("combobox", { name: "Risk owner" })).not.toBeInTheDocument()

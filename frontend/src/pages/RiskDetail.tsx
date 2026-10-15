@@ -24,7 +24,6 @@ const OPTION_HELP: Record<string, string> = {
 export function RiskDetailPage() {
   const { code } = useParams({ from: "/app/risks/$code" })
   const risk = useRisk(code)
-  const update = useUpdateRisk(code)
   if (risk.isPending) return <p role="status" className="text-fg-3">Loading…</p>
   if (risk.isError) return <p role="alert">{risk.error.message}</p>
   const r = risk.data
@@ -39,23 +38,9 @@ export function RiskDetailPage() {
           <p className="mb-2 font-mono text-[13px] text-fg-3">{r.code}{r.category ? ` · ${r.category}` : ""}</p>
           <h1 className="font-display text-[26px] font-extrabold tracking-tight">{r.title}</h1>
           <p className="mt-2 flex flex-wrap items-center gap-2 text-[13px] text-fg-2">
-            {r.can_edit && !r.closed_at ? (
-              <>
-                <span>Owner:</span>
-                <OwnerPicker
-                  label="Risk owner"
-                  value={r.owner?.id ?? null}
-                  current={r.owner}
-                  onChange={(id) => update.mutate({ owner_id: id })}
-                  disabled={update.isPending}
-                />
-              </>
-            ) : (
-              <span>Owner: {r.owner?.full_name ?? "Unassigned"}</span>
-            )}
+            {r.can_assign ? <OwnerField risk={r} /> : <span>Owner: {r.owner?.full_name ?? "Unassigned"}</span>}
             {r.review_due && <span>· Next review {formatDate(r.review_due)}</span>}
           </p>
-          {update.isError && <p role="alert" className="mt-1 text-[13px] text-bad">{update.error.message}</p>}
         </div>
         <div className="flex items-center gap-2">
           {r.can_edit && !r.closed_at && (
@@ -362,5 +347,25 @@ function CloseRisk({ risk }: { risk: RiskDetail }) {
         <div><Button type="submit" variant="secondary" disabled={!reason.trim() || close.isPending}>Close risk</Button></div>
       </form>
     </details>
+  )
+}
+
+/** Choosing an owner is a draft; Save commits it, so arrowing through the list never reassigns the risk. */
+function OwnerField({ risk }: { risk: RiskDetail }) {
+  const update = useUpdateRisk(risk.code)
+  const saved = risk.owner?.id ?? null
+  const [draft, setDraft] = useState<string | null>(saved)
+  const changed = draft !== saved
+  return (
+    <span className="inline-flex flex-wrap items-center gap-2">
+      <span>Owner:</span>
+      <OwnerPicker label="Risk owner" value={draft} current={risk.owner} onChange={setDraft} busy={update.isPending} />
+      {changed && (
+        <Button size="sm" onClick={() => update.mutate({ owner_id: draft })} disabled={update.isPending}>
+          Save owner
+        </Button>
+      )}
+      {update.isError && <span role="alert" className="text-bad">{update.error.message}</span>}
+    </span>
   )
 }

@@ -32,7 +32,7 @@ export function LineChart({
           <path d={line} fill="none" stroke="var(--chart-1)" strokeWidth="2.5" vectorEffect="non-scaling-stroke" />
         )}
         {points.map((p, i) => (
-          <circle key={p.x} cx={xAt(i)} cy={yAt(p.y)} r="2.5" fill="var(--chart-1)">
+          <circle key={`${i}-${p.x}`} cx={xAt(i)} cy={yAt(p.y)} r="2.5" fill="var(--chart-1)">
             <title>{`${p.x}: ${format(p.y)}`}</title>
           </circle>
         ))}

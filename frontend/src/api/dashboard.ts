@@ -11,6 +11,7 @@ export type FrameworkRow = {
   compliant: number
   readiness: number | null
   status_counts: Record<string, number>
+  excluded: number
   groups: GroupRow[]
 }
 

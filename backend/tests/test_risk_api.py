@@ -142,3 +142,16 @@ def test_owner_none_lists_unassigned_risks(client, db, seeded):
     new_risk(client, title="Nobody's")
     titles = [r["title"] for r in client.get("/api/v1/risks?owner=none").json()]
     assert titles == ["Nobody's"]
+
+
+def test_only_risk_managers_may_reassign_owners(client, db, seeded):
+    manager(client, db)
+    me = client.get("/api/v1/auth/me").json()
+    risk = new_risk(client, title="Owned")
+    assert client.get(f"/api/v1/risks/{risk['code']}").json()["can_assign"] is True
+    owner = create_user(db, "ayesha@acme.com", roles=(("risk_owner", None),), full_name="Ayesha Raza")
+    client.patch(f"/api/v1/risks/{risk['code']}", json={"owner_id": str(owner.id)})
+    sign_in(client, "ayesha@acme.com")
+    detail = client.get(f"/api/v1/risks/{risk['code']}").json()
+    assert detail["can_edit"] is True and detail["can_assign"] is False
+    assert me["id"]

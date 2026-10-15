@@ -4,8 +4,8 @@ export function DataTable({ caption, rows }: { caption: string; rows: [string, s
     <table className="sr-only">
       <caption>{caption}</caption>
       <tbody>
-        {rows.map(([key, value]) => (
-          <tr key={key}>
+        {rows.map(([key, value], i) => (
+          <tr key={`${i}-${key}`}>
             <td>{key}</td>
             <td>{value}</td>
           </tr>

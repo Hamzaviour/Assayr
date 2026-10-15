@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router"
 import type { ReactNode } from "react"
 import { type Dashboard, type FrameworkRow, type RiskCard, useDashboard } from "../api/dashboard"
+import { useMethodology } from "../api/risks"
 import { useMe } from "../auth/session"
 import { BarChart, Donut, LineChart, ProgressBar, type Segment, StackedBar } from "../components/charts"
 
@@ -12,12 +13,7 @@ const STATUS: [string, string, string][] = [
   ["non_compliant", "Non-compliant", "var(--bad)"],
   ["not_started", "Not started", "var(--idle)"],
 ]
-const LEVELS: [string, string, string][] = [
-  ["low", "Low", "var(--heat-1)"],
-  ["medium", "Medium", "var(--heat-3)"],
-  ["high", "High", "var(--heat-4)"],
-  ["critical", "Critical", "var(--heat-5)"],
-]
+const HEAT = ["var(--heat-1)", "var(--heat-2)", "var(--heat-3)", "var(--heat-4)", "var(--heat-5)"]
 const CARD = "rounded-xl border border-line bg-surface p-5"
 const SECTION_TITLE = "font-display text-[18px] font-semibold tracking-tight"
 const percent = (value: number | null) => (value === null ? "—" : `${Math.round(value)}%`)
@@ -39,6 +35,7 @@ function FrameworkCard({ f }: { f: FrameworkRow }) {
         <ProgressBar value={f.compliant} max={f.total} label={`${f.name} controls compliant`} />
         <p className="text-[13px] text-fg-2">
           {f.compliant} controls compliant · {f.total} total
+          {f.excluded > 0 && <span className="text-fg-3"> · {f.excluded} excluded in the SoA</span>}
         </p>
         {f.readiness === null && (
           <p className="text-[13px] text-fg-3">Upload the first evidence to a control to see readiness here.</p>
@@ -94,8 +91,21 @@ function riskSegments(r: RiskCard): Segment[] {
   ]
 }
 
+function levelBars(risks: RiskCard, bands: { key: string; label: string }[]): Segment[] {
+  // Bands come from the methodology, so every level (Very low too) is shown in its order.
+  const shown = bands.length ? bands : Object.keys(risks.by_level).map((key) => ({ key, label: key }))
+  return shown.map((b, i) => ({
+    key: b.key,
+    label: b.label,
+    color: HEAT[Math.min(HEAT.length - 1, Math.round((i * (HEAT.length - 1)) / Math.max(1, shown.length - 1)))],
+    value: risks.by_level[b.key] ?? 0,
+  }))
+}
+
 function Body({ d }: { d: Dashboard }) {
   const iso = d.frameworks[0]
+  const methodology = useMethodology()
+  const bands = methodology.data?.bands ?? []
   return (
     <>
       <section className="grid gap-3" aria-labelledby="compliance-title">
@@ -162,10 +172,7 @@ function Body({ d }: { d: Dashboard }) {
           {d.risks && (
             <div className={CARD}>
               <h3 className="mb-3 text-[15px] font-semibold">Risk levels</h3>
-              <BarChart
-                label="Risks by level"
-                bars={LEVELS.map(([key, label, color]) => ({ key, label, color, value: d.risks?.by_level[key] ?? 0 }))}
-              />
+              <BarChart label="Risks by level" bars={levelBars(d.risks, bands)} />
             </div>
           )}
         </div>

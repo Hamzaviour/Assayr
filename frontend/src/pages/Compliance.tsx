@@ -26,6 +26,7 @@ export function CompliancePage() {
           <ProgressBar value={f.compliant} max={f.total} label={`${f.name} controls compliant`} />
           <p className="text-[13px] text-fg-2">
             {f.compliant} controls compliant · {f.total} total
+            {f.excluded > 0 && <span className="text-fg-3"> · {f.excluded} excluded in the SoA</span>}
           </p>
           {f.groups.length > 0 && (
             <div className="border-t border-line pt-4">
