@@ -31,9 +31,17 @@ function Fail([string] $msg) {
   exit 1
 }
 
+# Wait for the given program only, with a time limit. (PowerShell 7's Start-Process -Wait also waits for every
+# descendant process, so it can hang on processes the install leaves running.)
+function Wait-Program([string] $exe, [string[]] $argv, [int] $minutes = 20) {
+  $p = Start-Process (Resolve-Path $exe) -ArgumentList $argv -PassThru
+  if (-not $p.WaitForExit($minutes * 60 * 1000)) { Fail "$exe did not finish within $minutes minutes" }
+  return $p.ExitCode
+}
+
 function Run-Setup([string] $exe, [string[]] $extra) {
   $argv = @('/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', "/LOG=$env:TEMP\setup.log") + $extra
-  return (Start-Process (Resolve-Path $exe) -ArgumentList $argv -Wait -PassThru).ExitCode
+  return Wait-Program $exe $argv
 }
 
 function Health { Invoke-RestMethod "$Base/api/v1/healthz" -SkipCertificateCheck -TimeoutSec 10 }
@@ -120,7 +128,7 @@ if ((Risk-Count $s) -ne $before) { Fail 'data lost in the rollback' }
 
 Step 'Uninstall keeps the data'
 $unins = Get-ChildItem "$App\unins*.exe" | Select-Object -First 1
-Start-Process $unins.FullName -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART' -Wait
+Wait-Program $unins.FullName @('/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART') | Out-Null
 if (Get-Service Assayr* -ErrorAction SilentlyContinue) { Fail 'services still registered after uninstall' }
 if (-not (Test-Path "$Data\db\PG_VERSION")) { Fail 'the data folder was removed' }
 if (Test-Path HKLM:\SOFTWARE\Assayr) { Fail 'registry key left behind' }
