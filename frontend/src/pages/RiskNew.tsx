@@ -2,12 +2,14 @@ import { Link, useNavigate } from "@tanstack/react-router"
 import { type FormEvent, useState } from "react"
 import { useCreateRisk, useRiskLibrary } from "../api/risks"
 import { Button } from "../components/Button"
+import { OwnerPicker } from "../components/OwnerPicker"
 
 export function RiskNewPage() {
   const library = useRiskLibrary()
   const create = useCreateRisk()
   const navigate = useNavigate()
   const [title, setTitle] = useState("")
+  const [owner, setOwner] = useState<string | null>(null)
   const [filter, setFilter] = useState("")
   const term = filter.trim().toLowerCase()
   const templates = (library.data?.templates ?? []).filter(
@@ -15,7 +17,7 @@ export function RiskNewPage() {
   )
 
   async function start(body: { template_code?: string; title?: string }) {
-    const risk = await create.mutateAsync(body)
+    const risk = await create.mutateAsync(owner ? { ...body, owner_id: owner } : body)
     navigate({ to: "/risks/$code/assess", params: { code: risk.code } })
   }
 
@@ -40,6 +42,10 @@ export function RiskNewPage() {
           <label htmlFor="risk-title" className="text-[13px] font-medium">Your own scenario</label>
           <input id="risk-title" value={title} onChange={(e) => setTitle(e.target.value)}
             placeholder="Customer data leaked by a supplier" className="rounded-lg border border-line-2 bg-surface px-3 py-2 text-sm" />
+        </div>
+        <div className="grid gap-1">
+          <span className="text-[13px] font-medium">Owner</span>
+          <OwnerPicker label="Risk owner" value={owner} onChange={setOwner} />
         </div>
         <Button type="submit" disabled={!title.trim() || create.isPending}>Start assessment</Button>
       </form>

@@ -66,3 +66,44 @@ test("chooses a treatment and adds an action", async () => {
     { title: "Enable MFA", assignee_id: null, due: null },
   ])
 })
+
+const PEOPLE = [
+  { id: "u1", full_name: "Sana Malik", email: "s@x", roles: [] },
+  { id: "u2", full_name: "Bilal Khan", email: "b@x", roles: [] },
+]
+
+test("an editor assigns and clears the owner", async () => {
+  const calls = mockApi({
+    ...base,
+    "GET /people": () => json(200, PEOPLE),
+    "GET /risks/R-001": () => json(200, riskDetail()),
+    "PATCH /risks/R-001": (_url, init) => {
+      const body = JSON.parse(String(init.body))
+      return json(200, riskDetail({ owner: body.owner_id ? { id: body.owner_id, full_name: "Bilal Khan" } : null }))
+    },
+  })
+  renderApp("/risks/R-001")
+  const picker = await screen.findByRole("combobox", { name: "Risk owner" })
+  await screen.findByRole("option", { name: "Bilal Khan" })
+  await userEvent.selectOptions(picker, "u2")
+  await userEvent.selectOptions(picker, "")
+  const patches = calls.filter((c) => c.method === "PATCH").map((c) => JSON.parse(String(c.init.body)))
+  expect(patches).toEqual([{ owner_id: "u2" }, { owner_id: null }])
+})
+
+test("a deactivated owner is still shown", async () => {
+  mockApi({
+    ...base,
+    "GET /people": () => json(200, PEOPLE),
+    "GET /risks/R-001": () => json(200, riskDetail({ owner: { id: "gone", full_name: "Old Owner" } })),
+  })
+  renderApp("/risks/R-001")
+  expect(await screen.findByRole("option", { name: "Old Owner (inactive)" })).toBeInTheDocument()
+})
+
+test("someone who cannot edit sees the owner as text", async () => {
+  mockApi({ ...base, "GET /risks/R-001": () => json(200, riskDetail({ can_edit: false })) })
+  renderApp("/risks/R-001")
+  expect(await screen.findByText(/Owner: Sana Malik/)).toBeInTheDocument()
+  expect(screen.queryByRole("combobox", { name: "Risk owner" })).not.toBeInTheDocument()
+})

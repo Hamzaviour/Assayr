@@ -3,11 +3,12 @@ import { type FormEvent, useState } from "react"
 import { usePeople } from "../api/people"
 import {
   AUTHORITY_LABEL, TASK_STATUS_LABEL, TREATMENT_LABEL, useAcceptRisk, useAddAction, useCloseRisk, useRisk,
-  useSetTreatment, useUpdateTask,
+  useSetTreatment, useUpdateRisk, useUpdateTask,
 } from "../api/risks"
 import type { Level, RiskDetail } from "../api/types"
 import { Button } from "../components/Button"
 import { LevelPill, RiskStatusPill } from "../components/LevelPill"
+import { OwnerPicker } from "../components/OwnerPicker"
 import { StatusPill } from "../components/StatusPill"
 import { formatDate } from "../lib/format"
 
@@ -23,6 +24,7 @@ const OPTION_HELP: Record<string, string> = {
 export function RiskDetailPage() {
   const { code } = useParams({ from: "/app/risks/$code" })
   const risk = useRisk(code)
+  const update = useUpdateRisk(code)
   if (risk.isPending) return <p role="status" className="text-fg-3">Loading…</p>
   if (risk.isError) return <p role="alert">{risk.error.message}</p>
   const r = risk.data
@@ -36,10 +38,24 @@ export function RiskDetailPage() {
         <div className="min-w-0">
           <p className="mb-2 font-mono text-[13px] text-fg-3">{r.code}{r.category ? ` · ${r.category}` : ""}</p>
           <h1 className="font-display text-[26px] font-extrabold tracking-tight">{r.title}</h1>
-          <p className="mt-2 text-[13px] text-fg-2">
-            Owner: {r.owner?.full_name ?? "Unassigned"}
-            {r.review_due ? ` · Next review ${formatDate(r.review_due)}` : ""}
+          <p className="mt-2 flex flex-wrap items-center gap-2 text-[13px] text-fg-2">
+            {r.can_edit && !r.closed_at ? (
+              <>
+                <span>Owner:</span>
+                <OwnerPicker
+                  label="Risk owner"
+                  value={r.owner?.id ?? null}
+                  current={r.owner}
+                  onChange={(id) => update.mutate({ owner_id: id })}
+                  disabled={update.isPending}
+                />
+              </>
+            ) : (
+              <span>Owner: {r.owner?.full_name ?? "Unassigned"}</span>
+            )}
+            {r.review_due && <span>· Next review {formatDate(r.review_due)}</span>}
           </p>
+          {update.isError && <p role="alert" className="mt-1 text-[13px] text-bad">{update.error.message}</p>}
         </div>
         <div className="flex items-center gap-2">
           {r.can_edit && !r.closed_at && (

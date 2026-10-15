@@ -33,9 +33,9 @@ export function RisksPage() {
   const [matrix, setMatrix] = useState<Matrix>("current")
   const [typed, setTyped] = useState("")
   const [query, setQuery] = useState("")
-  const [mine, setMine] = useState(false)
+  const [owner, setOwner] = useState<"" | "me" | "none">("")
   const [cell, setCell] = useState<[number, number] | null>(null)
-  const risks = useRisks({ q: query || undefined, mine })
+  const risks = useRisks({ q: query || undefined, owner: owner || undefined })
   const methodology = useMethodology()
   const rows = risks.data ?? []
 
@@ -65,8 +65,16 @@ export function RisksPage() {
       <section className="rounded-xl border border-line bg-surface">
         <div className="flex flex-wrap items-center gap-3 border-b border-line px-4 py-3">
           <label className="flex items-center gap-2 text-[13px]">
-            <input type="checkbox" checked={mine} onChange={(e) => setMine(e.target.checked)} />
-            Only my risks
+            Owner
+            <select
+              value={owner}
+              onChange={(e) => setOwner(e.target.value as "" | "me" | "none")}
+              className="rounded-lg border border-line-2 bg-surface px-2.5 py-1.5 text-[13px]"
+            >
+              <option value="">Anyone</option>
+              <option value="me">Mine</option>
+              <option value="none">Unassigned</option>
+            </select>
           </label>
           {view === "heatmap" && <Segmented label="Matrix" options={MATRICES} value={matrix} onChange={(m) => { setMatrix(m); setCell(null) }} />}
           <form onSubmit={onSearch} className="ml-auto flex min-w-0 flex-1 justify-end gap-2" role="search">
@@ -78,7 +86,7 @@ export function RisksPage() {
         </div>
         {risks.isError && <p role="alert" className="p-4">{risks.error.message}</p>}
         {risks.isSuccess && rows.length === 0 && (
-          <p className="px-4 py-8 text-center text-fg-3">{query || mine ? "No risks match these filters." : "No risks yet."}</p>
+          <p className="px-4 py-8 text-center text-fg-3">{query || owner ? "No risks match these filters." : "No risks yet."}</p>
         )}
         {rows.length > 0 && view === "table" && <RiskTable rows={rows} />}
         {rows.length > 0 && view === "board" && <RiskBoard rows={rows} />}

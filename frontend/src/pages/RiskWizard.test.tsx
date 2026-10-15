@@ -110,3 +110,24 @@ test("finishing the assessment finalizes it and opens the risk", async () => {
   expect(JSON.parse(String(patch.init.body))).toEqual({ target_l: null, target_c: null, rationale: null })
   expect(calls.some((c) => c.method === "POST" && c.url.pathname.endsWith("/finalize"))).toBe(true)
 })
+
+test("a new risk can be created with an owner", async () => {
+  const calls = mockApi({
+    "GET /auth/me": () => json(200, ME),
+    "GET /people": () => json(200, [{ id: "u2", full_name: "Bilal Khan", email: "b@x", roles: [] }]),
+    "GET /risk-library": () => json(200, { threats: [], vulnerabilities: [], templates: [] }),
+    "POST /risks": () => json(201, { code: "R-009" }),
+    "GET /risks/R-009": () => json(404, { detail: "not needed" }),
+  })
+  renderApp("/risks/new")
+  await screen.findByRole("option", { name: "Bilal Khan" })
+  await userEvent.selectOptions(screen.getByRole("combobox", { name: "Risk owner" }), "u2")
+  await userEvent.type(screen.getByLabelText("Your own scenario"), "Supplier leaks data")
+  await userEvent.click(screen.getByRole("button", { name: "Start assessment" }))
+  const post = await vi.waitFor(() => {
+    const found = calls.find((c) => c.method === "POST")
+    if (!found) throw new Error("no POST yet")
+    return found
+  })
+  expect(JSON.parse(String(post.init.body))).toEqual({ title: "Supplier leaks data", owner_id: "u2" })
+})

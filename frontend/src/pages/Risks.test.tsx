@@ -48,3 +48,15 @@ test("the board groups risks by status", async () => {
   expect(within(screen.getByRole("region", { name: "Accepted" })).getByText("Laptop theft")).toBeInTheDocument()
   expect(within(screen.getByRole("region", { name: "Draft" })).getByText("New supplier")).toBeInTheDocument()
 })
+
+test("the owner filter can show unassigned risks", async () => {
+  const calls = mockApi({
+    "GET /auth/me": () => json(200, ME),
+    "GET /risk-methodology": () => json(200, METHODOLOGY),
+    "GET /risks": () => json(200, []),
+  })
+  renderApp("/risks")
+  await userEvent.selectOptions(await screen.findByRole("combobox", { name: "Owner" }), "none")
+  await screen.findByText("No risks match these filters.")
+  expect(calls.some((c) => c.url.pathname.endsWith("/risks") && c.url.searchParams.get("owner") === "none")).toBe(true)
+})

@@ -37,13 +37,13 @@ export function useRiskLibrary() {
   return useQuery({ queryKey: ["risk-library"], queryFn: () => api<RiskLibrary>("/risk-library"), staleTime: 300_000 })
 }
 
-export function useRisks(filters: { q?: string; mine?: boolean }) {
+export function useRisks(filters: { q?: string; owner?: "me" | "none" }) {
   return useQuery({
     queryKey: ["risks", filters],
     queryFn: () => {
       const params = new URLSearchParams()
       if (filters.q) params.set("q", filters.q)
-      if (filters.mine) params.set("owner", "me")
+      if (filters.owner) params.set("owner", filters.owner)
       const query = params.toString()
       return api<RiskRow[]>(`/risks${query ? `?${query}` : ""}`)
     },
@@ -75,7 +75,8 @@ function useRiskMutation<T>(request: (body: T) => Promise<RiskDetail>) {
 }
 
 export function useCreateRisk() {
-  return useRiskMutation((body: { template_code?: string; title?: string }) => send<RiskDetail>("/risks", "POST", body))
+  return useRiskMutation((body: { template_code?: string; title?: string; owner_id?: string }) =>
+    send<RiskDetail>("/risks", "POST", body))
 }
 
 export type RiskChanges = Partial<{
