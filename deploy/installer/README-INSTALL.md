@@ -8,6 +8,7 @@ needed to install or run it.
 | Linux server (x86-64 or arm64) | Production |
 | macOS with Docker Desktop or Colima | Evaluation only |
 | Windows 10/11 with Docker Desktop and WSL2 | Evaluation only |
+| Windows Server 2019/2022/2025 | Production: use `Assayr-Setup-<version>.exe` instead (see README-INSTALL-WINDOWS.md) |
 
 ## What you need
 
