@@ -1,6 +1,8 @@
 import { useQuery } from "@tanstack/react-query"
 import { api } from "./client"
 
+export type GroupRow = { name: string; total: number; compliant: number; readiness: number | null }
+
 export type FrameworkRow = {
   code: string
   name: string
@@ -9,6 +11,7 @@ export type FrameworkRow = {
   compliant: number
   readiness: number | null
   status_counts: Record<string, number>
+  groups: GroupRow[]
 }
 
 export type RiskCard = { open: number; in_progress: number; closed: number; total: number; by_level: Record<string, number> }

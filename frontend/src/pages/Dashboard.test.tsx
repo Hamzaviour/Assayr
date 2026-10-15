@@ -11,6 +11,8 @@ const dashboard = (overrides = {}) => ({
       compliant: 40,
       readiness: 52.4,
       status_counts: { compliant: 40, in_review: 12, in_progress: 20, at_risk: 0, non_compliant: 0, not_started: 21 },
+      groups: [],
+      groups: [],
     },
   ],
   evidence: { needs_attention: 3, ok: 30, total: 33 },
@@ -75,6 +77,8 @@ test("a fresh install explains the next step and shows no NaN", async () => {
           compliant: 0,
           readiness: null,
           status_counts: { not_started: 93 },
+          groups: [],
+          groups: [],
         },
       ],
       evidence: { needs_attention: 0, ok: 0, total: 0 },
@@ -90,4 +94,10 @@ test("without risk rights the risk card is hidden", async () => {
   setup(dashboard({ risks: null }))
   await screen.findByText("ISO/IEC 27001")
   expect(screen.queryByRole("heading", { name: "Risks" })).not.toBeInTheDocument()
+})
+
+test("a single day of history explains that the trend builds up", async () => {
+  setup(dashboard({ trend: [{ date: "2026-10-16", readiness: 12 }] }))
+  expect(await screen.findByText(/Today: 12%/)).toBeInTheDocument()
+  expect(screen.getByText(/The trend line appears after the second daily snapshot/)).toBeInTheDocument()
 })

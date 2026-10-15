@@ -146,8 +146,13 @@ function Body({ d }: { d: Dashboard }) {
               label="Readiness over the last 90 days"
               format={(y) => `${Math.round(y)}%`}
             />
-            {d.trend.length === 0 && (
-              <p className="mt-2 text-[13px] text-fg-3">The trend appears after the first daily snapshot.</p>
+            {d.trend.length < 2 && (
+              <p className="mt-2 text-[13px] text-fg-3">
+                {d.trend.length === 1 && <b className="text-fg">Today: {Math.round(d.trend[0].readiness)}%. </b>}
+                {d.trend.length === 1
+                  ? "The trend line appears after the second daily snapshot."
+                  : "The trend appears after the first daily snapshot."}
+              </p>
             )}
           </div>
           <div className={CARD}>

@@ -30,6 +30,13 @@ IN_PROGRESS = ("treatment_planned", "in_treatment")
 CLOSED = ("treated", "accepted", "closed")
 
 
+class GroupRow(BaseModel):
+    name: str
+    total: int
+    compliant: int
+    readiness: float | None
+
+
 class FrameworkRow(BaseModel):
     code: str
     name: str
@@ -38,6 +45,7 @@ class FrameworkRow(BaseModel):
     compliant: int
     readiness: float | None
     status_counts: dict[str, int]
+    groups: list[GroupRow]
 
 
 class EvidenceCard(BaseModel):
@@ -78,7 +86,24 @@ def _framework_row(db: Session, controls: list[Control], has_evidence: bool) -> 
         compliant=counts.get("compliant", 0),
         readiness=weighted_readiness(controls) if has_evidence else None,
         status_counts=dict(counts),
+        groups=_groups(controls, has_evidence),
     )
+
+
+def _groups(controls: list[Control], has_evidence: bool) -> list[GroupRow]:
+    """Per Annex A theme, in catalogue order."""
+    by_theme: dict[str, list[Control]] = {}
+    for control in sorted(controls, key=lambda c: [int(p) if p.isdigit() else p for p in c.code.split(".")]):
+        by_theme.setdefault(control.theme or "Other", []).append(control)
+    return [
+        GroupRow(
+            name=theme,
+            total=len(group),
+            compliant=sum(1 for c in group if c.status == "compliant"),
+            readiness=weighted_readiness(group) if has_evidence else None,
+        )
+        for theme, group in by_theme.items()
+    ]
 
 
 def _evidence_card(db: Session, scope_id: uuid.UUID) -> EvidenceCard:

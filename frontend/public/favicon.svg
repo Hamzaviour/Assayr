@@ -1,6 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Assayr mark">
-  <rect x="2" y="2" width="60" height="60" rx="16" fill="#0A0F1F"/>
-  <rect x="2" y="2" width="60" height="60" rx="16" fill="none" stroke="#2F4BFF" stroke-width="2"/>
+  <rect x="2" y="2" width="60" height="60" rx="16" fill="#8A1538"/>
   <path d="M17 49 L32 14 L47 49" fill="none" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
   <path d="M23.5 37 L29 42.5 L40 31" fill="none" stroke="#CFAE4E" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
