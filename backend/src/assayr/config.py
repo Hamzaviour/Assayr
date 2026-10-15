@@ -1,3 +1,4 @@
+import os
 from functools import lru_cache
 
 from pydantic import field_validator
@@ -35,4 +36,4 @@ class Settings(BaseSettings):
 
 @lru_cache
 def get_settings() -> Settings:
-    return Settings()
+    return Settings(_env_file=os.environ.get("ASSAYR_ENV_FILE", ".env"), _env_file_encoding="utf-8")

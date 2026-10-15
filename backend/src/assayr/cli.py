@@ -1,5 +1,6 @@
 """`assayr` administration commands."""
 
+import signal
 import time
 from datetime import timedelta
 
@@ -19,6 +20,48 @@ from assayr.risk.seed import ensure_methodology, ensure_risk_library
 from assayr.storage import BlobStore
 
 app = typer.Typer(help="Assayr administration commands.", no_args_is_help=True)
+
+
+class StopFlag:
+    """Set when the service manager asks the worker to stop (Ctrl+C, SIGTERM, Ctrl+Break on Windows)."""
+
+    _SIGNALS = tuple(s for s in (getattr(signal, n, None) for n in ("SIGINT", "SIGTERM", "SIGBREAK")) if s)
+
+    def __init__(self) -> None:
+        self.requested = False
+        self._previous: dict[int, object] = {}
+
+    def _handle(self, signum, frame) -> None:
+        self.requested = True
+
+    def install(self) -> None:
+        for sig in self._SIGNALS:
+            self._previous[sig] = signal.signal(sig, self._handle)
+
+    def restore(self) -> None:
+        for sig, handler in self._previous.items():
+            signal.signal(sig, handler)
+        self._previous.clear()
+
+
+def _enqueue_recompute(database: Database) -> None:
+    from assayr.scoring.jobs import enqueue_recompute_all
+
+    with database.sessionmaker() as session:
+        enqueue_recompute_all(session, utcnow())
+        session.commit()
+
+
+def _worker_loop(database, env, settings, flag: StopFlag) -> None:
+    next_recompute = utcnow()
+    while not flag.requested:
+        if utcnow() >= next_recompute:
+            _enqueue_recompute(database)
+            next_recompute = utcnow() + timedelta(minutes=settings.recompute_interval_minutes)
+        if not run_one(database.sessionmaker if database else None, env):
+            deadline = time.monotonic() + settings.worker_poll_seconds
+            while not flag.requested and time.monotonic() < deadline:
+                time.sleep(0.2)
 
 
 def _database() -> Database:
@@ -116,7 +159,6 @@ def audit_verify() -> None:
 def worker(once: bool = typer.Option(False, "--once", help="Process the queued jobs, then exit.")) -> None:
     """Run background jobs: evidence verification and scheduled status checks."""
     import assayr.job_handlers  # noqa: F401
-    from assayr.scoring.jobs import enqueue_recompute_all
 
     settings = get_settings()
     database = _database()
@@ -126,12 +168,10 @@ def worker(once: bool = typer.Option(False, "--once", help="Process the queued j
         typer.echo(f"Processed {processed} job{'s' if processed != 1 else ''}.")
         return
     typer.echo("Worker started.")
-    next_recompute = utcnow()
-    while True:
-        if utcnow() >= next_recompute:
-            with database.sessionmaker() as session:
-                enqueue_recompute_all(session, utcnow())
-                session.commit()
-            next_recompute = utcnow() + timedelta(minutes=settings.recompute_interval_minutes)
-        if not run_one(database.sessionmaker, env):
-            time.sleep(settings.worker_poll_seconds)
+    flag = StopFlag()
+    flag.install()
+    try:
+        _worker_loop(database, env, settings, flag)
+    finally:
+        flag.restore()
+    typer.echo("Worker stopped.")
