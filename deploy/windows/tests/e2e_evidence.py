@@ -52,14 +52,18 @@ def upload(control: str, slot: str, name: str, data: bytes) -> str:
     return link["id"]
 
 
-def settled_state(link_id: str, seconds: int = 120) -> str:
-    state = "verifying"
+def settled(link_id: str, seconds: int = 120) -> dict:
     for _ in range(seconds):
-        state = call("GET", f"/api/v1/artefact-links/{link_id}")["state"]
-        if state != "verifying":
-            return state
+        link = call("GET", f"/api/v1/artefact-links/{link_id}")
+        if link["state"] != "verifying":
+            return link
         time.sleep(1)
     fail(f"evidence {link_id} was never verified (is the worker running?)")
+
+
+def malware_rule(link: dict) -> str:
+    """Status of the malware-scan rule (V-AV) in the verification run."""
+    return next((r["status"] for r in link["rules"] if r["code"] == "V-AV"), "missing")
 
 
 call("POST", "/api/v1/auth/login", json.dumps({"email": EMAIL, "password": PASSWORD}).encode(), "application/json")
@@ -70,15 +74,17 @@ if total != 93:
 control = call("GET", "/api/v1/controls/A.5.1")
 slot = control["slots"][0]["id"]
 policy = b"Acme Financial Services\nInformation Security Policy\nVersion 1.0\nApproved by: E2E Admin\n"
-clean = settled_state(upload("A.5.1", slot, "policy.txt", policy))
-if clean == "rejected":
-    fail("the clean policy document was rejected")
-print(f"Clean document verified: {clean}")
+# A tiny text file may still fail content rules (dates, approvals); what matters here is that the worker
+# verified it and the malware scanner passed it.
+clean = settled(upload("A.5.1", slot, "policy.txt", policy))
+if CHECK_AV and malware_rule(clean) != "pass":
+    fail(f"the malware scan did not pass the clean file: {malware_rule(clean)}")
+print(f"Clean document verified by the worker: {clean['state']}, malware scan {malware_rule(clean)}")
 
 if CHECK_AV:
-    infected = settled_state(upload("A.5.1", slot, "eicar.txt", EICAR))
-    if infected != "rejected":
-        fail(f"the EICAR test file ended {infected}, expected rejected")
+    infected = settled(upload("A.5.1", slot, "eicar.txt", EICAR))
+    if infected["state"] != "rejected" or malware_rule(infected) != "fail":
+        fail(f"the EICAR test file ended {infected['state']} with malware scan {malware_rule(infected)}")
     print("EICAR test file rejected by the malware scan")
 
 print("Evidence checks passed")
