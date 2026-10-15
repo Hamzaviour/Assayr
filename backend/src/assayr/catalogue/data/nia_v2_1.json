@@ -1,0 +1,4884 @@
+{
+ "source": "NCSA National Information Assurance Standard V2.1 (May 2023): IDs only, no NCSA text",
+ "domains": [
+  {
+   "code": "IG",
+   "name": "Security Governance",
+   "summary": "Who owns information security, with what authority, support and budget.",
+   "order": 0
+  },
+  {
+   "code": "RM",
+   "name": "Risk Management",
+   "summary": "Assessing information risks, treating them and checking that the treatment works.",
+   "order": 1
+  },
+  {
+   "code": "TM",
+   "name": "Third Party Security Management",
+   "summary": "Keeping security accountable and visible when services are outsourced.",
+   "order": 2
+  },
+  {
+   "code": "DL",
+   "name": "Data Classification Label",
+   "summary": "Labelling information so its handling matches its sensitivity.",
+   "order": 3
+  },
+  {
+   "code": "CM",
+   "name": "Change Management",
+   "summary": "Controlled, approved and documented changes to systems.",
+   "order": 4
+  },
+  {
+   "code": "PS",
+   "name": "Personnel Security",
+   "summary": "Security before, during and after employment, for staff and visitors.",
+   "order": 5
+  },
+  {
+   "code": "SA",
+   "name": "Security Awareness",
+   "summary": "Training and awareness so people know and follow security expectations.",
+   "order": 6
+  },
+  {
+   "code": "IM",
+   "name": "Incidents Management",
+   "summary": "Detecting, reporting, handling and learning from security incidents.",
+   "order": 7
+  },
+  {
+   "code": "BC",
+   "name": "Business Continuity Management",
+   "summary": "Keeping critical services running through disruption and recovering them.",
+   "order": 8
+  },
+  {
+   "code": "SM",
+   "name": "Logging and Security Monitoring",
+   "summary": "Recording and watching activity so misuse is noticed and traceable.",
+   "order": 9
+  },
+  {
+   "code": "DR",
+   "name": "Data Retention and Archival",
+   "summary": "Keeping information for as long as needed, safely, and no longer.",
+   "order": 10
+  },
+  {
+   "code": "DC",
+   "name": "Documentation",
+   "summary": "Security policies, plans and procedures that are current and consistent.",
+   "order": 11
+  },
+  {
+   "code": "AC",
+   "name": "Audit & Certification",
+   "summary": "Independent audit, certification and fixing what audits find.",
+   "order": 12
+  },
+  {
+   "code": "CS",
+   "name": "Communication Security",
+   "summary": "Protecting cabling, telephony, conferencing and fax communications.",
+   "order": 13
+  },
+  {
+   "code": "NS",
+   "name": "Network Security",
+   "summary": "Designing, configuring and protecting networks and network services.",
+   "order": 14
+  },
+  {
+   "code": "IE",
+   "name": "Information Exchange",
+   "summary": "Protecting information shared with other organisations and the public.",
+   "order": 15
+  },
+  {
+   "code": "GS",
+   "name": "Gateway Security",
+   "summary": "Controlling and inspecting data flows between networks.",
+   "order": 16
+  },
+  {
+   "code": "PR",
+   "name": "Product Security",
+   "summary": "Choosing, testing, delivering and patching security-relevant products.",
+   "order": 17
+  },
+  {
+   "code": "SS",
+   "name": "Software Security",
+   "summary": "Building security into software, servers, web applications and databases.",
+   "order": 18
+  },
+  {
+   "code": "SU",
+   "name": "System Usage Security",
+   "summary": "Responsible use of systems, the web and e-mail by staff.",
+   "order": 19
+  },
+  {
+   "code": "MS",
+   "name": "Media Security",
+   "summary": "Classifying, sanitising, repairing and destroying storage media.",
+   "order": 20
+  },
+  {
+   "code": "AM",
+   "name": "Access Control Security",
+   "summary": "Who can access what, how they prove who they are, and privileged access.",
+   "order": 21
+  },
+  {
+   "code": "CY",
+   "name": "Cryptographic Security",
+   "summary": "Approved cryptography, key management and digital certificates.",
+   "order": 22
+  },
+  {
+   "code": "OS",
+   "name": "Portable Devices & Working Off-Site Security",
+   "summary": "Securing laptops and mobile devices and work done off-site.",
+   "order": 23
+  },
+  {
+   "code": "PH",
+   "name": "Physical Security",
+   "summary": "Protecting sites, secure areas and equipment against physical threats.",
+   "order": 24
+  },
+  {
+   "code": "VL",
+   "name": "Virtualization",
+   "summary": "Securing hypervisors and virtual environments.",
+   "order": 25
+  }
+ ],
+ "controls": [
+  {
+   "ref": "IG 1",
+   "domain": "IG",
+   "order": 0,
+   "mandatory": true
+  },
+  {
+   "ref": "IG 2",
+   "domain": "IG",
+   "order": 1,
+   "mandatory": true
+  },
+  {
+   "ref": "IG 3",
+   "domain": "IG",
+   "order": 2,
+   "mandatory": true
+  },
+  {
+   "ref": "IG 4",
+   "domain": "IG",
+   "order": 3,
+   "mandatory": true
+  },
+  {
+   "ref": "IG 5",
+   "domain": "IG",
+   "order": 4,
+   "mandatory": false
+  },
+  {
+   "ref": "IG 6",
+   "domain": "IG",
+   "order": 5,
+   "mandatory": false
+  },
+  {
+   "ref": "IG 7",
+   "domain": "IG",
+   "order": 6,
+   "mandatory": true
+  },
+  {
+   "ref": "IG 8",
+   "domain": "IG",
+   "order": 7,
+   "mandatory": false
+  },
+  {
+   "ref": "IG 9",
+   "domain": "IG",
+   "order": 8,
+   "mandatory": false
+  },
+  {
+   "ref": "IG 10",
+   "domain": "IG",
+   "order": 9,
+   "mandatory": false
+  },
+  {
+   "ref": "RM 1",
+   "domain": "RM",
+   "order": 10,
+   "mandatory": true
+  },
+  {
+   "ref": "RM 2",
+   "domain": "RM",
+   "order": 11,
+   "mandatory": true
+  },
+  {
+   "ref": "RM 3",
+   "domain": "RM",
+   "order": 12,
+   "mandatory": false
+  },
+  {
+   "ref": "RM 4",
+   "domain": "RM",
+   "order": 13,
+   "mandatory": false
+  },
+  {
+   "ref": "RM 5",
+   "domain": "RM",
+   "order": 14,
+   "mandatory": false
+  },
+  {
+   "ref": "TM 1",
+   "domain": "TM",
+   "order": 15,
+   "mandatory": true
+  },
+  {
+   "ref": "TM 2",
+   "domain": "TM",
+   "order": 16,
+   "mandatory": true
+  },
+  {
+   "ref": "TM 3",
+   "domain": "TM",
+   "order": 17,
+   "mandatory": false
+  },
+  {
+   "ref": "TM 4",
+   "domain": "TM",
+   "order": 18,
+   "mandatory": false
+  },
+  {
+   "ref": "TM 5",
+   "domain": "TM",
+   "order": 19,
+   "mandatory": false
+  },
+  {
+   "ref": "DL 1",
+   "domain": "DL",
+   "order": 20,
+   "mandatory": true
+  },
+  {
+   "ref": "DL 2",
+   "domain": "DL",
+   "order": 21,
+   "mandatory": true
+  },
+  {
+   "ref": "DL 3",
+   "domain": "DL",
+   "order": 22,
+   "mandatory": true
+  },
+  {
+   "ref": "DL 4",
+   "domain": "DL",
+   "order": 23,
+   "mandatory": false
+  },
+  {
+   "ref": "DL 5",
+   "domain": "DL",
+   "order": 24,
+   "mandatory": false
+  },
+  {
+   "ref": "CM 1",
+   "domain": "CM",
+   "order": 25,
+   "mandatory": true
+  },
+  {
+   "ref": "CM 2",
+   "domain": "CM",
+   "order": 26,
+   "mandatory": false
+  },
+  {
+   "ref": "CM 3",
+   "domain": "CM",
+   "order": 27,
+   "mandatory": false
+  },
+  {
+   "ref": "CM 4",
+   "domain": "CM",
+   "order": 28,
+   "mandatory": true
+  },
+  {
+   "ref": "CM 5",
+   "domain": "CM",
+   "order": 29,
+   "mandatory": false
+  },
+  {
+   "ref": "CM 6",
+   "domain": "CM",
+   "order": 30,
+   "mandatory": false
+  },
+  {
+   "ref": "PS 1",
+   "domain": "PS",
+   "order": 31,
+   "mandatory": false
+  },
+  {
+   "ref": "PS 2",
+   "domain": "PS",
+   "order": 32,
+   "mandatory": true
+  },
+  {
+   "ref": "PS 3",
+   "domain": "PS",
+   "order": 33,
+   "mandatory": true
+  },
+  {
+   "ref": "PS 4",
+   "domain": "PS",
+   "order": 34,
+   "mandatory": false
+  },
+  {
+   "ref": "PS 5",
+   "domain": "PS",
+   "order": 35,
+   "mandatory": true
+  },
+  {
+   "ref": "PS 6",
+   "domain": "PS",
+   "order": 36,
+   "mandatory": true
+  },
+  {
+   "ref": "PS 7",
+   "domain": "PS",
+   "order": 37,
+   "mandatory": false
+  },
+  {
+   "ref": "PS 8",
+   "domain": "PS",
+   "order": 38,
+   "mandatory": false
+  },
+  {
+   "ref": "PS 9",
+   "domain": "PS",
+   "order": 39,
+   "mandatory": false
+  },
+  {
+   "ref": "PS 10",
+   "domain": "PS",
+   "order": 40,
+   "mandatory": true
+  },
+  {
+   "ref": "PS 11",
+   "domain": "PS",
+   "order": 41,
+   "mandatory": true
+  },
+  {
+   "ref": "PS 12",
+   "domain": "PS",
+   "order": 42,
+   "mandatory": true
+  },
+  {
+   "ref": "SA 1",
+   "domain": "SA",
+   "order": 43,
+   "mandatory": true
+  },
+  {
+   "ref": "SA 2",
+   "domain": "SA",
+   "order": 44,
+   "mandatory": true
+  },
+  {
+   "ref": "SA 3",
+   "domain": "SA",
+   "order": 45,
+   "mandatory": true
+  },
+  {
+   "ref": "SA 4",
+   "domain": "SA",
+   "order": 46,
+   "mandatory": false
+  },
+  {
+   "ref": "SA 5",
+   "domain": "SA",
+   "order": 47,
+   "mandatory": false
+  },
+  {
+   "ref": "SA 6",
+   "domain": "SA",
+   "order": 48,
+   "mandatory": false
+  },
+  {
+   "ref": "SA 7",
+   "domain": "SA",
+   "order": 49,
+   "mandatory": false
+  },
+  {
+   "ref": "SA 8",
+   "domain": "SA",
+   "order": 50,
+   "mandatory": false
+  },
+  {
+   "ref": "IM 1",
+   "domain": "IM",
+   "order": 51,
+   "mandatory": true
+  },
+  {
+   "ref": "IM 2",
+   "domain": "IM",
+   "order": 52,
+   "mandatory": false
+  },
+  {
+   "ref": "IM 3",
+   "domain": "IM",
+   "order": 53,
+   "mandatory": true
+  },
+  {
+   "ref": "IM 4",
+   "domain": "IM",
+   "order": 54,
+   "mandatory": false
+  },
+  {
+   "ref": "IM 5",
+   "domain": "IM",
+   "order": 55,
+   "mandatory": true
+  },
+  {
+   "ref": "IM 6",
+   "domain": "IM",
+   "order": 56,
+   "mandatory": false
+  },
+  {
+   "ref": "IM 7",
+   "domain": "IM",
+   "order": 57,
+   "mandatory": false
+  },
+  {
+   "ref": "IM 8",
+   "domain": "IM",
+   "order": 58,
+   "mandatory": true
+  },
+  {
+   "ref": "IM 9",
+   "domain": "IM",
+   "order": 59,
+   "mandatory": false
+  },
+  {
+   "ref": "BC 1",
+   "domain": "BC",
+   "order": 60,
+   "mandatory": true
+  },
+  {
+   "ref": "BC 2",
+   "domain": "BC",
+   "order": 61,
+   "mandatory": true
+  },
+  {
+   "ref": "BC 3",
+   "domain": "BC",
+   "order": 62,
+   "mandatory": false
+  },
+  {
+   "ref": "BC 4",
+   "domain": "BC",
+   "order": 63,
+   "mandatory": true
+  },
+  {
+   "ref": "BC 5",
+   "domain": "BC",
+   "order": 64,
+   "mandatory": false
+  },
+  {
+   "ref": "BC 6",
+   "domain": "BC",
+   "order": 65,
+   "mandatory": false
+  },
+  {
+   "ref": "BC 7",
+   "domain": "BC",
+   "order": 66,
+   "mandatory": false
+  },
+  {
+   "ref": "BC 8",
+   "domain": "BC",
+   "order": 67,
+   "mandatory": false
+  },
+  {
+   "ref": "BC 9",
+   "domain": "BC",
+   "order": 68,
+   "mandatory": true
+  },
+  {
+   "ref": "SM 1",
+   "domain": "SM",
+   "order": 69,
+   "mandatory": true
+  },
+  {
+   "ref": "SM 2",
+   "domain": "SM",
+   "order": 70,
+   "mandatory": true
+  },
+  {
+   "ref": "SM 3",
+   "domain": "SM",
+   "order": 71,
+   "mandatory": false
+  },
+  {
+   "ref": "SM 4",
+   "domain": "SM",
+   "order": 72,
+   "mandatory": true
+  },
+  {
+   "ref": "SM 5",
+   "domain": "SM",
+   "order": 73,
+   "mandatory": false
+  },
+  {
+   "ref": "SM 6",
+   "domain": "SM",
+   "order": 74,
+   "mandatory": false
+  },
+  {
+   "ref": "SM 7",
+   "domain": "SM",
+   "order": 75,
+   "mandatory": true
+  },
+  {
+   "ref": "SM 8",
+   "domain": "SM",
+   "order": 76,
+   "mandatory": false
+  },
+  {
+   "ref": "SM 9",
+   "domain": "SM",
+   "order": 77,
+   "mandatory": false
+  },
+  {
+   "ref": "DR 1",
+   "domain": "DR",
+   "order": 78,
+   "mandatory": true
+  },
+  {
+   "ref": "DR 2",
+   "domain": "DR",
+   "order": 79,
+   "mandatory": true
+  },
+  {
+   "ref": "DR 3",
+   "domain": "DR",
+   "order": 80,
+   "mandatory": false
+  },
+  {
+   "ref": "DR 4",
+   "domain": "DR",
+   "order": 81,
+   "mandatory": false
+  },
+  {
+   "ref": "DR 5",
+   "domain": "DR",
+   "order": 82,
+   "mandatory": true
+  },
+  {
+   "ref": "DR 6",
+   "domain": "DR",
+   "order": 83,
+   "mandatory": false
+  },
+  {
+   "ref": "DC 1",
+   "domain": "DC",
+   "order": 84,
+   "mandatory": true
+  },
+  {
+   "ref": "DC 2",
+   "domain": "DC",
+   "order": 85,
+   "mandatory": false
+  },
+  {
+   "ref": "DC 3",
+   "domain": "DC",
+   "order": 86,
+   "mandatory": false
+  },
+  {
+   "ref": "DC 4",
+   "domain": "DC",
+   "order": 87,
+   "mandatory": true
+  },
+  {
+   "ref": "DC 5",
+   "domain": "DC",
+   "order": 88,
+   "mandatory": true
+  },
+  {
+   "ref": "AC 1",
+   "domain": "AC",
+   "order": 89,
+   "mandatory": true
+  },
+  {
+   "ref": "AC 2",
+   "domain": "AC",
+   "order": 90,
+   "mandatory": true
+  },
+  {
+   "ref": "AC 3",
+   "domain": "AC",
+   "order": 91,
+   "mandatory": true
+  },
+  {
+   "ref": "AC 4",
+   "domain": "AC",
+   "order": 92,
+   "mandatory": true
+  },
+  {
+   "ref": "AC 5",
+   "domain": "AC",
+   "order": 93,
+   "mandatory": true
+  },
+  {
+   "ref": "AC 6",
+   "domain": "AC",
+   "order": 94,
+   "mandatory": true
+  },
+  {
+   "ref": "AC 7",
+   "domain": "AC",
+   "order": 95,
+   "mandatory": true
+  },
+  {
+   "ref": "AC 8",
+   "domain": "AC",
+   "order": 96,
+   "mandatory": true
+  },
+  {
+   "ref": "CS 1",
+   "domain": "CS",
+   "order": 97,
+   "mandatory": false
+  },
+  {
+   "ref": "CS 2",
+   "domain": "CS",
+   "order": 98,
+   "mandatory": true
+  },
+  {
+   "ref": "CS 3",
+   "domain": "CS",
+   "order": 99,
+   "mandatory": false
+  },
+  {
+   "ref": "CS 4",
+   "domain": "CS",
+   "order": 100,
+   "mandatory": true
+  },
+  {
+   "ref": "CS 5",
+   "domain": "CS",
+   "order": 101,
+   "mandatory": true
+  },
+  {
+   "ref": "CS 6",
+   "domain": "CS",
+   "order": 102,
+   "mandatory": false
+  },
+  {
+   "ref": "CS 7",
+   "domain": "CS",
+   "order": 103,
+   "mandatory": false
+  },
+  {
+   "ref": "CS 8",
+   "domain": "CS",
+   "order": 104,
+   "mandatory": true
+  },
+  {
+   "ref": "CS 9",
+   "domain": "CS",
+   "order": 105,
+   "mandatory": true
+  },
+  {
+   "ref": "CS 10",
+   "domain": "CS",
+   "order": 106,
+   "mandatory": true
+  },
+  {
+   "ref": "CS 11",
+   "domain": "CS",
+   "order": 107,
+   "mandatory": true
+  },
+  {
+   "ref": "CS 12",
+   "domain": "CS",
+   "order": 108,
+   "mandatory": false
+  },
+  {
+   "ref": "NS 1",
+   "domain": "NS",
+   "order": 109,
+   "mandatory": true
+  },
+  {
+   "ref": "NS 2",
+   "domain": "NS",
+   "order": 110,
+   "mandatory": false
+  },
+  {
+   "ref": "NS 3",
+   "domain": "NS",
+   "order": 111,
+   "mandatory": false
+  },
+  {
+   "ref": "NS 4",
+   "domain": "NS",
+   "order": 112,
+   "mandatory": true
+  },
+  {
+   "ref": "NS 5",
+   "domain": "NS",
+   "order": 113,
+   "mandatory": true
+  },
+  {
+   "ref": "NS 6",
+   "domain": "NS",
+   "order": 114,
+   "mandatory": true
+  },
+  {
+   "ref": "NS 7",
+   "domain": "NS",
+   "order": 115,
+   "mandatory": false
+  },
+  {
+   "ref": "NS 8",
+   "domain": "NS",
+   "order": 116,
+   "mandatory": true
+  },
+  {
+   "ref": "NS 9",
+   "domain": "NS",
+   "order": 117,
+   "mandatory": true
+  },
+  {
+   "ref": "NS 10",
+   "domain": "NS",
+   "order": 118,
+   "mandatory": true
+  },
+  {
+   "ref": "NS 11",
+   "domain": "NS",
+   "order": 119,
+   "mandatory": true
+  },
+  {
+   "ref": "NS 12",
+   "domain": "NS",
+   "order": 120,
+   "mandatory": false
+  },
+  {
+   "ref": "NS 13",
+   "domain": "NS",
+   "order": 121,
+   "mandatory": true
+  },
+  {
+   "ref": "NS 14",
+   "domain": "NS",
+   "order": 122,
+   "mandatory": false
+  },
+  {
+   "ref": "NS 15",
+   "domain": "NS",
+   "order": 123,
+   "mandatory": false
+  },
+  {
+   "ref": "NS 16",
+   "domain": "NS",
+   "order": 124,
+   "mandatory": false
+  },
+  {
+   "ref": "NS 17",
+   "domain": "NS",
+   "order": 125,
+   "mandatory": false
+  },
+  {
+   "ref": "NS 18",
+   "domain": "NS",
+   "order": 126,
+   "mandatory": false
+  },
+  {
+   "ref": "NS 19",
+   "domain": "NS",
+   "order": 127,
+   "mandatory": false
+  },
+  {
+   "ref": "NS 20",
+   "domain": "NS",
+   "order": 128,
+   "mandatory": true
+  },
+  {
+   "ref": "NS 21",
+   "domain": "NS",
+   "order": 129,
+   "mandatory": true
+  },
+  {
+   "ref": "NS 22",
+   "domain": "NS",
+   "order": 130,
+   "mandatory": false
+  },
+  {
+   "ref": "NS 23",
+   "domain": "NS",
+   "order": 131,
+   "mandatory": true
+  },
+  {
+   "ref": "NS 24",
+   "domain": "NS",
+   "order": 132,
+   "mandatory": false
+  },
+  {
+   "ref": "NS 25",
+   "domain": "NS",
+   "order": 133,
+   "mandatory": true
+  },
+  {
+   "ref": "NS 26",
+   "domain": "NS",
+   "order": 134,
+   "mandatory": false
+  },
+  {
+   "ref": "NS 27",
+   "domain": "NS",
+   "order": 135,
+   "mandatory": true
+  },
+  {
+   "ref": "NS 28",
+   "domain": "NS",
+   "order": 136,
+   "mandatory": false
+  },
+  {
+   "ref": "NS 29",
+   "domain": "NS",
+   "order": 137,
+   "mandatory": false
+  },
+  {
+   "ref": "NS 30",
+   "domain": "NS",
+   "order": 138,
+   "mandatory": true
+  },
+  {
+   "ref": "NS 31",
+   "domain": "NS",
+   "order": 139,
+   "mandatory": true
+  },
+  {
+   "ref": "NS 32",
+   "domain": "NS",
+   "order": 140,
+   "mandatory": false
+  },
+  {
+   "ref": "NS 33",
+   "domain": "NS",
+   "order": 141,
+   "mandatory": true
+  },
+  {
+   "ref": "NS 34",
+   "domain": "NS",
+   "order": 142,
+   "mandatory": true
+  },
+  {
+   "ref": "NS 35",
+   "domain": "NS",
+   "order": 143,
+   "mandatory": true
+  },
+  {
+   "ref": "NS 36",
+   "domain": "NS",
+   "order": 144,
+   "mandatory": true
+  },
+  {
+   "ref": "NS 37",
+   "domain": "NS",
+   "order": 145,
+   "mandatory": false
+  },
+  {
+   "ref": "NS 38",
+   "domain": "NS",
+   "order": 146,
+   "mandatory": false
+  },
+  {
+   "ref": "NS 39",
+   "domain": "NS",
+   "order": 147,
+   "mandatory": true
+  },
+  {
+   "ref": "NS 40",
+   "domain": "NS",
+   "order": 148,
+   "mandatory": false
+  },
+  {
+   "ref": "NS 41",
+   "domain": "NS",
+   "order": 149,
+   "mandatory": true
+  },
+  {
+   "ref": "NS 42",
+   "domain": "NS",
+   "order": 150,
+   "mandatory": false
+  },
+  {
+   "ref": "NS 43",
+   "domain": "NS",
+   "order": 151,
+   "mandatory": false
+  },
+  {
+   "ref": "NS 44",
+   "domain": "NS",
+   "order": 152,
+   "mandatory": false
+  },
+  {
+   "ref": "NS 45",
+   "domain": "NS",
+   "order": 153,
+   "mandatory": true
+  },
+  {
+   "ref": "NS 46",
+   "domain": "NS",
+   "order": 154,
+   "mandatory": false
+  },
+  {
+   "ref": "NS 47",
+   "domain": "NS",
+   "order": 155,
+   "mandatory": false
+  },
+  {
+   "ref": "NS 48",
+   "domain": "NS",
+   "order": 156,
+   "mandatory": false
+  },
+  {
+   "ref": "NS 49",
+   "domain": "NS",
+   "order": 157,
+   "mandatory": false
+  },
+  {
+   "ref": "NS 50",
+   "domain": "NS",
+   "order": 158,
+   "mandatory": true
+  },
+  {
+   "ref": "NS 51",
+   "domain": "NS",
+   "order": 159,
+   "mandatory": false
+  },
+  {
+   "ref": "NS 52",
+   "domain": "NS",
+   "order": 160,
+   "mandatory": false
+  },
+  {
+   "ref": "NS 53",
+   "domain": "NS",
+   "order": 161,
+   "mandatory": false
+  },
+  {
+   "ref": "NS 54",
+   "domain": "NS",
+   "order": 162,
+   "mandatory": false
+  },
+  {
+   "ref": "NS 55",
+   "domain": "NS",
+   "order": 163,
+   "mandatory": true
+  },
+  {
+   "ref": "NS 56",
+   "domain": "NS",
+   "order": 164,
+   "mandatory": true
+  },
+  {
+   "ref": "NS 57",
+   "domain": "NS",
+   "order": 165,
+   "mandatory": true
+  },
+  {
+   "ref": "NS 58",
+   "domain": "NS",
+   "order": 166,
+   "mandatory": true
+  },
+  {
+   "ref": "NS 59",
+   "domain": "NS",
+   "order": 167,
+   "mandatory": false
+  },
+  {
+   "ref": "NS 60",
+   "domain": "NS",
+   "order": 168,
+   "mandatory": false
+  },
+  {
+   "ref": "NS 61",
+   "domain": "NS",
+   "order": 169,
+   "mandatory": false
+  },
+  {
+   "ref": "NS 62",
+   "domain": "NS",
+   "order": 170,
+   "mandatory": false
+  },
+  {
+   "ref": "NS 63",
+   "domain": "NS",
+   "order": 171,
+   "mandatory": true
+  },
+  {
+   "ref": "NS 64",
+   "domain": "NS",
+   "order": 172,
+   "mandatory": true
+  },
+  {
+   "ref": "NS 65",
+   "domain": "NS",
+   "order": 173,
+   "mandatory": false
+  },
+  {
+   "ref": "NS 66",
+   "domain": "NS",
+   "order": 174,
+   "mandatory": false
+  },
+  {
+   "ref": "IE 1",
+   "domain": "IE",
+   "order": 175,
+   "mandatory": false
+  },
+  {
+   "ref": "IE 2",
+   "domain": "IE",
+   "order": 176,
+   "mandatory": true
+  },
+  {
+   "ref": "IE 3",
+   "domain": "IE",
+   "order": 177,
+   "mandatory": false
+  },
+  {
+   "ref": "IE 4",
+   "domain": "IE",
+   "order": 178,
+   "mandatory": false
+  },
+  {
+   "ref": "IE 5",
+   "domain": "IE",
+   "order": 179,
+   "mandatory": false
+  },
+  {
+   "ref": "IE 6",
+   "domain": "IE",
+   "order": 180,
+   "mandatory": false
+  },
+  {
+   "ref": "IE 7",
+   "domain": "IE",
+   "order": 181,
+   "mandatory": true
+  },
+  {
+   "ref": "IE 8",
+   "domain": "IE",
+   "order": 182,
+   "mandatory": true
+  },
+  {
+   "ref": "IE 9",
+   "domain": "IE",
+   "order": 183,
+   "mandatory": false
+  },
+  {
+   "ref": "IE 10",
+   "domain": "IE",
+   "order": 184,
+   "mandatory": true
+  },
+  {
+   "ref": "IE 11",
+   "domain": "IE",
+   "order": 185,
+   "mandatory": false
+  },
+  {
+   "ref": "IE 12",
+   "domain": "IE",
+   "order": 186,
+   "mandatory": false
+  },
+  {
+   "ref": "IE 13",
+   "domain": "IE",
+   "order": 187,
+   "mandatory": true
+  },
+  {
+   "ref": "GS 1",
+   "domain": "GS",
+   "order": 188,
+   "mandatory": false
+  },
+  {
+   "ref": "GS 2",
+   "domain": "GS",
+   "order": 189,
+   "mandatory": false
+  },
+  {
+   "ref": "GS 3",
+   "domain": "GS",
+   "order": 190,
+   "mandatory": false
+  },
+  {
+   "ref": "GS 4",
+   "domain": "GS",
+   "order": 191,
+   "mandatory": true
+  },
+  {
+   "ref": "GS 5",
+   "domain": "GS",
+   "order": 192,
+   "mandatory": false
+  },
+  {
+   "ref": "GS 6",
+   "domain": "GS",
+   "order": 193,
+   "mandatory": false
+  },
+  {
+   "ref": "GS 7",
+   "domain": "GS",
+   "order": 194,
+   "mandatory": false
+  },
+  {
+   "ref": "GS 8",
+   "domain": "GS",
+   "order": 195,
+   "mandatory": true
+  },
+  {
+   "ref": "GS 9",
+   "domain": "GS",
+   "order": 196,
+   "mandatory": true
+  },
+  {
+   "ref": "GS 10",
+   "domain": "GS",
+   "order": 197,
+   "mandatory": false
+  },
+  {
+   "ref": "GS 11",
+   "domain": "GS",
+   "order": 198,
+   "mandatory": false
+  },
+  {
+   "ref": "GS 12",
+   "domain": "GS",
+   "order": 199,
+   "mandatory": false
+  },
+  {
+   "ref": "GS 13",
+   "domain": "GS",
+   "order": 200,
+   "mandatory": true
+  },
+  {
+   "ref": "GS 14",
+   "domain": "GS",
+   "order": 201,
+   "mandatory": true
+  },
+  {
+   "ref": "GS 15",
+   "domain": "GS",
+   "order": 202,
+   "mandatory": false
+  },
+  {
+   "ref": "GS 16",
+   "domain": "GS",
+   "order": 203,
+   "mandatory": true
+  },
+  {
+   "ref": "GS 17",
+   "domain": "GS",
+   "order": 204,
+   "mandatory": true
+  },
+  {
+   "ref": "PR 1",
+   "domain": "PR",
+   "order": 205,
+   "mandatory": false
+  },
+  {
+   "ref": "PR 2",
+   "domain": "PR",
+   "order": 206,
+   "mandatory": false
+  },
+  {
+   "ref": "PR 3",
+   "domain": "PR",
+   "order": 207,
+   "mandatory": true
+  },
+  {
+   "ref": "PR 4",
+   "domain": "PR",
+   "order": 208,
+   "mandatory": false
+  },
+  {
+   "ref": "PR 5",
+   "domain": "PR",
+   "order": 209,
+   "mandatory": true
+  },
+  {
+   "ref": "PR 6",
+   "domain": "PR",
+   "order": 210,
+   "mandatory": false
+  },
+  {
+   "ref": "PR 7",
+   "domain": "PR",
+   "order": 211,
+   "mandatory": false
+  },
+  {
+   "ref": "PR 8",
+   "domain": "PR",
+   "order": 212,
+   "mandatory": true
+  },
+  {
+   "ref": "PR 9",
+   "domain": "PR",
+   "order": 213,
+   "mandatory": false
+  },
+  {
+   "ref": "SS 1",
+   "domain": "SS",
+   "order": 214,
+   "mandatory": false
+  },
+  {
+   "ref": "SS 2",
+   "domain": "SS",
+   "order": 215,
+   "mandatory": true
+  },
+  {
+   "ref": "SS 3",
+   "domain": "SS",
+   "order": 216,
+   "mandatory": false
+  },
+  {
+   "ref": "SS 4",
+   "domain": "SS",
+   "order": 217,
+   "mandatory": true
+  },
+  {
+   "ref": "SS 5",
+   "domain": "SS",
+   "order": 218,
+   "mandatory": false
+  },
+  {
+   "ref": "SS 6",
+   "domain": "SS",
+   "order": 219,
+   "mandatory": true
+  },
+  {
+   "ref": "SS 7",
+   "domain": "SS",
+   "order": 220,
+   "mandatory": false
+  },
+  {
+   "ref": "SS 8",
+   "domain": "SS",
+   "order": 221,
+   "mandatory": false
+  },
+  {
+   "ref": "SS 9",
+   "domain": "SS",
+   "order": 222,
+   "mandatory": false
+  },
+  {
+   "ref": "SS 10",
+   "domain": "SS",
+   "order": 223,
+   "mandatory": true
+  },
+  {
+   "ref": "SS 11",
+   "domain": "SS",
+   "order": 224,
+   "mandatory": false
+  },
+  {
+   "ref": "SS 12",
+   "domain": "SS",
+   "order": 225,
+   "mandatory": false
+  },
+  {
+   "ref": "SS 13",
+   "domain": "SS",
+   "order": 226,
+   "mandatory": true
+  },
+  {
+   "ref": "SS 14",
+   "domain": "SS",
+   "order": 227,
+   "mandatory": true
+  },
+  {
+   "ref": "SS 15",
+   "domain": "SS",
+   "order": 228,
+   "mandatory": false
+  },
+  {
+   "ref": "SS 16",
+   "domain": "SS",
+   "order": 229,
+   "mandatory": false
+  },
+  {
+   "ref": "SS 17",
+   "domain": "SS",
+   "order": 230,
+   "mandatory": false
+  },
+  {
+   "ref": "SS 18",
+   "domain": "SS",
+   "order": 231,
+   "mandatory": false
+  },
+  {
+   "ref": "SS 19",
+   "domain": "SS",
+   "order": 232,
+   "mandatory": true
+  },
+  {
+   "ref": "SS 20",
+   "domain": "SS",
+   "order": 233,
+   "mandatory": false
+  },
+  {
+   "ref": "SS 21",
+   "domain": "SS",
+   "order": 234,
+   "mandatory": true
+  },
+  {
+   "ref": "SS 22",
+   "domain": "SS",
+   "order": 235,
+   "mandatory": true
+  },
+  {
+   "ref": "SS 23",
+   "domain": "SS",
+   "order": 236,
+   "mandatory": false
+  },
+  {
+   "ref": "SS 24",
+   "domain": "SS",
+   "order": 237,
+   "mandatory": false
+  },
+  {
+   "ref": "SS 25",
+   "domain": "SS",
+   "order": 238,
+   "mandatory": false
+  },
+  {
+   "ref": "SS 26",
+   "domain": "SS",
+   "order": 239,
+   "mandatory": false
+  },
+  {
+   "ref": "SS 27",
+   "domain": "SS",
+   "order": 240,
+   "mandatory": false
+  },
+  {
+   "ref": "SS 28",
+   "domain": "SS",
+   "order": 241,
+   "mandatory": false
+  },
+  {
+   "ref": "SS 29",
+   "domain": "SS",
+   "order": 242,
+   "mandatory": true
+  },
+  {
+   "ref": "SS 30",
+   "domain": "SS",
+   "order": 243,
+   "mandatory": false
+  },
+  {
+   "ref": "SS 31",
+   "domain": "SS",
+   "order": 244,
+   "mandatory": true
+  },
+  {
+   "ref": "SS 32",
+   "domain": "SS",
+   "order": 245,
+   "mandatory": false
+  },
+  {
+   "ref": "SU 1",
+   "domain": "SU",
+   "order": 246,
+   "mandatory": false
+  },
+  {
+   "ref": "SU 2",
+   "domain": "SU",
+   "order": 247,
+   "mandatory": false
+  },
+  {
+   "ref": "SU 3",
+   "domain": "SU",
+   "order": 248,
+   "mandatory": false
+  },
+  {
+   "ref": "SU 4",
+   "domain": "SU",
+   "order": 249,
+   "mandatory": false
+  },
+  {
+   "ref": "SU 5",
+   "domain": "SU",
+   "order": 250,
+   "mandatory": true
+  },
+  {
+   "ref": "SU 6",
+   "domain": "SU",
+   "order": 251,
+   "mandatory": false
+  },
+  {
+   "ref": "SU 7",
+   "domain": "SU",
+   "order": 252,
+   "mandatory": false
+  },
+  {
+   "ref": "SU 8",
+   "domain": "SU",
+   "order": 253,
+   "mandatory": true
+  },
+  {
+   "ref": "SU 9",
+   "domain": "SU",
+   "order": 254,
+   "mandatory": false
+  },
+  {
+   "ref": "SU 10",
+   "domain": "SU",
+   "order": 255,
+   "mandatory": false
+  },
+  {
+   "ref": "SU 11",
+   "domain": "SU",
+   "order": 256,
+   "mandatory": true
+  },
+  {
+   "ref": "MS 1",
+   "domain": "MS",
+   "order": 257,
+   "mandatory": false
+  },
+  {
+   "ref": "MS 2",
+   "domain": "MS",
+   "order": 258,
+   "mandatory": false
+  },
+  {
+   "ref": "MS 3",
+   "domain": "MS",
+   "order": 259,
+   "mandatory": true
+  },
+  {
+   "ref": "MS 4",
+   "domain": "MS",
+   "order": 260,
+   "mandatory": false
+  },
+  {
+   "ref": "MS 5",
+   "domain": "MS",
+   "order": 261,
+   "mandatory": false
+  },
+  {
+   "ref": "MS 6",
+   "domain": "MS",
+   "order": 262,
+   "mandatory": false
+  },
+  {
+   "ref": "MS 7",
+   "domain": "MS",
+   "order": 263,
+   "mandatory": true
+  },
+  {
+   "ref": "MS 8",
+   "domain": "MS",
+   "order": 264,
+   "mandatory": false
+  },
+  {
+   "ref": "MS 9",
+   "domain": "MS",
+   "order": 265,
+   "mandatory": true
+  },
+  {
+   "ref": "MS 10",
+   "domain": "MS",
+   "order": 266,
+   "mandatory": false
+  },
+  {
+   "ref": "MS 11",
+   "domain": "MS",
+   "order": 267,
+   "mandatory": false
+  },
+  {
+   "ref": "MS 12",
+   "domain": "MS",
+   "order": 268,
+   "mandatory": true
+  },
+  {
+   "ref": "MS 13",
+   "domain": "MS",
+   "order": 269,
+   "mandatory": false
+  },
+  {
+   "ref": "MS 14",
+   "domain": "MS",
+   "order": 270,
+   "mandatory": false
+  },
+  {
+   "ref": "MS 15",
+   "domain": "MS",
+   "order": 271,
+   "mandatory": true
+  },
+  {
+   "ref": "MS 16",
+   "domain": "MS",
+   "order": 272,
+   "mandatory": false
+  },
+  {
+   "ref": "MS 17",
+   "domain": "MS",
+   "order": 273,
+   "mandatory": true
+  },
+  {
+   "ref": "MS 18",
+   "domain": "MS",
+   "order": 274,
+   "mandatory": true
+  },
+  {
+   "ref": "MS 19",
+   "domain": "MS",
+   "order": 275,
+   "mandatory": true
+  },
+  {
+   "ref": "MS 20",
+   "domain": "MS",
+   "order": 276,
+   "mandatory": false
+  },
+  {
+   "ref": "MS 21",
+   "domain": "MS",
+   "order": 277,
+   "mandatory": true
+  },
+  {
+   "ref": "AM 1",
+   "domain": "AM",
+   "order": 278,
+   "mandatory": false
+  },
+  {
+   "ref": "AM 2",
+   "domain": "AM",
+   "order": 279,
+   "mandatory": false
+  },
+  {
+   "ref": "AM 3",
+   "domain": "AM",
+   "order": 280,
+   "mandatory": true
+  },
+  {
+   "ref": "AM 4",
+   "domain": "AM",
+   "order": 281,
+   "mandatory": false
+  },
+  {
+   "ref": "AM 5",
+   "domain": "AM",
+   "order": 282,
+   "mandatory": false
+  },
+  {
+   "ref": "AM 6",
+   "domain": "AM",
+   "order": 283,
+   "mandatory": true
+  },
+  {
+   "ref": "AM 7",
+   "domain": "AM",
+   "order": 284,
+   "mandatory": false
+  },
+  {
+   "ref": "AM 8",
+   "domain": "AM",
+   "order": 285,
+   "mandatory": true
+  },
+  {
+   "ref": "AM 9",
+   "domain": "AM",
+   "order": 286,
+   "mandatory": true
+  },
+  {
+   "ref": "AM 10",
+   "domain": "AM",
+   "order": 287,
+   "mandatory": true
+  },
+  {
+   "ref": "AM 11",
+   "domain": "AM",
+   "order": 288,
+   "mandatory": true
+  },
+  {
+   "ref": "AM 12",
+   "domain": "AM",
+   "order": 289,
+   "mandatory": false
+  },
+  {
+   "ref": "AM 13",
+   "domain": "AM",
+   "order": 290,
+   "mandatory": false
+  },
+  {
+   "ref": "AM 14",
+   "domain": "AM",
+   "order": 291,
+   "mandatory": false
+  },
+  {
+   "ref": "AM 15",
+   "domain": "AM",
+   "order": 292,
+   "mandatory": true
+  },
+  {
+   "ref": "AM 16",
+   "domain": "AM",
+   "order": 293,
+   "mandatory": true
+  },
+  {
+   "ref": "AM 17",
+   "domain": "AM",
+   "order": 294,
+   "mandatory": true
+  },
+  {
+   "ref": "AM 18",
+   "domain": "AM",
+   "order": 295,
+   "mandatory": true
+  },
+  {
+   "ref": "AM 19",
+   "domain": "AM",
+   "order": 296,
+   "mandatory": true
+  },
+  {
+   "ref": "AM 20",
+   "domain": "AM",
+   "order": 297,
+   "mandatory": true
+  },
+  {
+   "ref": "AM 21",
+   "domain": "AM",
+   "order": 298,
+   "mandatory": true
+  },
+  {
+   "ref": "AM 22",
+   "domain": "AM",
+   "order": 299,
+   "mandatory": true
+  },
+  {
+   "ref": "AM 23",
+   "domain": "AM",
+   "order": 300,
+   "mandatory": true
+  },
+  {
+   "ref": "AM 24",
+   "domain": "AM",
+   "order": 301,
+   "mandatory": false
+  },
+  {
+   "ref": "AM 25",
+   "domain": "AM",
+   "order": 302,
+   "mandatory": false
+  },
+  {
+   "ref": "AM 26",
+   "domain": "AM",
+   "order": 303,
+   "mandatory": true
+  },
+  {
+   "ref": "AM 27",
+   "domain": "AM",
+   "order": 304,
+   "mandatory": true
+  },
+  {
+   "ref": "AM 28",
+   "domain": "AM",
+   "order": 305,
+   "mandatory": false
+  },
+  {
+   "ref": "AM 29",
+   "domain": "AM",
+   "order": 306,
+   "mandatory": true
+  },
+  {
+   "ref": "AM 30",
+   "domain": "AM",
+   "order": 307,
+   "mandatory": true
+  },
+  {
+   "ref": "AM 31",
+   "domain": "AM",
+   "order": 308,
+   "mandatory": false
+  },
+  {
+   "ref": "AM 32",
+   "domain": "AM",
+   "order": 309,
+   "mandatory": false
+  },
+  {
+   "ref": "AM 33",
+   "domain": "AM",
+   "order": 310,
+   "mandatory": true
+  },
+  {
+   "ref": "AM 34",
+   "domain": "AM",
+   "order": 311,
+   "mandatory": true
+  },
+  {
+   "ref": "AM 35",
+   "domain": "AM",
+   "order": 312,
+   "mandatory": false
+  },
+  {
+   "ref": "AM 36",
+   "domain": "AM",
+   "order": 313,
+   "mandatory": true
+  },
+  {
+   "ref": "AM 37",
+   "domain": "AM",
+   "order": 314,
+   "mandatory": true
+  },
+  {
+   "ref": "AM 38",
+   "domain": "AM",
+   "order": 315,
+   "mandatory": false
+  },
+  {
+   "ref": "AM 39",
+   "domain": "AM",
+   "order": 316,
+   "mandatory": false
+  },
+  {
+   "ref": "AM 40",
+   "domain": "AM",
+   "order": 317,
+   "mandatory": true
+  },
+  {
+   "ref": "AM 41",
+   "domain": "AM",
+   "order": 318,
+   "mandatory": false
+  },
+  {
+   "ref": "CY 1",
+   "domain": "CY",
+   "order": 319,
+   "mandatory": false
+  },
+  {
+   "ref": "CY 2",
+   "domain": "CY",
+   "order": 320,
+   "mandatory": false
+  },
+  {
+   "ref": "CY 3",
+   "domain": "CY",
+   "order": 321,
+   "mandatory": true
+  },
+  {
+   "ref": "CY 4",
+   "domain": "CY",
+   "order": 322,
+   "mandatory": false
+  },
+  {
+   "ref": "CY 5",
+   "domain": "CY",
+   "order": 323,
+   "mandatory": true
+  },
+  {
+   "ref": "CY 6",
+   "domain": "CY",
+   "order": 324,
+   "mandatory": true
+  },
+  {
+   "ref": "CY 7",
+   "domain": "CY",
+   "order": 325,
+   "mandatory": true
+  },
+  {
+   "ref": "CY 8",
+   "domain": "CY",
+   "order": 326,
+   "mandatory": false
+  },
+  {
+   "ref": "CY 9",
+   "domain": "CY",
+   "order": 327,
+   "mandatory": false
+  },
+  {
+   "ref": "CY 10",
+   "domain": "CY",
+   "order": 328,
+   "mandatory": false
+  },
+  {
+   "ref": "CY 11",
+   "domain": "CY",
+   "order": 329,
+   "mandatory": false
+  },
+  {
+   "ref": "CY 12",
+   "domain": "CY",
+   "order": 330,
+   "mandatory": true
+  },
+  {
+   "ref": "OS 1",
+   "domain": "OS",
+   "order": 331,
+   "mandatory": true
+  },
+  {
+   "ref": "OS 2",
+   "domain": "OS",
+   "order": 332,
+   "mandatory": false
+  },
+  {
+   "ref": "OS 3",
+   "domain": "OS",
+   "order": 333,
+   "mandatory": false
+  },
+  {
+   "ref": "OS 4",
+   "domain": "OS",
+   "order": 334,
+   "mandatory": false
+  },
+  {
+   "ref": "OS 5",
+   "domain": "OS",
+   "order": 335,
+   "mandatory": true
+  },
+  {
+   "ref": "OS 6",
+   "domain": "OS",
+   "order": 336,
+   "mandatory": true
+  },
+  {
+   "ref": "OS 7",
+   "domain": "OS",
+   "order": 337,
+   "mandatory": true
+  },
+  {
+   "ref": "OS 8",
+   "domain": "OS",
+   "order": 338,
+   "mandatory": false
+  },
+  {
+   "ref": "OS 9",
+   "domain": "OS",
+   "order": 339,
+   "mandatory": true
+  },
+  {
+   "ref": "OS 10",
+   "domain": "OS",
+   "order": 340,
+   "mandatory": true
+  },
+  {
+   "ref": "PH 2",
+   "domain": "PH",
+   "order": 341,
+   "mandatory": false
+  },
+  {
+   "ref": "PH 3",
+   "domain": "PH",
+   "order": 342,
+   "mandatory": false
+  },
+  {
+   "ref": "PH 4",
+   "domain": "PH",
+   "order": 343,
+   "mandatory": false
+  },
+  {
+   "ref": "PH 5",
+   "domain": "PH",
+   "order": 344,
+   "mandatory": false
+  },
+  {
+   "ref": "PH 6",
+   "domain": "PH",
+   "order": 345,
+   "mandatory": true
+  },
+  {
+   "ref": "PH 7",
+   "domain": "PH",
+   "order": 346,
+   "mandatory": false
+  },
+  {
+   "ref": "VL 1",
+   "domain": "VL",
+   "order": 347,
+   "mandatory": true
+  },
+  {
+   "ref": "VL 2",
+   "domain": "VL",
+   "order": 348,
+   "mandatory": true
+  },
+  {
+   "ref": "VL 3",
+   "domain": "VL",
+   "order": 349,
+   "mandatory": false
+  },
+  {
+   "ref": "VL 4",
+   "domain": "VL",
+   "order": 350,
+   "mandatory": true
+  },
+  {
+   "ref": "VL 5",
+   "domain": "VL",
+   "order": 351,
+   "mandatory": false
+  },
+  {
+   "ref": "VL 6",
+   "domain": "VL",
+   "order": 352,
+   "mandatory": false
+  },
+  {
+   "ref": "VL 7",
+   "domain": "VL",
+   "order": 353,
+   "mandatory": true
+  },
+  {
+   "ref": "VL 8",
+   "domain": "VL",
+   "order": 354,
+   "mandatory": true
+  }
+ ],
+ "mapping": [
+  {
+   "ref": "IG 1",
+   "iso": [
+    "A.5.2"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "IG 2",
+   "iso": [
+    "A.5.4"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "IG 3",
+   "iso": [
+    "A.5.2",
+    "A.5.4"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "IG 4",
+   "iso": [
+    "A.5.4",
+    "A.5.1"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "IG 5",
+   "iso": [
+    "A.5.4"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "IG 6",
+   "iso": [
+    "A.5.2",
+    "A.6.2"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "IG 7",
+   "iso": [
+    "A.5.2",
+    "A.5.4"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "IG 8",
+   "iso": [
+    "A.5.2"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "IG 9",
+   "iso": [
+    "A.5.2"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "IG 10",
+   "iso": [
+    "A.5.2",
+    "A.5.37"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "RM 1",
+   "iso": [],
+   "coverage": "partial"
+  },
+  {
+   "ref": "RM 2",
+   "iso": [],
+   "coverage": "partial"
+  },
+  {
+   "ref": "RM 3",
+   "iso": [],
+   "coverage": "partial"
+  },
+  {
+   "ref": "RM 4",
+   "iso": [],
+   "coverage": "partial"
+  },
+  {
+   "ref": "RM 5",
+   "iso": [
+    "A.5.8"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "TM 1",
+   "iso": [
+    "A.5.19"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "TM 2",
+   "iso": [
+    "A.5.19"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "TM 3",
+   "iso": [
+    "A.5.20"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "TM 4",
+   "iso": [
+    "A.5.20",
+    "A.5.22"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "TM 5",
+   "iso": [
+    "A.5.22"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "DL 1",
+   "iso": [
+    "A.5.12"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "DL 2",
+   "iso": [
+    "A.5.12"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "DL 3",
+   "iso": [
+    "A.5.12",
+    "A.5.13"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "DL 4",
+   "iso": [
+    "A.5.13",
+    "A.5.15"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "DL 5",
+   "iso": [
+    "A.6.3",
+    "A.5.13"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "CM 1",
+   "iso": [
+    "A.8.32"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "CM 2",
+   "iso": [
+    "A.8.32"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "CM 3",
+   "iso": [
+    "A.8.32"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "CM 4",
+   "iso": [
+    "A.8.32",
+    "A.8.29"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "CM 5",
+   "iso": [
+    "A.8.32",
+    "A.5.37"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "CM 6",
+   "iso": [
+    "A.8.32"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "PS 1",
+   "iso": [
+    "A.6.2"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "PS 2",
+   "iso": [
+    "A.6.2"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "PS 3",
+   "iso": [
+    "A.5.34",
+    "A.6.1"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "PS 4",
+   "iso": [
+    "A.6.2",
+    "A.5.2"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "PS 5",
+   "iso": [
+    "A.6.1"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "PS 6",
+   "iso": [
+    "A.6.6",
+    "A.6.2"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "PS 7",
+   "iso": [
+    "A.6.6",
+    "A.5.10"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "PS 8",
+   "iso": [
+    "A.5.15",
+    "A.8.3"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "PS 9",
+   "iso": [
+    "A.5.3"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "PS 10",
+   "iso": [
+    "A.6.4"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "PS 11",
+   "iso": [
+    "A.7.2"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "PS 12",
+   "iso": [
+    "A.6.5",
+    "A.5.18"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "SA 1",
+   "iso": [
+    "A.6.3"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "SA 2",
+   "iso": [
+    "A.6.3"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "SA 3",
+   "iso": [
+    "A.6.3"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "SA 4",
+   "iso": [
+    "A.6.3"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "SA 5",
+   "iso": [
+    "A.6.3"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "SA 6",
+   "iso": [
+    "A.6.3"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "SA 7",
+   "iso": [
+    "A.6.3"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "SA 8",
+   "iso": [
+    "A.6.3"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "IM 1",
+   "iso": [
+    "A.5.24",
+    "A.5.5"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "IM 2",
+   "iso": [
+    "A.5.24"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "IM 3",
+   "iso": [
+    "A.5.24",
+    "A.5.25",
+    "A.5.26"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "IM 4",
+   "iso": [
+    "A.5.26",
+    "A.6.8"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "IM 5",
+   "iso": [
+    "A.6.8"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "IM 6",
+   "iso": [
+    "A.5.25"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "IM 7",
+   "iso": [
+    "A.5.5",
+    "A.5.27"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "IM 8",
+   "iso": [
+    "A.5.5"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "IM 9",
+   "iso": [
+    "A.5.27"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "BC 1",
+   "iso": [
+    "A.5.29"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "BC 2",
+   "iso": [
+    "A.5.29",
+    "A.5.30"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "BC 3",
+   "iso": [
+    "A.5.30",
+    "A.8.14"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "BC 4",
+   "iso": [
+    "A.5.30"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "BC 5",
+   "iso": [
+    "A.8.13"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "BC 6",
+   "iso": [
+    "A.8.14",
+    "A.5.30"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "BC 7",
+   "iso": [
+    "A.5.20",
+    "A.5.21"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "BC 8",
+   "iso": [
+    "A.5.30"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "BC 9",
+   "iso": [
+    "A.6.3"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "SM 1",
+   "iso": [
+    "A.8.15",
+    "A.8.16"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "SM 2",
+   "iso": [
+    "A.8.16"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "SM 3",
+   "iso": [
+    "A.8.16",
+    "A.5.31",
+    "A.5.34"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "SM 4",
+   "iso": [
+    "A.8.15"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "SM 5",
+   "iso": [
+    "A.8.15",
+    "A.5.12"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "SM 6",
+   "iso": [
+    "A.8.15",
+    "A.5.34"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "SM 7",
+   "iso": [
+    "A.8.15",
+    "A.5.33"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "SM 8",
+   "iso": [
+    "A.8.15"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "SM 9",
+   "iso": [
+    "A.8.16",
+    "A.6.8"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "DR 1",
+   "iso": [
+    "A.5.33"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "DR 2",
+   "iso": [
+    "A.5.33"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "DR 3",
+   "iso": [
+    "A.5.34",
+    "A.8.10"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "DR 4",
+   "iso": [
+    "A.8.13"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "DR 5",
+   "iso": [
+    "A.5.13"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "DR 6",
+   "iso": [
+    "A.5.33"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "DC 1",
+   "iso": [
+    "A.5.1"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "DC 2",
+   "iso": [
+    "A.5.37"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "DC 3",
+   "iso": [
+    "A.5.1",
+    "A.5.37"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "DC 4",
+   "iso": [
+    "A.5.12"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "DC 5",
+   "iso": [
+    "A.5.1"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "AC 1",
+   "iso": [
+    "A.5.36"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "AC 2",
+   "iso": [
+    "A.5.31"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "AC 3",
+   "iso": [],
+   "coverage": "partial"
+  },
+  {
+   "ref": "AC 4",
+   "iso": [
+    "A.5.35"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "AC 5",
+   "iso": [],
+   "coverage": "partial"
+  },
+  {
+   "ref": "AC 6",
+   "iso": [
+    "A.5.35"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "AC 7",
+   "iso": [
+    "A.5.36"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "AC 8",
+   "iso": [],
+   "coverage": "partial"
+  },
+  {
+   "ref": "CS 1",
+   "iso": [
+    "A.5.14"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "CS 2",
+   "iso": [
+    "A.7.12"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "CS 3",
+   "iso": [
+    "A.7.12"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "CS 4",
+   "iso": [
+    "A.7.12"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "CS 5",
+   "iso": [
+    "A.7.12"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "CS 6",
+   "iso": [
+    "A.8.14"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "CS 7",
+   "iso": [
+    "A.5.14"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "CS 8",
+   "iso": [
+    "A.5.14"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "CS 9",
+   "iso": [
+    "A.7.6"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "CS 10",
+   "iso": [
+    "A.7.6"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "CS 11",
+   "iso": [
+    "A.5.14",
+    "A.8.24"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "CS 12",
+   "iso": [
+    "A.5.14"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "NS 1",
+   "iso": [
+    "A.8.20"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "NS 2",
+   "iso": [
+    "A.8.9",
+    "A.5.17"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "NS 3",
+   "iso": [
+    "A.8.9",
+    "A.8.32"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "NS 4",
+   "iso": [
+    "A.8.20"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "NS 5",
+   "iso": [
+    "A.8.20",
+    "A.8.22"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "NS 6",
+   "iso": [
+    "A.8.22"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "NS 7",
+   "iso": [
+    "A.8.22"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "NS 8",
+   "iso": [
+    "A.8.22",
+    "A.8.2"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "NS 9",
+   "iso": [
+    "A.8.9"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "NS 10",
+   "iso": [
+    "A.8.22"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "NS 11",
+   "iso": [
+    "A.5.14"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "NS 12",
+   "iso": [
+    "A.5.14",
+    "A.8.20"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "NS 13",
+   "iso": [
+    "A.8.20"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "NS 14",
+   "iso": [
+    "A.5.10"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "NS 15",
+   "iso": [
+    "A.8.10"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "NS 16",
+   "iso": [
+    "A.7.14",
+    "A.8.10"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "NS 17",
+   "iso": [
+    "A.8.21"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "NS 18",
+   "iso": [
+    "A.8.21"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "NS 19",
+   "iso": [
+    "A.8.21",
+    "A.8.14"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "NS 20",
+   "iso": [
+    "A.8.21",
+    "A.8.24"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "NS 21",
+   "iso": [
+    "A.8.21",
+    "A.8.24"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "NS 22",
+   "iso": [
+    "A.8.21"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "NS 23",
+   "iso": [
+    "A.8.24"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "NS 24",
+   "iso": [
+    "A.8.7"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "NS 25",
+   "iso": [
+    "A.8.21",
+    "A.8.20"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "NS 26",
+   "iso": [
+    "A.8.9",
+    "A.8.23"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "NS 27",
+   "iso": [
+    "A.8.16"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "NS 28",
+   "iso": [
+    "A.8.9",
+    "A.8.21"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "NS 29",
+   "iso": [
+    "A.8.24"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "NS 30",
+   "iso": [
+    "A.8.21"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "NS 31",
+   "iso": [
+    "A.8.3"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "NS 32",
+   "iso": [
+    "A.8.7",
+    "A.8.12"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "NS 33",
+   "iso": [
+    "A.8.20",
+    "A.8.5"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "NS 34",
+   "iso": [
+    "A.8.20",
+    "A.8.24"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "NS 35",
+   "iso": [
+    "A.5.9"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "NS 36",
+   "iso": [
+    "A.8.16"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "NS 37",
+   "iso": [
+    "A.7.8"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "NS 38",
+   "iso": [
+    "A.8.5",
+    "A.8.9"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "NS 39",
+   "iso": [
+    "A.8.9"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "NS 40",
+   "iso": [
+    "A.8.20",
+    "A.8.24"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "NS 41",
+   "iso": [
+    "A.8.20",
+    "A.8.22"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "NS 42",
+   "iso": [
+    "A.8.16"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "NS 43",
+   "iso": [
+    "A.8.22"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "NS 44",
+   "iso": [
+    "A.8.17"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "NS 45",
+   "iso": [
+    "A.8.17"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "NS 46",
+   "iso": [
+    "A.8.17"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "NS 47",
+   "iso": [
+    "A.8.17"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "NS 48",
+   "iso": [
+    "A.8.5"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "NS 49",
+   "iso": [
+    "A.8.5",
+    "A.6.7"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "NS 50",
+   "iso": [
+    "A.8.20",
+    "A.6.7"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "NS 51",
+   "iso": [
+    "A.8.1",
+    "A.8.7"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "NS 52",
+   "iso": [
+    "A.8.20",
+    "A.8.22"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "NS 53",
+   "iso": [
+    "A.8.22"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "NS 54",
+   "iso": [
+    "A.8.20"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "NS 55",
+   "iso": [
+    "A.8.21"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "NS 56",
+   "iso": [
+    "A.7.8"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "NS 57",
+   "iso": [
+    "A.8.15"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "NS 58",
+   "iso": [
+    "A.6.7"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "NS 59",
+   "iso": [
+    "A.7.11"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "NS 60",
+   "iso": [
+    "A.8.5"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "NS 61",
+   "iso": [
+    "A.8.20",
+    "A.8.24"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "NS 62",
+   "iso": [
+    "A.5.30"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "NS 63",
+   "iso": [
+    "A.8.20"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "NS 64",
+   "iso": [
+    "A.8.20"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "NS 65",
+   "iso": [
+    "A.8.20"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "NS 66",
+   "iso": [],
+   "coverage": "partial"
+  },
+  {
+   "ref": "IE 1",
+   "iso": [
+    "A.5.14"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "IE 2",
+   "iso": [
+    "A.5.14",
+    "A.8.20"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "IE 3",
+   "iso": [
+    "A.5.14",
+    "A.6.6"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "IE 4",
+   "iso": [
+    "A.7.10",
+    "A.5.14"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "IE 5",
+   "iso": [
+    "A.5.12",
+    "A.5.14"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "IE 6",
+   "iso": [
+    "A.7.10"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "IE 7",
+   "iso": [
+    "A.7.10"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "IE 8",
+   "iso": [
+    "A.5.14"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "IE 9",
+   "iso": [
+    "A.5.14",
+    "A.8.24"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "IE 10",
+   "iso": [
+    "A.5.14"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "IE 11",
+   "iso": [
+    "A.8.7"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "IE 12",
+   "iso": [
+    "A.5.14",
+    "A.8.24"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "IE 13",
+   "iso": [
+    "A.5.14"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "GS 1",
+   "iso": [
+    "A.8.20",
+    "A.8.22"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "GS 2",
+   "iso": [
+    "A.8.20",
+    "A.8.22"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "GS 3",
+   "iso": [
+    "A.8.2"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "GS 4",
+   "iso": [
+    "A.8.2",
+    "A.8.5"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "GS 5",
+   "iso": [
+    "A.5.13"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "GS 6",
+   "iso": [
+    "A.8.22"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "GS 7",
+   "iso": [
+    "A.8.20",
+    "A.8.22"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "GS 8",
+   "iso": [
+    "A.8.9",
+    "A.8.7"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "GS 9",
+   "iso": [
+    "A.8.16"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "GS 10",
+   "iso": [
+    "A.8.23",
+    "A.8.12"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "GS 11",
+   "iso": [
+    "A.8.12"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "GS 12",
+   "iso": [
+    "A.8.12"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "GS 13",
+   "iso": [
+    "A.8.12",
+    "A.5.13"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "GS 14",
+   "iso": [
+    "A.8.12"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "GS 15",
+   "iso": [
+    "A.8.7"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "GS 16",
+   "iso": [
+    "A.8.7"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "GS 17",
+   "iso": [
+    "A.8.7"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "PR 1",
+   "iso": [
+    "A.5.21"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "PR 2",
+   "iso": [
+    "A.5.12"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "PR 3",
+   "iso": [
+    "A.5.19",
+    "A.5.21"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "PR 4",
+   "iso": [
+    "A.8.29"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "PR 5",
+   "iso": [
+    "A.8.29"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "PR 6",
+   "iso": [
+    "A.5.21"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "PR 7",
+   "iso": [
+    "A.5.21"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "PR 8",
+   "iso": [
+    "A.5.21"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "PR 9",
+   "iso": [
+    "A.8.8",
+    "A.8.32"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "SS 1",
+   "iso": [
+    "A.8.25"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "SS 2",
+   "iso": [
+    "A.5.12"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "SS 3",
+   "iso": [
+    "A.8.26"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "SS 4",
+   "iso": [
+    "A.8.31",
+    "A.8.33"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "SS 5",
+   "iso": [
+    "A.8.29"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "SS 6",
+   "iso": [
+    "A.8.28"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "SS 7",
+   "iso": [
+    "A.8.29",
+    "A.8.8"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "SS 8",
+   "iso": [
+    "A.5.32",
+    "A.5.31"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "SS 9",
+   "iso": [
+    "A.5.37"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "SS 10",
+   "iso": [
+    "A.8.4",
+    "A.8.30"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "SS 11",
+   "iso": [],
+   "coverage": "partial"
+  },
+  {
+   "ref": "SS 12",
+   "iso": [
+    "A.5.37"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "SS 13",
+   "iso": [
+    "A.8.9",
+    "A.8.19"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "SS 14",
+   "iso": [
+    "A.8.8",
+    "A.8.9"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "SS 15",
+   "iso": [
+    "A.8.9",
+    "A.8.22"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "SS 16",
+   "iso": [
+    "A.8.9"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "SS 17",
+   "iso": [
+    "A.8.9"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "SS 18",
+   "iso": [
+    "A.8.9"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "SS 19",
+   "iso": [
+    "A.8.9",
+    "A.8.34"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "SS 20",
+   "iso": [
+    "A.5.26"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "SS 21",
+   "iso": [
+    "A.8.21"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "SS 22",
+   "iso": [
+    "A.8.26",
+    "A.8.29"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "SS 23",
+   "iso": [
+    "A.8.27"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "SS 24",
+   "iso": [
+    "A.8.24",
+    "A.5.34"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "SS 25",
+   "iso": [
+    "A.8.24"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "SS 26",
+   "iso": [
+    "A.8.26"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "SS 27",
+   "iso": [
+    "A.5.12"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "SS 28",
+   "iso": [
+    "A.5.12"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "SS 29",
+   "iso": [
+    "A.8.3"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "SS 30",
+   "iso": [
+    "A.8.15"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "SS 31",
+   "iso": [
+    "A.8.3"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "SS 32",
+   "iso": [
+    "A.8.11"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "SU 1",
+   "iso": [
+    "A.5.10"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "SU 2",
+   "iso": [
+    "A.5.10",
+    "A.8.23"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "SU 3",
+   "iso": [
+    "A.8.23",
+    "A.8.7"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "SU 4",
+   "iso": [
+    "A.8.23"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "SU 5",
+   "iso": [
+    "A.5.10",
+    "A.8.23"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "SU 6",
+   "iso": [
+    "A.5.13",
+    "A.5.10"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "SU 7",
+   "iso": [
+    "A.8.7"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "SU 8",
+   "iso": [
+    "A.5.10"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "SU 9",
+   "iso": [
+    "A.5.14"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "SU 10",
+   "iso": [
+    "A.5.14"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "SU 11",
+   "iso": [
+    "A.5.14"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "MS 1",
+   "iso": [
+    "A.7.10",
+    "A.5.12"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "MS 2",
+   "iso": [
+    "A.7.10",
+    "A.5.12"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "MS 3",
+   "iso": [
+    "A.7.10"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "MS 4",
+   "iso": [
+    "A.7.10",
+    "A.5.12"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "MS 5",
+   "iso": [
+    "A.7.10"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "MS 6",
+   "iso": [
+    "A.7.14"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "MS 7",
+   "iso": [
+    "A.5.13"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "MS 8",
+   "iso": [
+    "A.5.13"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "MS 9",
+   "iso": [
+    "A.8.10",
+    "A.7.14"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "MS 10",
+   "iso": [
+    "A.7.14"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "MS 11",
+   "iso": [
+    "A.8.10"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "MS 12",
+   "iso": [
+    "A.8.10"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "MS 13",
+   "iso": [
+    "A.8.10"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "MS 14",
+   "iso": [
+    "A.8.10"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "MS 15",
+   "iso": [
+    "A.7.13"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "MS 16",
+   "iso": [
+    "A.7.13"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "MS 17",
+   "iso": [
+    "A.8.10",
+    "A.7.14"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "MS 18",
+   "iso": [
+    "A.7.14"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "MS 19",
+   "iso": [
+    "A.7.14"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "MS 20",
+   "iso": [
+    "A.7.14",
+    "A.8.10"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "MS 21",
+   "iso": [
+    "A.7.14"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "AM 1",
+   "iso": [
+    "A.5.15",
+    "A.8.3"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "AM 2",
+   "iso": [
+    "A.5.15",
+    "A.8.5"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "AM 3",
+   "iso": [
+    "A.5.15",
+    "A.5.18"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "AM 4",
+   "iso": [
+    "A.5.18",
+    "A.6.5"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "AM 5",
+   "iso": [
+    "A.8.18",
+    "A.5.18"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "AM 6",
+   "iso": [
+    "A.6.8",
+    "A.5.25"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "AM 7",
+   "iso": [
+    "A.8.15"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "AM 8",
+   "iso": [
+    "A.8.20",
+    "A.8.5"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "AM 9",
+   "iso": [
+    "A.5.16",
+    "A.5.18"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "AM 10",
+   "iso": [
+    "A.8.5"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "AM 11",
+   "iso": [
+    "A.8.5"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "AM 12",
+   "iso": [
+    "A.5.15"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "AM 13",
+   "iso": [
+    "A.6.3"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "AM 14",
+   "iso": [
+    "A.5.16",
+    "A.8.5"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "AM 15",
+   "iso": [
+    "A.5.16"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "AM 16",
+   "iso": [
+    "A.5.16"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "AM 17",
+   "iso": [
+    "A.5.17"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "AM 18",
+   "iso": [
+    "A.8.5"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "AM 19",
+   "iso": [
+    "A.5.17"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "AM 20",
+   "iso": [
+    "A.5.17"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "AM 21",
+   "iso": [
+    "A.5.17"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "AM 22",
+   "iso": [
+    "A.5.17"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "AM 23",
+   "iso": [
+    "A.8.1",
+    "A.7.7"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "AM 24",
+   "iso": [
+    "A.8.5"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "AM 25",
+   "iso": [
+    "A.5.17",
+    "A.6.8"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "AM 26",
+   "iso": [
+    "A.5.18"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "AM 27",
+   "iso": [
+    "A.5.18"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "AM 28",
+   "iso": [
+    "A.5.15"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "AM 29",
+   "iso": [
+    "A.6.1"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "AM 30",
+   "iso": [
+    "A.6.3"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "AM 31",
+   "iso": [
+    "A.8.2"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "AM 32",
+   "iso": [
+    "A.8.2",
+    "A.5.16"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "AM 33",
+   "iso": [
+    "A.8.2"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "AM 34",
+   "iso": [
+    "A.8.15"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "AM 35",
+   "iso": [
+    "A.6.7",
+    "A.5.15"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "AM 36",
+   "iso": [
+    "A.8.5"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "AM 37",
+   "iso": [
+    "A.6.7",
+    "A.8.24"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "AM 38",
+   "iso": [
+    "A.8.1",
+    "A.8.7"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "AM 39",
+   "iso": [
+    "A.8.8"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "AM 40",
+   "iso": [
+    "A.6.7"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "AM 41",
+   "iso": [
+    "A.5.19",
+    "A.6.7"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "CY 1",
+   "iso": [
+    "A.8.24"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "CY 2",
+   "iso": [
+    "A.8.24"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "CY 3",
+   "iso": [
+    "A.8.24"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "CY 4",
+   "iso": [
+    "A.8.24"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "CY 5",
+   "iso": [
+    "A.8.24"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "CY 6",
+   "iso": [
+    "A.5.17",
+    "A.8.24"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "CY 7",
+   "iso": [
+    "A.8.24"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "CY 8",
+   "iso": [
+    "A.8.24"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "CY 9",
+   "iso": [
+    "A.8.24"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "CY 10",
+   "iso": [
+    "A.8.24"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "CY 11",
+   "iso": [
+    "A.8.24"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "CY 12",
+   "iso": [
+    "A.8.24"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "OS 1",
+   "iso": [
+    "A.8.1",
+    "A.6.7"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "OS 2",
+   "iso": [
+    "A.8.1"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "OS 3",
+   "iso": [
+    "A.8.1"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "OS 4",
+   "iso": [
+    "A.7.6"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "OS 5",
+   "iso": [
+    "A.8.1",
+    "A.8.24"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "OS 6",
+   "iso": [
+    "A.7.9",
+    "A.8.1"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "OS 7",
+   "iso": [
+    "A.8.1"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "OS 8",
+   "iso": [
+    "A.8.1"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "OS 9",
+   "iso": [
+    "A.6.8",
+    "A.8.1"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "OS 10",
+   "iso": [
+    "A.8.1"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "PH 2",
+   "iso": [
+    "A.7.1",
+    "A.7.5"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "PH 3",
+   "iso": [
+    "A.7.1",
+    "A.7.2",
+    "A.7.3"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "PH 4",
+   "iso": [
+    "A.7.7"
+   ],
+   "coverage": "full"
+  },
+  {
+   "ref": "PH 5",
+   "iso": [
+    "A.7.3",
+    "A.7.8"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "PH 6",
+   "iso": [
+    "A.7.12"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "PH 7",
+   "iso": [
+    "A.7.6"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "VL 1",
+   "iso": [
+    "A.8.27"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "VL 2",
+   "iso": [
+    "A.8.9"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "VL 3",
+   "iso": [
+    "A.8.2",
+    "A.5.3"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "VL 4",
+   "iso": [
+    "A.7.1",
+    "A.7.8"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "VL 5",
+   "iso": [
+    "A.8.27"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "VL 6",
+   "iso": [
+    "A.8.22"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "VL 7",
+   "iso": [
+    "A.8.32"
+   ],
+   "coverage": "partial"
+  },
+  {
+   "ref": "VL 8",
+   "iso": [
+    "A.8.15",
+    "A.8.16"
+   ],
+   "coverage": "partial"
+  }
+ ]
+}
