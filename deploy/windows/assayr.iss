@@ -286,6 +286,9 @@ var
   Problem: string;
 begin
   Result := True;
+  { Silent installs still pass through every page, but their answers come from /CONFIG, not these pages, and
+    nobody could dismiss a message box: the Python installer validates them instead. }
+  if WizardSilent then Exit;
   if CurPageID = ServerPage.ID then begin
     if (Trim(ServerPage.Values[0]) = '') or (Trim(ServerPage.Values[1]) = '') then begin
       MsgBox('Enter the hostname and the organisation name.', mbError, MB_OK);
