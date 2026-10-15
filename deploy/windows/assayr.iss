@@ -509,6 +509,11 @@ end;
 
 procedure CurPageChanged(CurPageID: Integer);
 begin
+  { Keep the data next to the program by default when the program is not on C:. }
+  if (CurPageID = DataPage.ID) and
+     (CompareText(DataPage.Values[0], ExpandConstant('{commonappdata}\Assayr')) = 0) and
+     (CompareText(ExtractFileDrive(WizardDirValue), ExtractFileDrive(ExpandConstant('{commonappdata}'))) <> 0) then
+    DataPage.Values[0] := ExtractFileDrive(WizardDirValue) + '\AssayrData';
   if (CurPageID = wpFinished) and (ExitCode <> 0) then begin
     WizardForm.FinishedHeadingLabel.Caption := 'Assayr was not set up';
     if Upgrading then

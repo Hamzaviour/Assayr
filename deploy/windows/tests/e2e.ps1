@@ -12,7 +12,8 @@ param(
 $ErrorActionPreference = 'Stop'
 $Data = 'C:\ProgramData\Assayr'
 $App = "$env:ProgramFiles\Assayr"
-$Base = 'https://localhost'
+# Windows (http.sys) often holds port 80 on servers, as on the CI runner: use other ports, as a customer would.
+$Base = 'https://localhost:8443'
 $Email = 'e2e@example.com'
 $env:ASSAYR_ADMIN_PASSWORD = 'e2e-password-123'
 $Services = 'AssayrDb', 'AssayrClamAV', 'AssayrApi', 'AssayrWorker', 'AssayrWeb'
@@ -69,6 +70,8 @@ Organisation=E2E Org
 AdminEmail=$Email
 CertMode=self-signed
 MalwareScan=yes
+HttpsPort=8443
+HttpPort=8080
 "@ | Set-Content $answers -Encoding ascii
 
 Step 'Silent install'
@@ -82,7 +85,7 @@ foreach ($name in $Services) {
 }
 $pg = Get-NetTCPConnection -LocalPort 5432 -State Listen
 if ($pg.LocalAddress | Where-Object { $_ -ne '127.0.0.1' }) { Fail 'PostgreSQL listens beyond localhost' }
-if ((curl.exe -s -o NUL -w '%{http_code}' http://localhost/) -ne '301') { Fail 'HTTP does not redirect to HTTPS' }
+if ((curl.exe -s -o NUL -w '%{http_code}' http://localhost:8080/) -ne '301') { Fail 'HTTP does not redirect to HTTPS' }
 if ((Get-ItemProperty HKLM:\SOFTWARE\Assayr).Version -notmatch '^\d+\.\d+\.\d+$') { Fail 'registry Version missing' }
 if (Select-String -Path "$Data\install.log" -Pattern $env:ASSAYR_ADMIN_PASSWORD -SimpleMatch -Quiet) { Fail 'password in install.log' }
 
