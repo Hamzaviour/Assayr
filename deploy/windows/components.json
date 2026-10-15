@@ -1,0 +1,27 @@
+{
+  "python": {
+    "version": "3.12.15",
+    "url": "https://github.com/astral-sh/python-build-standalone/releases/download/20261013/cpython-3.12.15%2B20261013-x86_64-pc-windows-msvc-install_only.tar.gz",
+    "sha256": "bbc902d4d187ac4914915bf538196a064b49109a33a104965b5164ced5b80a1e"
+  },
+  "postgres": {
+    "version": "16.14",
+    "url": "https://get.enterprisedb.com/postgresql/postgresql-16.14-1-windows-x64-binaries.zip",
+    "sha256": "98af1417ba6a8dc30543e560e5407833a3b9e7cc7ed20e73b2006f3aa2f04663"
+  },
+  "caddy": {
+    "version": "2.11.7",
+    "url": "https://github.com/caddyserver/caddy/releases/download/v2.11.7/caddy_2.11.7_windows_amd64.zip",
+    "sha256": "0a1edc0b799512051c57071ce0e798d3f2cf67dc98171366f1d2b326072e3b06"
+  },
+  "clamav": {
+    "version": "1.4.6",
+    "url": "https://github.com/Cisco-Talos/clamav/releases/download/clamav-1.4.6/clamav-1.4.6.win.x64.zip",
+    "sha256": "57b6fd1d60cd87bafe800f97407ecdef0576d36b3900b8b7abcfbbabe88295fd"
+  },
+  "winsw": {
+    "version": "2.12.0",
+    "url": "https://github.com/winsw/winsw/releases/download/v2.12.0/WinSW-x64.exe",
+    "sha256": "05b82d46ad331cc16bdc00de5c6332c1ef818df8ceefcd49c726553209b3a0da"
+  }
+}
