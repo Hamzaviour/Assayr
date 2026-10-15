@@ -4,6 +4,7 @@ import { AssetsPage } from "./pages/Assets"
 import { ControlDetailPage } from "./pages/ControlDetail"
 import { ControlsPage } from "./pages/Controls"
 import { DashboardPage } from "./pages/Dashboard"
+import { CompliancePage } from "./pages/Compliance"
 import { LoginPage } from "./pages/Login"
 import { ReviewQueuePage } from "./pages/ReviewQueue"
 import { RiskDetailPage } from "./pages/RiskDetail"
@@ -27,6 +28,7 @@ const loginRoute = createRoute({
 
 const appRoute = createRoute({ getParentRoute: () => rootRoute, id: "app", component: AppLayout })
 const dashboardRoute = createRoute({ getParentRoute: () => appRoute, path: "/", component: DashboardPage })
+const complianceRoute = createRoute({ getParentRoute: () => appRoute, path: "/compliance", component: CompliancePage })
 const controlsRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "/controls",
@@ -50,7 +52,7 @@ const styleguideRoute = createRoute({ getParentRoute: () => appRoute, path: "/st
 
 export const routeTree = rootRoute.addChildren([
   loginRoute,
-  appRoute.addChildren([dashboardRoute, controlsRoute, controlRoute, evidenceRoute, risksRoute, riskNewRoute, riskSnapshotsRoute, riskRoute, riskAssessRoute, assetsRoute, soaRoute, styleguideRoute]),
+  appRoute.addChildren([dashboardRoute, complianceRoute, controlsRoute, controlRoute, evidenceRoute, risksRoute, riskNewRoute, riskSnapshotsRoute, riskRoute, riskAssessRoute, assetsRoute, soaRoute, styleguideRoute]),
 ])
 
 export function createAppRouter(history?: RouterHistory) {

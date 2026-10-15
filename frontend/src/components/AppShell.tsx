@@ -7,12 +7,13 @@ import { toggleTheme } from "../lib/theme"
 import { Button } from "./Button"
 import { Icon } from "./icons"
 
-type NavItem = { label: string; icon: string; to?: "/" | "/controls" | "/evidence" | "/soa" | "/risks" | "/assets" }
+type NavItem = { label: string; icon: string; to?: "/" | "/compliance" | "/controls" | "/evidence" | "/soa" | "/risks" | "/assets" }
 const NAV: { group: string | null; items: NavItem[] }[] = [
   { group: null, items: [{ label: "Home", icon: "home", to: "/" }] },
   {
     group: "Comply",
     items: [
+      { label: "Compliance", icon: "soa", to: "/compliance" },
       { label: "Controls", icon: "controls", to: "/controls" },
       { label: "Evidence", icon: "evidence", to: "/evidence" },
       { label: "SoA", icon: "soa", to: "/soa" },
