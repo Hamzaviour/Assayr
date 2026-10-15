@@ -1,29 +1,73 @@
 # Assayr
 
-On-premise GRC for ISO/IEC 27001: keep every control, piece of evidence and risk on your own servers.
-Product specs, brand and design live in the Obsidian vault at `../Assayr-Vault` (start at `00-Home/Home.md`).
+**On-premise GRC for ISO/IEC 27001: every control, piece of evidence and risk stays on your own servers.**
 
-What it covers today: the ISO/IEC 27001:2022 catalogue with evidence slots, evidence upload with automatic verification and review,
-derived control status and readiness, a risk register with a guided assessment wizard, treatment and residual-risk acceptance,
-an asset inventory, and a Statement of Applicability with traceability checks and executive approval.
+Assayr is a governance, risk and compliance platform that organisations install inside their own network.
+It holds every ISO/IEC 27001:2022 requirement and all 93 Annex A controls, checks each piece of uploaded
+evidence automatically, keeps compliance status current as evidence arrives or expires, and runs the full
+risk assessment and treatment cycle through to a Statement of Applicability. Nothing is sent to the cloud:
+no telemetry, no outbound calls, and it installs on servers with no internet access.
 
-## Layout
+## What it does
+
+| Area | Capability |
+|---|---|
+| **Controls** | The ISO/IEC 27001:2022 catalogue (clauses 4–10 and Annex A) with evidence slots that say exactly what each control needs |
+| **Evidence** | Upload, versioning and expiry; every file is malware-scanned and verified automatically (dates, approvals, versions, freshness) with the reasons shown, and uncertain files go to a reviewer queue |
+| **Compliance status** | Control status derived from evidence, never ticked by hand: compliant, in review, in progress, at risk, not started, non-compliant, with readiness scores and history |
+| **Risk** | Risk register with a guided assessment wizard, treatment plans, residual-risk acceptance, snapshots and comparison, register export |
+| **Assets** | Asset inventory with owners and classification, linked to risks |
+| **Statement of Applicability** | Generated from controls and risks, with traceability checks and executive approval |
+| **Audit trail** | Tamper-evident (hash-chained) record of every change |
+
+## Download and install
+
+Download from the [latest release](https://github.com/Hamzaviour/Assayr/releases/latest) and check the file
+against `SHA256SUMS.txt` on the same page.
+
+| Your server | Download | Guide |
+|---|---|---|
+| **Windows Server 2019 / 2022 / 2025** | `Assayr-Setup-<version>.exe`: run it and follow the wizard (native Windows services, no Docker) | [Windows install guide](deploy/windows/README-INSTALL-WINDOWS.md) |
+| **Linux** (x86-64) | `assayr-<version>-linux-amd64-offline.tar.gz`: unpack, then `sudo ./assayr install` | [Linux install guide](deploy/installer/README-INSTALL.md) |
+| **Linux** (arm64) | `assayr-<version>-linux-arm64-offline.tar.gz` | [Linux install guide](deploy/installer/README-INSTALL.md) |
+
+**You need:** 4 CPU cores, 8 GB of memory (16 GB recommended), 100 GB of free disk and ports 443/80. The
+installers contain everything else (database, web server, malware scanner), set up HTTPS (your certificate
+or a self-signed one), create the first administrator, and schedule nightly backups. Upgrading means running
+the newer installer: it backs up first and puts the previous version back automatically if the new one does
+not start. Backups are the same format on Windows and Linux, so you can move between them.
+
+## Security and privacy
+
+- Runs entirely on your infrastructure; works air-gapped. No telemetry and no outbound connections.
+- Only the HTTPS and HTTP ports are reachable from the network; the database, API and scanner listen on
+  localhost only.
+- Every upload is scanned with ClamAV; uploaded files are stored content-addressed and checksummed.
+- Passwords are hashed with Argon2id; sessions expire on idle and absolute timeouts; roles limit who can do what.
+- Backups contain the database password and the HTTPS key, so keep them where only administrators can read them.
+
+## Roadmap
+
+- **Next:** a redesigned dashboard (framework progress, risk status, trends) and risk owner assignment.
+- **Then:** the Qatar National Information Assurance standard (NIA v2.1) alongside ISO 27001 with shared
+  evidence; internal audit reports; policies, procedures and guidelines management.
+- **Later:** training and awareness (videos and mandatory assessments).
+
+---
+
+## For developers
 
 | Path | What |
 |---|---|
 | `backend/` | FastAPI service (`assayr` Python package), Alembic migrations, `assayr` CLI |
 | `frontend/` | React + Vite single-page app, served by Caddy in production |
-| `deploy/` | Docker Compose stack and smoke test |
-| `docs/superpowers/plans/` | Implementation plans |
+| `deploy/` | Docker Compose stack, Linux offline installer (`deploy/installer/`), Windows installer (`deploy/windows/`) |
+| `docs/superpowers/` | Design specs and implementation plans |
 
-## Develop locally
+### Develop locally
 
-Every command assumes the cache redirection script has been sourced (the dev machine's C: drive is full):
-
-```bash
-source scripts/dev-env.sh            # Git Bash
-# . .\scripts\dev-env.ps1            # PowerShell
-```
+On the original development machine, source the cache redirection script first (its C: drive is full):
+`source scripts/dev-env.sh` (Git Bash) or `. .\scripts\dev-env.ps1` (PowerShell).
 
 Backend:
 
@@ -47,9 +91,7 @@ npm run dev        # http://localhost:5173
 npm test
 ```
 
-## Run the full stack
-
-Requires Docker. Builds the images from source:
+### Run the full stack with Docker
 
 ```bash
 cd deploy
@@ -61,25 +103,21 @@ docker compose --env-file assayr.env -f compose.yaml -f compose.build.yaml exec 
 
 `deploy/smoke.sh` runs the same steps end to end and tears the stack down.
 
-## Install for customers
+### Releases
 
-Windows Server: run `Assayr-Setup-<version>.exe` from the same GitHub Release (native Windows services,
-no Docker); the customer guide is `deploy/windows/README-INSTALL-WINDOWS.md` and
-`deploy/windows/build.ps1` + `deploy/windows/assayr.iss` build it.
+Pushing a tag `v<version>` (matching `backend/pyproject.toml` and `frontend/package.json`) runs
+`.github/workflows/release.yml`. It builds the two Linux bundles and the Windows installer, tests each end to
+end on a clean machine (install, evidence upload, backup/restore, upgrade, rollback after a failed upgrade,
+uninstall), and only then publishes the GitHub Release. Branch pushes that change `deploy/`, and manual runs
+with a version, build and test without publishing.
 
-Customers install from an offline bundle, not from source. Pushing a tag `v<version>` (matching
-`backend/pyproject.toml` and `frontend/package.json`) runs `.github/workflows/release.yml`, which
-builds `assayr-<version>-linux-amd64-offline.tar.gz` and `…-linux-arm64-…`, tests each end to end
-(install, backup/restore, upgrade, rollback) and publishes them as a GitHub Release. Branch
-pushes that change the installer or the images, and runs by hand with a version, build and test
-without publishing.
+- Linux bundle: build `assayr-api:<v>` and `assayr-web:<v>`, then `scripts/build-bundle.sh <v> amd64 dist`.
+  Installer unit tests: `deploy/installer/tests/run.sh`.
+- Windows installer: `deploy/windows/build.ps1 -Version <v> -Out <dir>` stages pinned, hash-checked runtimes;
+  then Inno Setup 7: `ISCC /DVersion=<v> /DStage=<dir>\stage /DOutDir=<out> deploy\windows\assayr.iss`.
+  Manual pre-release checks: `deploy/windows/MANUAL-CHECKS.md`.
 
-Inside a bundle, `./assayr install` sets everything up; `deploy/installer/README-INSTALL.md` is
-the customer guide and `deploy/installer/MANUAL-CHECKS.md` the Docker Desktop checklist.
-Installer unit tests: `deploy/installer/tests/run.sh`. To build a bundle locally (Docker needed):
-build `assayr-api:<v>` and `assayr-web:<v>`, then `scripts/build-bundle.sh <v> amd64 dist`.
-
-## Administration
+### Administration commands
 
 | Command | Purpose |
 |---|---|
@@ -88,3 +126,6 @@ build `assayr-api:<v>` and `assayr-web:<v>`, then `scripts/build-bundle.sh <v> a
 | `assayr create-admin --email …` | Create an administrator (password from prompt or `ASSAYR_ADMIN_PASSWORD`) |
 | `assayr audit-verify` | Check the audit trail's hash chain (exit code 2 if broken) |
 | `assayr worker [--once]` | Run background jobs (evidence verification, scheduled status checks) |
+| `assayr win …` | Windows installation management, used by the installer and the Assayr Admin console |
+
+Product specs, brand and design live in the Obsidian vault at `../Assayr-Vault` (start at `00-Home/Home.md`).
