@@ -26,9 +26,13 @@ class SubprocessRunner:
         self.log_path = log_path
 
     def _log(self, line: str) -> None:
-        self.log_path.parent.mkdir(parents=True, exist_ok=True)
-        with self.log_path.open("a", encoding="utf-8") as log:
-            log.write(f"{datetime.now(UTC):%Y-%m-%dT%H:%M:%SZ} {line}\n")
+        """Logging is best effort: a log that cannot be written must not stop the install or its cleanup."""
+        try:
+            self.log_path.parent.mkdir(parents=True, exist_ok=True)
+            with self.log_path.open("a", encoding="utf-8") as log:
+                log.write(f"{datetime.now(UTC):%Y-%m-%dT%H:%M:%SZ} {line}\n")
+        except OSError:
+            pass
 
     def run(self, args, *, env=None, input=None, check=True):
         args = [str(a) for a in args]

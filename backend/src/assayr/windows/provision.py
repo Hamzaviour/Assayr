@@ -57,7 +57,19 @@ def _secure_data_dir(cfg: InstallConfig, runner) -> None:
     grants += [
         f"{services.account(s)}:(OI)(CI)M" for s in SERVICES if s != "AssayrClamAV" or cfg.malware_scan
     ]
-    runner.run(["icacls.exe", cfg.data_dir, "/inheritance:r", "/grant:r", *grants, "/T", "/C", "/Q"])
+    # Set the folder's own ACL only: with /T, /inheritance:r also strips every existing file, leaving
+    # files (install.log first) with an empty ACL nobody can open. Then make everything below inherit it.
+    runner.run(["icacls.exe", cfg.data_dir, "/inheritance:r", "/grant:r", *grants, "/C", "/Q"])
+    runner.run(["icacls.exe", cfg.data_dir / "*", "/reset", "/T", "/C", "/Q"])
+
+
+def _check_folders(cfg: InstallConfig) -> None:
+    program, data = cfg.install_dir.resolve(), cfg.data_dir.resolve()
+    if program == data or program.is_relative_to(data) or data.is_relative_to(program):
+        raise ProvisionError(
+            f"The data folder ({data}) and the program folder ({program}) must be separate folders, "
+            "neither inside the other: upgrades replace the program folder."
+        )
 
 
 def _write_files(cfg: InstallConfig, db_password: str) -> None:
@@ -217,6 +229,7 @@ def install(
     token=secrets.token_urlsafe,
 ) -> None:
     """First installation. On failure removes what it registered, and the data folder if it created it."""
+    _check_folders(cfg)
     new_data_dir = not cfg.data_dir.exists()
     try:
         services.unregister(cfg, runner, sleep=_sleep)  # left over from an interrupted attempt

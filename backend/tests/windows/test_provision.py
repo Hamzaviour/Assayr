@@ -262,3 +262,30 @@ def test_busy_internal_ports_move_to_free_ones(tmp_path):
     assert port not in (c.pg_port, c.api_port, c.clamav_port)
     assert len({c.pg_port, c.api_port, c.clamav_port}) == 3
     assert InstallConfig.load(c.data_dir).pg_port == c.pg_port
+
+
+def test_data_dir_acl_is_set_on_the_folder_and_children_inherit_it(tmp_path):
+    c, r = run_install(tmp_path)
+    icacls = [cmd for cmd in r.calls if cmd[0] == "icacls.exe" and "/inheritance:r" in cmd]
+    assert icacls and "/T" not in icacls[0], "removing inheritance with /T leaves files with an empty ACL"
+    reset = [cmd for cmd in r.calls if cmd[0] == "icacls.exe" and "/reset" in cmd]
+    assert reset and reset[0][1] == str(c.data_dir / "*") and "/T" in reset[0]
+    assert r.calls.index(icacls[0]) < r.calls.index(reset[0])
+
+
+def test_data_folder_inside_the_program_folder_is_refused(tmp_path):
+    c = make_cfg(tmp_path)
+    c.data_dir = c.install_dir / "data"
+    with pytest.raises(ProvisionError, match="separate"):
+        provision.install(
+            c, "a@b.c", "a-very-long-password", CertChoice("self-signed"), FakeRunner(), wait=healthy
+        )
+
+
+def test_program_folder_inside_the_data_folder_is_refused(tmp_path):
+    c = make_cfg(tmp_path)
+    c.data_dir = c.install_dir.parent
+    with pytest.raises(ProvisionError, match="separate"):
+        provision.install(
+            c, "a@b.c", "a-very-long-password", CertChoice("self-signed"), FakeRunner(), wait=healthy
+        )

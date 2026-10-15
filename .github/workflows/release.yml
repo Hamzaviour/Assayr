@@ -179,7 +179,7 @@ jobs:
         run: ./deploy/windows/build.ps1 -Version $env:VERSION -Out build -Signatures sigs
       - name: Build the installer and the test installers (a newer working one and a newer broken one)
         run: |
-          & $env:ISCC /Q "/DVersion=$env:VERSION" /DStage=build\stage /DOutDir=dist deploy\windows\assayr.iss
+          & $env:ISCC /Q "/DVersion=$env:VERSION" "/DStage=$PWD\build\stage" "/DOutDir=$PWD\dist" deploy\windows\assayr.iss
           if ($LASTEXITCODE) { throw "ISCC failed" }
           function Set-PackageVersion([string] $stage, [string] $version) {
             $info = Get-ChildItem "$stage\python\Lib\site-packages\assayr-*.dist-info" -Directory
@@ -188,12 +188,12 @@ jobs:
           }
           Copy-Item -Recurse build\stage build\stage99
           Set-PackageVersion build\stage99 99.0.0
-          & $env:ISCC /Q /DVersion=99.0.0 /DStage=build\stage99 /DOutDir=dist\test deploy\windows\assayr.iss
+          & $env:ISCC /Q /DVersion=99.0.0 "/DStage=$PWD\build\stage99" "/DOutDir=$PWD\dist\test" deploy\windows\assayr.iss
           if ($LASTEXITCODE) { throw "ISCC failed (99.0.0)" }
           Rename-Item build\stage99 stage991
           Set-PackageVersion build\stage991 99.1.0
           Add-Content build\stage991\python\Lib\site-packages\assayr\main.py "`nraise SystemExit('broken on purpose')"
-          & $env:ISCC /Q /DVersion=99.1.0 /DStage=build\stage991 /DOutDir=dist\test deploy\windows\assayr.iss
+          & $env:ISCC /Q /DVersion=99.1.0 "/DStage=$PWD\build\stage991" "/DOutDir=$PWD\dist\test" deploy\windows\assayr.iss
           if ($LASTEXITCODE) { throw "ISCC failed (99.1.0)" }
       - name: Sign
         env:
