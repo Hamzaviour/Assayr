@@ -1,7 +1,10 @@
+from importlib.metadata import version
+
+
 def test_healthz_reports_ok_and_version(client):
     response = client.get("/api/v1/healthz")
     assert response.status_code == 200
-    assert response.json() == {"status": "ok", "version": "0.1.0"}
+    assert response.json() == {"status": "ok", "version": version("assayr")}
 
 
 def test_request_id_is_echoed_and_sanitised(client):
