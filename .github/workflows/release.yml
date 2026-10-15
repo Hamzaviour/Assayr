@@ -135,6 +135,7 @@ jobs:
   windows:
     needs: clamav-signatures
     runs-on: windows-2022
+    timeout-minutes: 60
     env:
       INPUT_VERSION: ${{ inputs.version }}
       INNO_URL: https://github.com/jrsoftware/issrc/releases/download/is-7_1_0/innosetup-7.1.0-x64.exe
