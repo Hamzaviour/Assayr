@@ -39,7 +39,7 @@ function FrameworkCard({ f }: { f: FrameworkRow }) {
           <Link to="/compliance" className="text-[17px] hover:underline">
             <strong>{f.name}</strong> <span className="text-fg-3">{f.version}</span>
           </Link>
-          <span className="font-display text-[34px] font-extrabold leading-none text-brand">
+          <span className="font-display text-[34px] font-extrabold leading-none text-primary">
             {f.readiness === null ? "—" : <CountUp value={Math.round(f.readiness)} suffix="%" />}
           </span>
         </p>
@@ -90,7 +90,7 @@ function Monitor({
       </div>
       <div>
         <p className="text-[12.5px] text-fg-3">Needs attention</p>
-        <p className={`font-display text-[32px] font-extrabold leading-tight ${attention > 0 ? "text-brand" : ""}`}>
+        <p className={`font-display text-[32px] font-extrabold leading-tight ${attention > 0 ? "text-primary" : ""}`}>
           <CountUp value={attention} />
         </p>
       </div>
