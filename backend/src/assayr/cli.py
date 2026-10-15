@@ -3,12 +3,15 @@
 import signal
 import time
 from datetime import timedelta
+from pathlib import Path
+from pathlib import Path
 
 import typer
 from sqlalchemy import select
 
 from assayr.audit.service import SYSTEM, record, verify_chain
 from assayr.catalogue.seed import ensure_default_scope, seed_iso27001
+from assayr.certs import CertError, check_pair, generate_self_signed, pfx_to_pem
 from assayr.config import get_settings
 from assayr.db import Database, utcnow
 from assayr.identity.models import RoleAssignment, User
@@ -175,3 +178,36 @@ def worker(once: bool = typer.Option(False, "--once", help="Process the queued j
     finally:
         flag.restore()
     typer.echo("Worker stopped.")
+
+
+@app.command("gen-cert")
+def gen_cert(hostname: str = typer.Option(...), out: Path = typer.Option(...)) -> None:
+    """Create a self-signed certificate (tls.crt, tls.key) valid for two years."""
+    generate_self_signed(hostname, out / "tls.crt", out / "tls.key")
+    typer.echo(f"Self-signed certificate for {hostname} written to {out}.")
+
+
+@app.command("import-pfx")
+def import_pfx(
+    pfx: Path,
+    out: Path = typer.Option(...),
+    password: str = typer.Option("", envvar="ASSAYR_PFX_PASSWORD", hidden=True),
+) -> None:
+    """Convert a .pfx/.p12 file to tls.crt and tls.key (password from ASSAYR_PFX_PASSWORD)."""
+    try:
+        pfx_to_pem(pfx.read_bytes(), password or None, out / "tls.crt", out / "tls.key")
+    except (CertError, OSError) as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(1) from exc
+    typer.echo(f"Certificate written to {out}.")
+
+
+@app.command("check-cert")
+def check_cert(cert: Path = typer.Option(...), key: Path = typer.Option(...)) -> None:
+    """Check that a PEM certificate and key can be read and belong together."""
+    try:
+        check_pair(cert, key)
+    except CertError as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(1) from exc
+    typer.echo("Certificate and key match.")
