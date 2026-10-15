@@ -273,6 +273,14 @@ begin
     Result := True;
 end;
 
+function Inside(Child, Parent: string): Boolean;
+begin
+  { True when Child is Parent or a folder below it. }
+  Child := Lowercase(AddBackslash(Child));
+  Parent := Lowercase(AddBackslash(Parent));
+  Result := Copy(Child, 1, Length(Parent)) = Parent;
+end;
+
 function NextButtonClick(CurPageID: Integer): Boolean;
 var
   Problem: string;
@@ -306,6 +314,13 @@ begin
       Result := False;
     end else if AdminPage.Values[1] <> AdminPage.Values[2] then begin
       MsgBox('The passwords do not match.', mbError, MB_OK);
+      Result := False;
+    end;
+  end else if CurPageID = DataPage.ID then begin
+    if Inside(DataPage.Values[0], WizardDirValue) or Inside(WizardDirValue, DataPage.Values[0]) then begin
+      MsgBox('Choose a data folder separate from the program folder (' + WizardDirValue + '), ' +
+        'for example ' + ExtractFileDrive(WizardDirValue) + '\AssayrData. Neither may be inside the other, ' +
+        'because upgrades replace the program folder.', mbError, MB_OK);
       Result := False;
     end;
   end;
