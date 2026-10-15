@@ -13,6 +13,7 @@ from assayr.catalogue.seed import ensure_default_scope, seed_iso27001
 from assayr.certs import CertError, check_pair, generate_self_signed, pfx_to_pem
 from assayr.config import get_settings
 from assayr.db import Database, utcnow
+from assayr.healthcheck import HealthError, wait_healthy
 from assayr.identity.models import RoleAssignment, User
 from assayr.identity.rbac import Role
 from assayr.identity.security import WeakPasswordError, hash_password, normalize_email
@@ -210,3 +211,18 @@ def check_cert(cert: Path = typer.Option(...), key: Path = typer.Option(...)) ->
         typer.echo(str(exc), err=True)
         raise typer.Exit(1) from exc
     typer.echo("Certificate and key match.")
+
+
+@app.command()
+def healthcheck(
+    url: str = typer.Option(...),
+    timeout: float = typer.Option(180.0),
+    expect_version: str | None = typer.Option(None),
+) -> None:
+    """Wait until Assayr answers its health endpoint (exit 1 on timeout)."""
+    try:
+        found = wait_healthy(url, timeout, expect_version)
+    except HealthError as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(1) from exc
+    typer.echo(f"Assayr {found} is healthy.")
