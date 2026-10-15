@@ -1,8 +1,8 @@
 /* Strata design tokens — see vault 07-Design/Design System.md */
 :root {
-  --canvas: #f5f6fa; --surface: #ffffff; --subtle: #eef0f6; --line: #e1e5ee; --line-2: #c9d0dd;
+  --canvas: #f7f5f6; --surface: #ffffff; --subtle: #eef0f6; --line: #e1e5ee; --line-2: #c9d0dd;
   --text: #0e1424; --text-2: #4a5368; --text-3: #687188;
-  --primary: #2f4bff; --primary-hover: #2238d9; --primary-soft: #eceffe; --on-primary: #ffffff;
+  --primary: #8a1538; --primary-hover: #6f102c; --primary-soft: #f7e8ed; --on-primary: #ffffff;
   --ink: #0a0f1f; --brass: #cfae4e;
   --ok: #15803d; --ok-soft: #e6f5eb; --warn: #b45309; --warn-soft: #fcf1df; --bad: #c62828; --bad-soft: #fcebeb;
   --review: #6d28d9; --review-soft: #f0eafe; --idle: #5e6a80; --idle-soft: #eef0f5; --na: #8c95a8;
@@ -15,7 +15,8 @@
   :root:not([data-theme="light"]) {
     --canvas: #0a0f1f; --surface: #11172a; --subtle: #182037; --line: #252f4d; --line-2: #37426c;
     --text: #edf0f7; --text-2: #aeb6ca; --text-3: #8690a8;
-    --primary: #6e83ff; --primary-hover: #8a9bff; --primary-soft: #1a2350; --on-primary: #0a0f1f;
+    --primary: #e0577c; --primary-hover: #ea7a98; --primary-soft: #3a1220; --on-primary: #1a0610;
+    --chart-1: #e0577c; --chart-2: #2dd4bf; --chart-3: #fbbf24; --chart-4: #94a3b8; --chart-5: #4ade80; --chart-6: #6b7280;
     --ok: #4cc17e; --ok-soft: #0f2e1e; --warn: #e6a645; --warn-soft: #33260f; --bad: #f26b66; --bad-soft: #3a1517;
     --review: #b39bff; --review-soft: #261a45; --idle: #95a0b8; --idle-soft: #1b2340; --na: #6e7894;
     color-scheme: dark;
@@ -24,12 +25,14 @@
 :root[data-theme="dark"] {
   --canvas: #0a0f1f; --surface: #11172a; --subtle: #182037; --line: #252f4d; --line-2: #37426c;
   --text: #edf0f7; --text-2: #aeb6ca; --text-3: #8690a8;
-  --primary: #6e83ff; --primary-hover: #8a9bff; --primary-soft: #1a2350; --on-primary: #0a0f1f;
+  --primary: #e0577c; --primary-hover: #ea7a98; --primary-soft: #3a1220; --on-primary: #1a0610;
+    --chart-1: #e0577c; --chart-2: #2dd4bf; --chart-3: #fbbf24; --chart-4: #94a3b8; --chart-5: #4ade80; --chart-6: #6b7280;
   --ok: #4cc17e; --ok-soft: #0f2e1e; --warn: #e6a645; --warn-soft: #33260f; --bad: #f26b66; --bad-soft: #3a1517;
   --review: #b39bff; --review-soft: #261a45; --idle: #95a0b8; --idle-soft: #1b2340; --na: #6e7894;
   color-scheme: dark;
 }
 
 :root {
+  --chart-1: #8a1538; --chart-2: #0f766e; --chart-3: #d97706; --chart-4: #475569; --chart-5: #16a34a; --chart-6: #9ca3af;
   --heat-1: #cdebd8; --heat-2: #e4efb0; --heat-3: #fce38a; --heat-4: #f8a35b; --heat-5: #e2483d; --on-heat: #1b2233;
 }
