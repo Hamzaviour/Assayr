@@ -226,3 +226,13 @@ def healthcheck(
         typer.echo(str(exc), err=True)
         raise typer.Exit(1) from exc
     typer.echo(f"Assayr {found} is healthy.")
+
+
+from assayr.windows.cli import win_app  # noqa: E402
+
+app.add_typer(win_app, name="win")
+
+
+from assayr.windows.cli import win_app  # noqa: E402
+
+app.add_typer(win_app, name="win")
