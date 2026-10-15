@@ -29,4 +29,4 @@ uninstall on Windows Server 2022. These checks cover what it cannot.
 
 ## Clean server without the Visual C++ runtime
 
-- [ ] On a fresh Windows Server 2022 VM **without** the VC++ 2015-2022 redistributable, the install succeeds (PostgreSQL uses the runtime DLLs bundled in `pgsqlin`).
+- [ ] On a fresh Windows Server 2022 VM **without** the VC++ 2015-2022 redistributable, the install succeeds (PostgreSQL uses the runtime DLLs bundled in `pgsqlbin`).
