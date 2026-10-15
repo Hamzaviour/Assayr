@@ -10,11 +10,13 @@ from assayr.windows.provision import CertChoice, ProvisionError
 @pytest.fixture(autouse=True)
 def no_wait(monkeypatch):
     monkeypatch.setattr(provision.services, "wait_running", lambda *a, **k: None)
+    monkeypatch.setattr(provision, "_sleep", lambda s: None)
 
 
 class FakeRunner:
-    def __init__(self, fail_on=None):
+    def __init__(self, fail_on=None, not_ready=0, createdb_err=None, whoami=""):
         self.calls, self.envs, self.fail_on = [], [], fail_on
+        self.not_ready, self.createdb_err, self.whoami = not_ready, createdb_err, whoami
 
     def run(self, args, *, env=None, input=None, check=True):
         args = [str(a) for a in args]
@@ -24,6 +26,13 @@ class FakeRunner:
             if check:
                 raise provision.CommandError(f"{args[0]} {self.fail_on} failed")
             return subprocess.CompletedProcess(args, 1, "", "boom")
+        if args[0].endswith("pg_isready.exe") and self.not_ready:
+            self.not_ready -= 1
+            return subprocess.CompletedProcess(args, 2, "", "no response")
+        if args[0].endswith("createdb.exe") and self.createdb_err:
+            return subprocess.CompletedProcess(args, 1, "", self.createdb_err)
+        if args[0] == "whoami":
+            return subprocess.CompletedProcess(args, 0, self.whoami, "")
         return subprocess.CompletedProcess(args, 0, "", "")
 
 
@@ -182,14 +191,74 @@ def test_finish_upgrade_health_failure_raises(tmp_path):
         provision.finish_upgrade(c, FakeRunner(), wait=unhealthy)
 
 
-def test_reinstall_over_kept_data_skips_create_admin(tmp_path):
-    c = make_cfg(tmp_path)
-    c.db_dir.mkdir(parents=True)
-    (c.db_dir / "PG_VERSION").write_text("16")
-    c.env_file.write_text('POSTGRES_PASSWORD="old"\n')
-    r = FakeRunner(fail_on="create-admin")
-    provision.install(
-        c, "a@b.c", "a-very-long-password", CertChoice("self-signed"), r, wait=healthy, token=lambda n: "new"
-    )
-    assert not any("create-admin" in cmd for cmd in flat(r))
-    assert any("-m assayr migrate" in cmd for cmd in flat(r))
+def idx_of(r, fragment):
+    return next(i for i, cmd in enumerate(flat(r)) if fragment in cmd)
+
+
+def test_waits_until_postgres_accepts_connections(tmp_path):
+    _, r = run_install(tmp_path, runner=FakeRunner(not_ready=3))
+    assert sum("pg_isready" in cmd for cmd in flat(r)) == 4
+    assert idx_of(r, "pg_isready") < idx_of(r, "createdb") < idx_of(r, "-m assayr migrate")
+
+
+def test_createdb_already_exists_is_fine(tmp_path):
+    run_install(tmp_path, runner=FakeRunner(createdb_err='createdb: error: database "assayr" already exists'))
+
+
+def test_createdb_other_failure_stops_the_install(tmp_path):
+    with pytest.raises(ProvisionError, match="createdb"):
+        run_install(tmp_path, runner=FakeRunner(createdb_err="could not connect to server"))
+
+
+def test_installing_account_is_granted_the_db_folder_before_initdb(tmp_path):
+    r = FakeRunner(whoami='"server\\admin","S-1-5-21-111-222-333-500"\n')
+    c, _ = run_install(tmp_path, runner=r)
+    grant = idx_of(r, "*S-1-5-21-111-222-333-500:(OI)(CI)F")
+    assert str(c.db_dir) in r.calls[grant] and grant < idx_of(r, "initdb")
+
+
+def test_failed_install_keeps_its_log_next_to_the_removed_folder(tmp_path):
+    with pytest.raises(ProvisionError, match="Assayr Data-install-failed.log"):
+        run_install(tmp_path, runner=FakeRunner(fail_on="create-admin"))
+    kept = tmp_path / "Assayr Data-install-failed.log"
+    assert "create-admin" in kept.read_text(encoding="utf-8")
+
+
+def test_create_admin_only_when_no_administrator_exists(tmp_path):
+    _, r = run_install(tmp_path)
+    admin = next(cmd for cmd in r.calls if "create-admin" in cmd)
+    assert "--if-no-admin" in admin
+
+
+def test_install_clears_stale_services_first(tmp_path):
+    _, r = run_install(tmp_path)
+    assert idx_of(r, "sc.exe delete AssayrWeb") < idx_of(r, "initdb")
+
+
+def test_finish_upgrade_failure_stops_and_removes_the_new_services(tmp_path):
+    c, _ = run_install(tmp_path)
+
+    def unhealthy(*a, **k):
+        raise provision.HealthError("down")
+
+    r = FakeRunner()
+    with pytest.raises(ProvisionError):
+        provision.finish_upgrade(c, r, wait=unhealthy)
+    after_start = flat(r)[idx_of(r, "sc.exe start AssayrWeb") :]
+    assert any("AssayrDb.exe uninstall" in cmd for cmd in after_start)
+
+
+def test_busy_internal_ports_move_to_free_ones(tmp_path):
+    import socket
+
+    busy = socket.socket()
+    busy.bind(("127.0.0.1", 0))
+    busy.listen()
+    port = busy.getsockname()[1]
+    try:
+        c, _ = run_install(tmp_path, pg_port=port, api_port=port, clamav_port=port)
+    finally:
+        busy.close()
+    assert port not in (c.pg_port, c.api_port, c.clamav_port)
+    assert len({c.pg_port, c.api_port, c.clamav_port}) == 3
+    assert InstallConfig.load(c.data_dir).pg_port == c.pg_port

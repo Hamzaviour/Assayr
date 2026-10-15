@@ -114,3 +114,37 @@ def test_logs_rejects_unknown_service(tmp_path):
     c = saved_config(tmp_path)
     result = runner.invoke(app, ["win", "logs", "nope", "--data-dir", str(c.data_dir)])
     assert result.exit_code == 1 and "Choose one of" in result.output
+
+
+def test_failed_restore_restarts_assayr_and_names_the_safety_backup(tmp_path, monkeypatch):
+    c = saved_config(tmp_path)
+
+    class Source:
+        version, created, folder = "0.3.0", "x", tmp_path
+
+    started = []
+    monkeypatch.setattr(wincli, "read_backup", lambda f, w: Source())
+    monkeypatch.setattr(wincli.provision, "make_backup", lambda cfg, r: cfg.backups_dir / "safety.tar.gz")
+    monkeypatch.setattr(wincli.services, "stop", lambda *a, **k: None)
+    monkeypatch.setattr(wincli.services, "start_all", lambda cfg, r: started.append(True))
+
+    def broken(*a, **k):
+        raise wincli.PgError("pg_restore failed: disk full")
+
+    monkeypatch.setattr(wincli, "restore_data", broken)
+    result = runner.invoke(
+        app, ["win", "restore", str(tmp_path / "b.tar.gz"), "--yes", "--data-dir", str(c.data_dir)]
+    )
+    assert result.exit_code == 1
+    assert "The restore failed" in result.output and "safety.tar.gz" in result.output
+    assert "can't be used" not in result.output
+    assert started == [True]
+
+
+def test_permission_denied_says_run_as_administrator(tmp_path, monkeypatch):
+    def denied(data_dir):
+        raise PermissionError(13, "Access is denied")
+
+    monkeypatch.setattr(wincli.InstallConfig, "load", staticmethod(denied))
+    result = runner.invoke(app, ["win", "status", "--data-dir", str(tmp_path)])
+    assert result.exit_code == 1 and "administrator" in result.output.lower()

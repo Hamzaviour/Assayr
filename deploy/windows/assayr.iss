@@ -18,7 +18,7 @@ AppVersion={#Version}
 AppVerName=Assayr {#Version}
 AppPublisher=Assayr
 DefaultDirName={autopf}\Assayr
-DisableDirPage=yes
+DisableDirPage=auto
 DisableProgramGroupPage=yes
 OutputDir={#OutDir}
 OutputBaseFilename=Assayr-Setup-{#Version}
@@ -49,7 +49,7 @@ Type: filesandordirs; Name: "{app}"
 [Icons]
 Name: "{autoprograms}\Assayr\Open Assayr"; Filename: "{code:SiteUrl}"
 Name: "{autoprograms}\Assayr\Assayr Admin"; Filename: "{cmd}"; Parameters: "/k ""{app}\assayr-admin.cmd"" status"; WorkingDir: "{app}"
-Name: "{autoprograms}\Assayr\Back up now"; Filename: "{app}\assayr-admin.cmd"; Parameters: "backup"; WorkingDir: "{app}"
+Name: "{autoprograms}\Assayr\Back up now"; Filename: "{cmd}"; Parameters: "/k ""{app}\assayr-admin.cmd"" backup"; WorkingDir: "{app}"
 
 [Code]
 const
@@ -73,7 +73,7 @@ var
   CertPage, OptionsPage: TInputOptionWizardPage;
   CertFilesPage: TInputFileWizardPage;
   DataPage: TInputDirWizardPage;
-  Upgrading, Silent, DeleteData: Boolean;
+  Upgrading, Silent, DeleteData, MovedAside, PostInstallRan: Boolean;
   OldVersion, OldDataDir, BackupFile: string;
   ExitCode: Integer;
 
@@ -393,6 +393,33 @@ begin
   RegWriteStringValue(HKLM, RegKey, 'Version', '{#Version}');
 end;
 
+function RenameWithRetry(FromDir, ToDir: string): Boolean;
+var
+  Attempt: Integer;
+begin
+  { Antivirus and indexer handles can hold a folder for a moment after the services stop. }
+  Result := False;
+  for Attempt := 1 to 10 do begin
+    if RenameFile(FromDir, ToDir) then begin
+      Result := True;
+      Exit;
+    end;
+    Sleep(2000);
+  end;
+end;
+
+function PutPreviousBack(App: string): Boolean;
+var
+  Attempt: Integer;
+begin
+  for Attempt := 1 to 10 do begin
+    if DirExists(App) then DelTree(App, True, True, True);
+    if not DirExists(App) then Break;
+    Sleep(2000);
+  end;
+  Result := RenameWithRetry(App + '.previous', App);
+end;
+
 function PrepareToInstall(var NeedsRestart: Boolean): String;
 var
   App, OutFile: string;
@@ -409,10 +436,11 @@ begin
   if LoadStringsFromFile(OutFile, Lines) and (GetArrayLength(Lines) > 0) then
     BackupFile := Trim(Lines[0]);
   DelTree(App + '.previous', True, True, True);
-  if not RenameFile(App, App + '.previous') then begin
+  if not RenameWithRetry(App, App + '.previous') then begin
     RunPython(App, 'start --data-dir "' + OldDataDir + '"');
     Result := 'The old program folder could not be moved aside. Close any window using ' + App + ' and try again.';
-  end;
+  end else
+    MovedAside := True;
 end;
 
 procedure FinishUpgrade(App: string);
@@ -424,8 +452,8 @@ begin
     Exit;
   end;
   ExitCode := 1;
-  DelTree(App, True, True, True);
-  if not RenameFile(App + '.previous', App) then begin
+  RunPython(App, 'stop --data-dir "' + OldDataDir + '"');
+  if not PutPreviousBack(App) then begin
     Report('The upgrade to {#Version} failed and the previous program folder could not be put back. ' +
       'It is in ' + App + '.previous. See ' + OldDataDir + '\install.log');
     Exit;
@@ -445,8 +473,9 @@ begin
     RecordInstall
   else begin
     ExitCode := 1;
-    Report('Assayr could not be set up. See ' + DataDir('') + '\install.log for the step that failed, ' +
-      'then run this setup again.');
+    Report('Assayr could not be set up. The step that failed is at the end of ' + DataDir('') +
+      '\install.log (or ' + DataDir('') + '-install-failed.log when the data folder was removed). ' +
+      'Fix the cause, then run this setup again.');
   end;
   DeleteFile(Answers);
   ClearSecrets;
@@ -455,11 +484,37 @@ end;
 procedure CurStepChanged(CurStep: TSetupStep);
 begin
   if CurStep <> ssPostInstall then Exit;
+  PostInstallRan := True;
   WizardForm.StatusLabel.Caption := 'Configuring Assayr. This takes a few minutes...';
   if Upgrading then
     FinishUpgrade(ExpandConstant('{app}'))
   else
     FirstInstall(ExpandConstant('{app}'));
+end;
+
+procedure CurPageChanged(CurPageID: Integer);
+begin
+  if (CurPageID = wpFinished) and (ExitCode <> 0) then begin
+    WizardForm.FinishedHeadingLabel.Caption := 'Assayr was not set up';
+    if Upgrading then
+      WizardForm.FinishedLabel.Caption := 'The upgrade did not complete. See the message shown before and ' +
+        OldDataDir + '\install.log.'
+    else
+      WizardForm.FinishedLabel.Caption := 'Setup could not configure Assayr. See the message shown before, ' +
+        'fix the cause and run this setup again.';
+  end;
+end;
+
+procedure DeinitializeSetup;
+var
+  App: string;
+begin
+  { An upgrade cancelled or failed during the file copy: put the old program back and start it. }
+  if Upgrading and MovedAside and not PostInstallRan then begin
+    App := ExpandConstant('{app}');
+    if DirExists(App + '.previous') and PutPreviousBack(App) then
+      RunPython(App, 'start --data-dir "' + OldDataDir + '"');
+  end;
 end;
 
 function GetCustomSetupExitCode: Integer;

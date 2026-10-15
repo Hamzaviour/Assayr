@@ -49,6 +49,8 @@ def _fail(message: str) -> None:
 def _load(data_dir: Path) -> InstallConfig:
     try:
         return InstallConfig.load(data_dir)
+    except PermissionError:
+        _fail("Run Assayr Admin as administrator: only administrators can read the Assayr data folder.")
     except OSError:
         _fail(f"No Assayr installation found in {data_dir}.")
 
@@ -223,18 +225,26 @@ def restore(file: Path, data_dir: Path = DATA_DIR, yes: bool = typer.Option(Fals
         )
         if not yes and not typer.confirm(prompt):
             raise typer.Exit(1)
-        r = _runner(cfg)
-        typer.echo(f"Safety backup: {provision.make_backup(cfg, r)}")
+    except BackupError as exc:
+        shutil.rmtree(work, ignore_errors=True)
+        _fail(f"This backup can't be used: {exc}")
+    r = _runner(cfg)
+    safety = None
+    try:
+        safety = provision.make_backup(cfg, r)
+        typer.echo(f"Safety backup: {safety}")
         for s in ("AssayrWeb", "AssayrWorker", "AssayrApi"):
-            r.run(["sc.exe", "stop", s], check=False)
+            services.stop(cfg, r, s)
         db = PgTools(cfg.pg_bin, database_url(cfg, provision._env_password(cfg) or ""))
         restore_data(source, cfg.blobs_dir, db)
         provision._assayr(cfg, r, "migrate")
+    except (BackupError, PgError, services.CommandError, OSError) as exc:
         services.start_all(cfg, r)
-    except (BackupError, PgError) as exc:
-        _fail(f"This backup can't be used: {exc}")
+        hint = f"\nThe data from just before it is in {safety}. To put it back: assayr-admin restore {safety}"
+        _fail(f"The restore failed: {exc}{hint if safety else ''}")
     finally:
         shutil.rmtree(work, ignore_errors=True)
+    services.start_all(cfg, r)
     typer.echo("Restore complete.")
 
 

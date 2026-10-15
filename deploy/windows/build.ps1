@@ -73,6 +73,17 @@ $root = (Get-ChildItem $tmp -Directory | Select-Object -First 1).FullName
 if (-not (Test-Path "$root\clamd.exe")) { throw "clamd.exe missing in the ClamAV archive" }
 Copy-Item -Recurse $root "$stage\clamav"
 Remove-Item -Recurse -Force $tmp
+# Debug symbols and import libraries (about 640 MB) are not needed to run ClamAV.
+Get-ChildItem "$stage\clamav" -Recurse -Include *.pdb, *.lib | Remove-Item -Force
+
+# The PostgreSQL binaries need the Visual C++ runtime, which a clean Windows Server lacks.
+# ClamAV ships the same runtime DLLs; copy them next to postgres.exe.
+foreach ($dll in 'vcruntime140.dll', 'vcruntime140_1.dll', 'msvcp140.dll', 'msvcp140_1.dll', 'msvcp140_2.dll', 'concrt140.dll') {
+  if (-not (Test-Path "$stage\pgsql\bin\$dll")) {
+    if (-not (Test-Path "$stage\clamav\$dll")) { throw "$dll is missing from the ClamAV archive" }
+    Copy-Item "$stage\clamav\$dll" "$stage\pgsql\bin\"
+  }
+}
 New-Item -ItemType Directory -Force "$stage\clamav\database" | Out-Null
 if ($Signatures) { Copy-Item "$Signatures\*.c?d" "$stage\clamav\database\" }
 

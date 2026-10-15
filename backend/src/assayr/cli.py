@@ -108,6 +108,9 @@ def create_admin(
         envvar="ASSAYR_ADMIN_PASSWORD",
         help="At least 12 characters.",
     ),
+    if_no_admin: bool = typer.Option(
+        False, "--if-no-admin", help="Do nothing (exit 0) when a platform administrator already exists."
+    ),
 ) -> None:
     """Create the first administrator (platform admin + ISMS manager, all scopes)."""
     normalized = normalize_email(email)
@@ -117,6 +120,11 @@ def create_admin(
         typer.echo(str(exc), err=True)
         raise typer.Exit(1) from exc
     with _database().sessionmaker() as session:
+        if if_no_admin and session.scalar(
+            select(RoleAssignment.id).where(RoleAssignment.role == Role.PLATFORM_ADMIN.value).limit(1)
+        ):
+            typer.echo("An administrator already exists; none was created.")
+            return
         if session.scalar(select(User.id).where(User.email == normalized)):
             typer.echo(f"A user with the email {normalized} already exists.", err=True)
             raise typer.Exit(1)
@@ -226,11 +234,6 @@ def healthcheck(
         typer.echo(str(exc), err=True)
         raise typer.Exit(1) from exc
     typer.echo(f"Assayr {found} is healthy.")
-
-
-from assayr.windows.cli import win_app  # noqa: E402
-
-app.add_typer(win_app, name="win")
 
 
 from assayr.windows.cli import win_app  # noqa: E402
