@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router"
 import type { CSSProperties, ReactNode } from "react"
-import { type Dashboard, type FrameworkRow, type RiskCard, useDashboard } from "../api/dashboard"
+import { type Dashboard, type FrameworkRow, type RiskCard, useDashboard, frameworkTitle } from "../api/dashboard"
 import { useMethodology } from "../api/risks"
 import { useMe } from "../auth/session"
 import { BarChart, Donut, LineChart, ProgressBar, type Segment, StackedBar } from "../components/charts"
@@ -37,7 +37,8 @@ function FrameworkCard({ f }: { f: FrameworkRow }) {
       <div className="grid content-start gap-3">
         <p className="flex items-baseline justify-between gap-3">
           <Link to="/compliance" className="text-[17px] hover:underline">
-            <strong>{f.name}</strong> <span className="text-fg-3">{f.version}</span>
+            <strong>{frameworkTitle(f).name}</strong>
+            {frameworkTitle(f).note && <span className="text-fg-3"> {frameworkTitle(f).note}</span>}
           </Link>
           <span className="font-display text-[34px] font-extrabold leading-none text-primary">
             {f.readiness === null ? "—" : <CountUp value={Math.round(f.readiness)} suffix="%" />}

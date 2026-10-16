@@ -117,3 +117,14 @@ test("excluded controls are shown apart from the total", async () => {
   setup(dashboard({ frameworks: [{ ...dashboard().frameworks[0], total: 87, excluded: 6 }] }))
   expect(await screen.findByText(/6 excluded/)).toBeInTheDocument()
 })
+
+test("NIA appears under ISO in the compliance section with its name in bold", async () => {
+  const nia = { ...dashboard().frameworks[0], code: "nia-2.1", name: "NIA", version: "2.1", total: 355, compliant: 10 }
+  setup(dashboard({ frameworks: [dashboard().frameworks[0], nia] }))
+  const name = await screen.findByText("NIA v2.1")
+  expect(name.tagName).toBe("STRONG")
+  const section = name.closest("section")!
+  const titles = [...section.querySelectorAll("strong")].map((e) => e.textContent).filter((t) => /ISO|NIA/.test(t ?? ""))
+  expect(titles).toEqual(["ISO/IEC 27001", "NIA v2.1"])
+  expect(name.closest("article")).toHaveTextContent("10 controls compliant · 355 total")
+})

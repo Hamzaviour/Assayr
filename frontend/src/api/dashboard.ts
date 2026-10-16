@@ -28,3 +28,10 @@ export type Dashboard = {
 export function useDashboard() {
   return useQuery({ queryKey: ["dashboard"], queryFn: () => api<Dashboard>("/dashboard") })
 }
+
+export const isNia = (f: Pick<FrameworkRow, "code">) => f.code.startsWith("nia")
+
+/** Bold display name and trailing note: "NIA v2.1" reads as one name; ISO keeps "2022" as a quiet suffix. */
+export function frameworkTitle(f: Pick<FrameworkRow, "code" | "name" | "version">): { name: string; note: string } {
+  return isNia(f) ? { name: `${f.name} v${f.version}`, note: "" } : { name: f.name, note: f.version }
+}
