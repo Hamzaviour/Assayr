@@ -10,12 +10,14 @@ from sqlalchemy.orm import Session
 
 from assayr.audit.models import AuditLog
 from assayr.audit.service import record
-from assayr.catalogue.access import check_active_user, has_perm
+from assayr.catalogue.access import check_active_user, edit_rights, has_perm
 from assayr.catalogue.models import Control
-from assayr.catalogue.router import FORBIDDEN, _like, resolve_scope
+from assayr.catalogue.router import FORBIDDEN, _get_control, _like, resolve_scope
 from assayr.db import get_session
 from assayr.documents.models import Document, DocumentControl
 from assayr.documents.schemas import (
+    ControlDocumentOut,
+    ControlDocumentsOut,
     ControlLinksIn,
     DocumentDetailOut,
     DocumentIn,
@@ -382,3 +384,93 @@ def set_document_controls(
     )
     db.commit()
     return _detail(db, request, user, doc)
+
+
+def _control_documents(db: Session, control: Control) -> ControlDocumentsOut:
+    docs = db.scalars(
+        select(Document)
+        .join(DocumentControl, DocumentControl.document_id == Document.id)
+        .where(DocumentControl.control_id == control.id)
+        .order_by(Document.code)
+    ).unique()
+    grouped: dict[str, list[ControlDocumentOut]] = {"policy": [], "procedure": [], "guideline": []}
+    for d in docs:
+        grouped[d.doc_type].append(ControlDocumentOut.model_validate(d, from_attributes=True))
+    return ControlDocumentsOut(**grouped)
+
+
+@router.get("/controls/{code}/documents", response_model=ControlDocumentsOut)
+def list_control_documents(
+    code: str,
+    grant: Grant = Depends(require(Perm.CONTROLS_READ)),
+    db: Session = Depends(get_session),
+    scope_id: uuid.UUID | None = None,
+) -> ControlDocumentsOut:
+    scope = resolve_scope(db, scope_id, grant)
+    return _control_documents(db, _get_control(db, scope, code))
+
+
+def _link_target(
+    db: Session, user: User, grant: Grant, scope_id: uuid.UUID | None, code: str, doc_id: uuid.UUID
+) -> tuple[Control, Document]:
+    scope = resolve_scope(db, scope_id, grant)
+    control = _get_control(db, scope, code)
+    doc = _get(db, grant, doc_id)
+    if doc.scope_id != scope.id:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, NOT_FOUND)
+    if not (
+        _is_manager(user, doc) or _is_owner(user, doc) or edit_rights(user, scope.id, control.owner_id).any
+    ):
+        raise HTTPException(status.HTTP_403_FORBIDDEN, FORBIDDEN)
+    return control, doc
+
+
+@router.post("/controls/{code}/documents/{doc_id}", response_model=ControlDocumentsOut)
+def link_control_document(
+    code: str,
+    doc_id: uuid.UUID,
+    request: Request,
+    user: User = Depends(current_user),
+    grant: Grant = Depends(require(Perm.CONTROLS_READ)),
+    db: Session = Depends(get_session),
+    scope_id: uuid.UUID | None = None,
+) -> ControlDocumentsOut:
+    control, doc = _link_target(db, user, grant, scope_id, code, doc_id)
+    if db.get(DocumentControl, (doc.id, control.id)) is None:
+        db.add(DocumentControl(document_id=doc.id, control_id=control.id))
+        record(
+            db,
+            actor_for(request, user),
+            "document.link",
+            "document",
+            str(doc.id),
+            diff={"control": control.code},
+        )
+        db.commit()
+    return _control_documents(db, control)
+
+
+@router.delete("/controls/{code}/documents/{doc_id}", response_model=ControlDocumentsOut)
+def unlink_control_document(
+    code: str,
+    doc_id: uuid.UUID,
+    request: Request,
+    user: User = Depends(current_user),
+    grant: Grant = Depends(require(Perm.CONTROLS_READ)),
+    db: Session = Depends(get_session),
+    scope_id: uuid.UUID | None = None,
+) -> ControlDocumentsOut:
+    control, doc = _link_target(db, user, grant, scope_id, code, doc_id)
+    link = db.get(DocumentControl, (doc.id, control.id))
+    if link is not None:
+        db.delete(link)
+        record(
+            db,
+            actor_for(request, user),
+            "document.unlink",
+            "document",
+            str(doc.id),
+            diff={"control": control.code},
+        )
+        db.commit()
+    return _control_documents(db, control)

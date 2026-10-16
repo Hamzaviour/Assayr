@@ -34,6 +34,21 @@ class ControlLinksIn(BaseModel):
     codes: list[str] = Field(max_length=200)
 
 
+class ControlDocumentOut(BaseModel):
+    id: uuid.UUID
+    code: str
+    title: str
+    status: str
+    version_label: str
+    review_due: date | None
+
+
+class ControlDocumentsOut(BaseModel):
+    policy: list[ControlDocumentOut]
+    procedure: list[ControlDocumentOut]
+    guideline: list[ControlDocumentOut]
+
+
 class LinkedControlOut(BaseModel):
     code: str
     title: str

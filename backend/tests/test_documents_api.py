@@ -123,3 +123,51 @@ def test_deleting_a_control_removes_its_links(client, db, seeded):
     db.delete(db.scalar(select(Control).where(Control.code == "A.5.1")))
     db.commit()
     assert db.scalars(select(DocumentControl)).all() == []
+
+
+def test_control_documents_grouped_by_type(client, db, seeded):
+    manager(client, db)
+    pol = new_doc(client).json()
+    pro = new_doc(client, doc_type="procedure", code="PRO-01", title="Access procedure").json()
+    for doc in (pol, pro):
+        client.put(f"/api/v1/documents/{doc['id']}/controls", json={"codes": ["A.5.15"]})
+    body = client.get("/api/v1/controls/A.5.15/documents").json()
+    assert [d["code"] for d in body["policy"]] == ["POL-01"]
+    assert [d["code"] for d in body["procedure"]] == ["PRO-01"] and body["guideline"] == []
+    assert set(body["policy"][0]) >= {"id", "code", "title", "status", "version_label", "review_due"}
+    assert client.get("/api/v1/controls/A.5.1/documents").json()["policy"] == []
+    assert client.get("/api/v1/controls/A.99.9/documents").status_code == 404
+
+
+def test_link_and_unlink_from_the_control_page(client, db, seeded):
+    manager(client, db)
+    doc = new_doc(client).json()
+    url = f"/api/v1/controls/A.5.1/documents/{doc['id']}"
+    assert client.post(url).status_code == 200
+    assert client.post(url).status_code == 200  # linking twice is harmless
+    assert [d["code"] for d in client.get("/api/v1/controls/A.5.1/documents").json()["policy"]] == ["POL-01"]
+    assert client.delete(url).status_code == 200
+    assert client.get("/api/v1/controls/A.5.1/documents").json()["policy"] == []
+
+
+def test_viewer_cannot_link_from_the_control_page(client, db, seeded):
+    manager(client, db)
+    doc = new_doc(client).json()
+    create_user(db, "vera@acme.com", roles=(("viewer", None),), full_name="Vera")
+    sign_in(client, "vera@acme.com")
+    assert client.post(f"/api/v1/controls/A.5.1/documents/{doc['id']}").status_code == 403
+
+
+def test_documents_link_to_nia_only_controls(client, db, seeded):
+    from assayr.nia.seed import seed_nia
+
+    seed_nia(db, seeded)
+    db.commit()
+    manager(client, db)
+    doc = new_doc(client).json()
+    assert (
+        client.put(f"/api/v1/documents/{doc['id']}/controls", json={"codes": ["NIA AC 3"]}).status_code == 200
+    )
+    assert [d["code"] for d in client.get("/api/v1/controls/NIA AC 3/documents").json()["policy"]] == [
+        "POL-01"
+    ]
