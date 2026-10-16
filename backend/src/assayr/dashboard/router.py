@@ -17,6 +17,8 @@ from assayr.evidence.models import ArtefactLink
 from assayr.identity.deps import current_user, get_clock, require
 from assayr.identity.models import User
 from assayr.identity.rbac import Grant, Perm
+from assayr.nia.service import framework as nia_framework
+from assayr.nia.service import nia_framework_row
 from assayr.risk.models import Risk
 from assayr.risk.service import risk_row
 from assayr.scoring.models import ScoreSnapshot
@@ -159,6 +161,15 @@ def _risk_card(db: Session, scope_id: uuid.UUID) -> RiskCard:
     )
 
 
+def _frameworks(db: Session, scope_id: uuid.UUID, controls: list[Control]) -> list[FrameworkRow]:
+    has_evidence = scope_has_evidence(db, scope_id)
+    iso = [c for c in controls if not c.code.startswith("NIA ")]  # NIA-only controls belong to the NIA row
+    rows = [_framework_row(db, iso, has_evidence)]
+    if nia_framework(db) is not None:
+        rows.append(FrameworkRow(**nia_framework_row(db, scope_id, has_evidence)))
+    return rows
+
+
 @router.get("/dashboard", response_model=DashboardOut)
 def dashboard(
     request: Request,
@@ -177,7 +188,7 @@ def dashboard(
         .order_by(ScoreSnapshot.taken_at)
     )
     return DashboardOut(
-        frameworks=[_framework_row(db, controls, scope_has_evidence(db, scope.id))],
+        frameworks=_frameworks(db, scope.id, controls),
         evidence=_evidence_card(db, scope.id, now.date(), request.app.state.settings.expiry_warning_days),
         risks=_risk_card(db, scope.id) if has_perm(user, scope.id, Perm.RISKS_READ) else None,
         unowned_controls=sum(1 for c in _in_scope(controls) if c.owner_id is None),

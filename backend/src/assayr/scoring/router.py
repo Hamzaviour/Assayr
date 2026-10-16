@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 
 from assayr.audit.service import record
 from assayr.catalogue.access import edit_rights
-from assayr.catalogue.models import Control
+from assayr.catalogue.models import Control, iso_controls
 from assayr.catalogue.router import _get_control, control_detail, resolve_scope
 from assayr.catalogue.schemas import ControlDetailOut
 from assayr.db import get_session
@@ -48,7 +48,7 @@ def readiness(
     scope_id: uuid.UUID | None = None,
 ) -> ReadinessOut:
     scope = resolve_scope(db, scope_id, grant)
-    controls = list(db.scalars(select(Control).where(Control.scope_id == scope.id)))
+    controls = list(db.scalars(select(Control).where(Control.scope_id == scope.id, iso_controls())))
     has_evidence = scope_has_evidence(db, scope.id)
     themes: dict[str, list[Control]] = {}
     for control in controls:

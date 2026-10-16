@@ -9,7 +9,7 @@ from typing import NamedTuple
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from assayr.catalogue.models import Control, EvidenceSlot
+from assayr.catalogue.models import Control, EvidenceSlot, iso_controls
 from assayr.catalogue.seed import FREQ_DAYS
 from assayr.config import Settings
 from assayr.evidence.models import ArtefactLink
@@ -170,7 +170,7 @@ def scope_has_evidence(db: Session, scope_id: uuid.UUID) -> bool:
 
 def take_snapshot(db: Session, scope_id: uuid.UUID, now: datetime) -> ScoreSnapshot | None:
     """One snapshot per scope per day, plus one whenever readiness changes during the day."""
-    controls = list(db.scalars(select(Control).where(Control.scope_id == scope_id)))
+    controls = list(db.scalars(select(Control).where(Control.scope_id == scope_id, iso_controls())))
     readiness = weighted_readiness(controls)
     if readiness is None:
         return None

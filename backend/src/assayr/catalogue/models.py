@@ -101,3 +101,8 @@ class EvidenceSlot(IdMixin, Base):
     sort_order: Mapped[int] = mapped_column(default=0)
 
     control: Mapped[Control | None] = relationship(back_populates="slots")
+
+
+def iso_controls():
+    """Filter for ISO/IEC 27001 controls: NIA-only controls (coded "NIA <ref>") share the table."""
+    return ~Control.code.startswith("NIA ")

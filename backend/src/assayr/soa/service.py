@@ -6,7 +6,7 @@ from datetime import date
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from assayr.catalogue.models import Control
+from assayr.catalogue.models import Control, iso_controls
 from assayr.config import Settings
 from assayr.risk.methodology import band_for
 from assayr.risk.models import Risk, RiskControl
@@ -54,7 +54,7 @@ def soa_items(db: Session, scope_id: uuid.UUID, settings: Settings, today: date)
     links = active_risk_links(db, scope_id)
     items = []
     for control in db.scalars(
-        select(Control).where(Control.scope_id == scope_id).order_by(Control.sort_order)
+        select(Control).where(Control.scope_id == scope_id, iso_controls()).order_by(Control.sort_order)
     ).unique():
         sources = [
             SourceOut(kind="risk", label=f"Risk {code}", ref=code) for code in links.get(control.id, [])

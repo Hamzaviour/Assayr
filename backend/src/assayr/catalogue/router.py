@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from assayr.audit.service import record
 from assayr.catalogue.access import edit_rights
-from assayr.catalogue.models import Control, Framework, Requirement
+from assayr.catalogue.models import Control, Framework, Requirement, iso_controls
 from assayr.catalogue.schemas import (
     ControlDetailOut,
     ControlPage,
@@ -92,7 +92,7 @@ def list_controls(
     cursor: int | None = Query(None, ge=0),
 ) -> ControlPage:
     scope = resolve_scope(db, scope_id, grant)
-    stmt = select(Control).where(Control.scope_id == scope.id)
+    stmt = select(Control).where(Control.scope_id == scope.id, iso_controls())
     if theme:
         stmt = stmt.where(Control.theme == theme)
     if status_:
@@ -132,15 +132,19 @@ def controls_summary(
     scope_id: uuid.UUID | None = None,
 ) -> ControlStatsOut:
     scope = resolve_scope(db, scope_id, grant)
-    base = select(func.count()).select_from(Control).where(Control.scope_id == scope.id)
+    base = select(func.count()).select_from(Control).where(Control.scope_id == scope.id, iso_controls())
     by_status = dict(
         db.execute(
-            select(Control.status, func.count()).where(Control.scope_id == scope.id).group_by(Control.status)
+            select(Control.status, func.count())
+            .where(Control.scope_id == scope.id, iso_controls())
+            .group_by(Control.status)
         ).all()
     )
     by_theme = dict(
         db.execute(
-            select(Control.theme, func.count()).where(Control.scope_id == scope.id).group_by(Control.theme)
+            select(Control.theme, func.count())
+            .where(Control.scope_id == scope.id, iso_controls())
+            .group_by(Control.theme)
         ).all()
     )
     return ControlStatsOut(
