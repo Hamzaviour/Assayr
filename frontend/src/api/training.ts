@@ -161,3 +161,60 @@ export function useGrantAttempts() {
     api<AssignmentRow>(`/assignments/${assignmentId}/attempts`, { method: "POST", body: JSON.stringify({ extra, reason }) }),
   )
 }
+
+export type MyAssignment = {
+  id: string
+  course_title: string
+  course_description: string | null
+  status: AssignmentRow["status"]
+  overdue: boolean
+  due_at: string
+  completed_at: string | null
+  material_count: number
+  materials_done: number
+  has_assessment: boolean
+  attempts_used: number
+  attempts_left: number | null
+  best_score: number | null
+}
+
+export type MyAssignmentDetail = MyAssignment & {
+  materials: Material[]
+  done: string[]
+  assessment: { pass_mark: number; questions: { id: string; kind: QuestionKind; text: string; options: { id: string; text: string }[] }[] } | null
+  assessment_locked: boolean
+  attempts: { submitted_at: string | null; score: number | null; passed: boolean | null }[]
+}
+
+export type AttemptResult = { score: number; passed: boolean; wrong: string[]; attempts_left: number }
+
+export const myMaterialFileUrl = (assignmentId: string, materialId: string) =>
+  `/api/v1/my/assignments/${assignmentId}/materials/${materialId}/file`
+
+export function useMyAssignments() {
+  return useQuery({ queryKey: ["my-training"], queryFn: () => api<MyAssignment[]>("/my/assignments") })
+}
+
+export function useMyAssignment(id: string) {
+  return useQuery({ queryKey: ["my-training", id], queryFn: () => api<MyAssignmentDetail>(`/my/assignments/${id}`) })
+}
+
+export function useMaterialDone(id: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (materialId: string) => api<MyAssignmentDetail>(`/my/assignments/${id}/materials/${materialId}/done`, { method: "POST" }),
+    onSuccess: (detail) => {
+      queryClient.setQueryData(["my-training", id], detail)
+      queryClient.invalidateQueries({ queryKey: ["my-training"], exact: true })
+    },
+  })
+}
+
+export function useSubmitAttempt(id: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (answers: Record<string, string[]>) =>
+      api<AttemptResult>(`/my/assignments/${id}/attempts`, { method: "POST", body: JSON.stringify({ answers }) }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["my-training"] }),
+  })
+}
