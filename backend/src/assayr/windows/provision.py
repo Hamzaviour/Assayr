@@ -286,7 +286,7 @@ def install(
 
 
 def finish_upgrade(cfg: InstallConfig, runner, *, health_timeout: float = 180.0, wait=wait_healthy) -> None:
-    """Run by the new program after its files are in place: re-register, migrate, start, check health."""
+    """Run by the new program after its files are in place: re-register, migrate, seed, start, check health."""
     try:
         password = _env_password(cfg)
         if not password:
@@ -297,6 +297,7 @@ def finish_upgrade(cfg: InstallConfig, runner, *, health_timeout: float = 180.0,
         services.register(cfg, runner)
         _start_db(cfg, runner, password)
         _assayr(cfg, runner, "migrate")
+        _assayr(cfg, runner, "seed")  # idempotent: adds catalogues new in this version (e.g. NIA)
         services.start_all(cfg, runner)
         _schedule_backup(cfg, runner)
         wait(cfg.health_url, health_timeout, cfg.version)

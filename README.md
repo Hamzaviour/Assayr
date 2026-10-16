@@ -13,9 +13,11 @@ no telemetry, no outbound calls, and it installs on servers with no internet acc
 | Area | Capability |
 |---|---|
 | **Controls** | The ISO/IEC 27001:2022 catalogue (clauses 4–10 and Annex A) with evidence slots that say exactly what each control needs |
+| **Qatar NIA v2.1** | All 355 NIA controls in 26 domains, mapped to ISO 27001 so evidence is shared; NIA-only controls tracked on their own; applicability with reasons. Assayr ships control IDs and its own summaries; the official NCSA text is imported from your organisation's copy and stays in your installation |
+| **Policies, procedures and guidelines** | A document register with owners, approval, versions, review dates and files, linked to controls; every control page lists its policies, procedures and guidelines |
 | **Evidence** | Upload, versioning and expiry; every file is malware-scanned and verified automatically (dates, approvals, versions, freshness) with the reasons shown, and uncertain files go to a reviewer queue |
 | **Compliance status** | Control status derived from evidence, never ticked by hand: compliant, in review, in progress, at risk, not started, non-compliant, with readiness scores and history |
-| **Dashboard** | Framework compliance with partial progress, evidence and risk monitoring (open / in progress / closed), owner gaps, readiness trend and status charts |
+| **Dashboard** | ISO 27001 and NIA compliance with partial progress, evidence and risk monitoring (open / in progress / closed), owner gaps, readiness trend and status charts |
 | **Risk** | Risk register with a guided assessment wizard, risk owners, treatment plans, residual-risk acceptance, snapshots and comparison, register export |
 | **Assets** | Asset inventory with owners and classification, linked to risks |
 | **Statement of Applicability** | Generated from controls and risks, with traceability checks and executive approval |
@@ -49,9 +51,8 @@ not start. Backups are the same format on Windows and Linux, so you can move bet
 
 ## Roadmap
 
-- **Next:** the Qatar National Information Assurance standard (NIA v2.1) alongside ISO 27001 with shared
-  evidence; internal audit reports; policies, procedures and guidelines management.
-- **Later:** training and awareness (videos and mandatory assessments).
+- **Next:** internal audit reports (NIA internal audit workbook layout).
+- **Then:** training and awareness (videos and mandatory assessments).
 
 ---
 

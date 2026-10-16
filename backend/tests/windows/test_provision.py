@@ -176,7 +176,7 @@ def test_finish_upgrade_rerenders_and_migrates(tmp_path):
     c.version = "0.4.0"
     r = FakeRunner()
     provision.finish_upgrade(c, r, wait=lambda *a, **k: "0.4.0")
-    assert any("-m assayr migrate" in cmd for cmd in flat(r))
+    assert idx_of(r, "-m assayr migrate") < idx_of(r, "-m assayr seed")
     assert "0.4.0" in c.env_file.read_text()
     assert InstallConfig.load(c.data_dir).version == "0.4.0"
 
