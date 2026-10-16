@@ -135,3 +135,5 @@ class PrivacySummary(BaseModel):
     reviews_due: int
     requests_open: int = 0
     requests_overdue: int = 0
+    breaches_open: int = 0
+    notifications_overdue: int = 0

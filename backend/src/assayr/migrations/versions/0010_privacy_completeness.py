@@ -15,7 +15,7 @@ down_revision = "0009"
 branch_labels = None
 depends_on = None
 
-TABLES = ["subject_request", "dpia_risk", "dpia", "activity_processor", "processor"]
+TABLES = ["breach", "subject_request", "dpia_risk", "dpia", "activity_processor", "processor"]
 
 
 def upgrade() -> None:
@@ -158,6 +158,40 @@ def upgrade() -> None:
         ),
         sa.PrimaryKeyConstraint("id", name="pk_subject_request"),
         sa.UniqueConstraint("scope_id", "code", name="uq_subject_request_scope_code"),
+    )
+
+    op.create_table(
+        "breach",
+        sa.Column("id", sa.Uuid(), nullable=False),
+        sa.Column("scope_id", sa.Uuid(), nullable=False),
+        sa.Column("code", sa.String(length=20), nullable=False),
+        sa.Column("seq", sa.Integer(), nullable=False),
+        sa.Column("title", sa.String(length=300), nullable=False),
+        sa.Column("discovered_at", UTCDateTime(), nullable=False),
+        sa.Column("occurred_at", UTCDateTime(), nullable=True),
+        sa.Column("description", sa.Text(), nullable=True),
+        sa.Column("data_categories", sa.JSON(), nullable=True),
+        sa.Column("people_affected", sa.Integer(), nullable=True),
+        sa.Column("asset_ids", sa.JSON(), nullable=True),
+        sa.Column("activity_ids", sa.JSON(), nullable=True),
+        sa.Column("severity", sa.String(length=20), nullable=False),
+        sa.Column("containment", sa.Text(), nullable=True),
+        sa.Column("regulator_notify", sa.String(length=20), nullable=False),
+        sa.Column("regulator_notified_at", UTCDateTime(), nullable=True),
+        sa.Column("people_notify", sa.String(length=20), nullable=False),
+        sa.Column("people_notified_at", UTCDateTime(), nullable=True),
+        sa.Column("notify_deadline", UTCDateTime(), nullable=False),
+        sa.Column("lessons", sa.Text(), nullable=True),
+        sa.Column("status", sa.String(length=20), nullable=False),
+        sa.Column("risk_id", sa.Uuid(), nullable=True),
+        sa.Column("created_at", UTCDateTime(), nullable=False),
+        sa.Column("updated_at", UTCDateTime(), nullable=False),
+        sa.ForeignKeyConstraint(
+            ["scope_id"], ["scope.id"], name="fk_breach_scope_id_scope", ondelete="CASCADE"
+        ),
+        sa.ForeignKeyConstraint(["risk_id"], ["risk.id"], name="fk_breach_risk_id_risk", ondelete="SET NULL"),
+        sa.PrimaryKeyConstraint("id", name="pk_breach"),
+        sa.UniqueConstraint("scope_id", "code", name="uq_breach_scope_code"),
     )
 
 

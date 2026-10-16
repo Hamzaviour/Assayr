@@ -19,8 +19,9 @@ from assayr.exports import add_sheet, xlsx_response
 from assayr.identity.deps import actor_for, current_user, get_clock, require
 from assayr.identity.models import User
 from assayr.identity.rbac import Grant, Perm
+from assayr.privacy.breaches import notification_overdue
 from assayr.privacy.categories import PII_CATEGORIES, SENSITIVE, level_label, normalise_pii
-from assayr.privacy.models import ProcessingActivity, SubjectRequest
+from assayr.privacy.models import Breach, ProcessingActivity, SubjectRequest
 from assayr.privacy.schemas import (
     ActivityIn,
     ActivityOut,
@@ -333,6 +334,8 @@ def privacy_summary(
     )
     today = _today(request)
     requests = list(db.scalars(select(SubjectRequest).where(SubjectRequest.scope_id == scope.id)))
+    breaches = list(db.scalars(select(Breach).where(Breach.scope_id == scope.id)))
+    now = get_clock(request)()
     return PrivacySummary(
         pii_assets=len(inventory),
         sensitive_assets=sum(1 for r in inventory if r.pii_sensitive),
@@ -342,6 +345,8 @@ def privacy_summary(
         reviews_due=sum(1 for a in activities if _overdue(a, today)),
         requests_open=sum(1 for r in requests if r.status != "closed"),
         requests_overdue=sum(1 for r in requests if r.status != "closed" and r.due_on < today),
+        breaches_open=sum(1 for b in breaches if b.status != "closed"),
+        notifications_overdue=sum(1 for b in breaches if notification_overdue(b, now)),
     )
 
 

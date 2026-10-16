@@ -184,3 +184,36 @@ class SubjectRequest(IdMixin, TimestampMixin, Base):
     closed_on: Mapped[date | None] = mapped_column(Date)
 
     assignee: Mapped[User | None] = relationship(lazy="joined")
+
+
+BREACH_SEVERITIES = ("low", "medium", "high", "critical")
+NOTIFY_CHOICES = ("required", "not_required", "undecided")
+
+
+class Breach(IdMixin, TimestampMixin, Base):
+    """A personal data breach: what happened, who is affected, and who must be told by when."""
+
+    __tablename__ = "breach"
+    __table_args__ = (UniqueConstraint("scope_id", "code", name="uq_breach_scope_code"),)
+
+    scope_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("scope.id", ondelete="CASCADE"))
+    code: Mapped[str] = mapped_column(String(20))
+    seq: Mapped[int] = mapped_column(Integer)
+    title: Mapped[str] = mapped_column(String(300))
+    discovered_at: Mapped[datetime] = mapped_column(UTCDateTime)
+    occurred_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
+    description: Mapped[str | None] = mapped_column(Text)
+    data_categories: Mapped[list[str] | None] = mapped_column(JSON, default=list)
+    people_affected: Mapped[int | None] = mapped_column(Integer)
+    asset_ids: Mapped[list[str] | None] = mapped_column(JSON, default=list)
+    activity_ids: Mapped[list[str] | None] = mapped_column(JSON, default=list)
+    severity: Mapped[str] = mapped_column(String(20), default="medium")
+    containment: Mapped[str | None] = mapped_column(Text)
+    regulator_notify: Mapped[str] = mapped_column(String(20), default="undecided")
+    regulator_notified_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
+    people_notify: Mapped[str] = mapped_column(String(20), default="undecided")
+    people_notified_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
+    notify_deadline: Mapped[datetime] = mapped_column(UTCDateTime)
+    lessons: Mapped[str | None] = mapped_column(Text)
+    status: Mapped[str] = mapped_column(String(20), default="open")
+    risk_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("risk.id", ondelete="SET NULL"))
