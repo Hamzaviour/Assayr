@@ -3,7 +3,7 @@
 import uuid
 from typing import Literal
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, UploadFile, status
 from pydantic import BaseModel, Field, model_validator
 from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
@@ -16,6 +16,7 @@ from assayr.db import get_session
 from assayr.identity.deps import actor_for, current_user, require
 from assayr.identity.models import User
 from assayr.identity.rbac import Grant, Perm
+from assayr.nia.importer import NiaImportError, apply_import, parse_nia_pdf
 from assayr.nia.service import NiaControlView, nia_views, set_applicability
 
 router = APIRouter(prefix="/nia", tags=["nia"])
@@ -214,3 +215,44 @@ def set_nia_applicability(
     )
     db.commit()
     return _detail(db, user, scope.id, ref)
+
+
+class ImportOut(BaseModel):
+    version: str
+    matched: int
+    unmatched: list[str]
+
+
+frameworks_router = APIRouter(prefix="/frameworks", tags=["nia"])
+MAX_IMPORT_BYTES = 30 * 1024 * 1024
+
+
+@frameworks_router.post("/nia-2.1/import", response_model=ImportOut)
+async def import_nia_text(
+    request: Request,
+    file: UploadFile,
+    user: User = Depends(current_user),
+    grant: Grant = Depends(require(Perm.CONTROLS_READ)),
+    db: Session = Depends(get_session),
+    scope_id: uuid.UUID | None = None,
+) -> ImportOut:
+    """Read the official text from the customer's own copy of the NCSA standard (kept in this install only)."""
+    scope = resolve_scope(db, scope_id, grant)
+    _require_manager(user, scope.id)
+    data = await file.read(MAX_IMPORT_BYTES + 1)
+    if len(data) > MAX_IMPORT_BYTES:
+        raise HTTPException(status.HTTP_413_CONTENT_TOO_LARGE, "The file is larger than 30 MB.")
+    try:
+        result = apply_import(db, parse_nia_pdf(data))
+    except NiaImportError as exc:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(exc)) from exc
+    record(
+        db,
+        actor_for(request, user),
+        "nia.import",
+        "framework",
+        "nia-2.1",
+        diff={"matched": [None, result.matched], "unmatched": [None, len(result.unmatched)]},
+    )
+    db.commit()
+    return ImportOut(version=result.version, matched=result.matched, unmatched=result.unmatched)

@@ -16,6 +16,7 @@ from assayr.health import router as health_router
 from assayr.identity.auth_router import router as auth_router
 from assayr.identity.people_router import router as people_router
 from assayr.identity.users_router import router as users_router
+from assayr.nia.router import frameworks_router as nia_frameworks_router
 from assayr.nia.router import router as nia_router
 from assayr.risk.library_router import router as risk_library_router
 from assayr.risk.router import router as risk_router
@@ -64,4 +65,5 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(scoring_router, prefix="/api/v1")
     app.include_router(dashboard_router, prefix="/api/v1")
     app.include_router(nia_router, prefix="/api/v1")
+    app.include_router(nia_frameworks_router, prefix="/api/v1")
     return app
