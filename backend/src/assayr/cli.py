@@ -50,9 +50,11 @@ class StopFlag:
 
 def _enqueue_recompute(database: Database) -> None:
     from assayr.scoring.jobs import enqueue_recompute_all
+    from assayr.training.jobs import enqueue_training_sweep
 
     with database.sessionmaker() as session:
         enqueue_recompute_all(session, utcnow())
+        enqueue_training_sweep(session, utcnow())
         session.commit()
 
 

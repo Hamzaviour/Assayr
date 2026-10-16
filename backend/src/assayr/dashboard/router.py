@@ -23,6 +23,7 @@ from assayr.risk.models import Risk
 from assayr.risk.service import risk_row
 from assayr.scoring.models import ScoreSnapshot
 from assayr.scoring.service import scope_has_evidence, weighted_readiness
+from assayr.training.report_router import training_card
 
 router = APIRouter(tags=["dashboard"])
 TREND_DAYS = 90
@@ -77,6 +78,7 @@ class DashboardOut(BaseModel):
     risks: RiskCard | None
     unowned_controls: int
     trend: list[TrendPoint]
+    training: dict[str, int] | None = None
 
 
 def _in_scope(controls: list[Control]) -> list[Control]:
@@ -196,4 +198,7 @@ def dashboard(
             1 for c in _in_scope(controls) if c.owner_id is None and not c.code.startswith("NIA ")
         ),
         trend=_daily(snapshots),
+        training=training_card(db, scope.id, now.date())
+        if has_perm(user, scope.id, Perm.TRAINING_MANAGE)
+        else None,
     )
