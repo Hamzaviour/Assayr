@@ -23,6 +23,7 @@ export type Dashboard = {
   risks: RiskCard | null
   unowned_controls: number
   trend: { date: string; readiness: number }[]
+  training?: { assigned: number; passed: number; overdue: number } | null
 }
 
 export function useDashboard() {

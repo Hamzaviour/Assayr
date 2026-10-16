@@ -10,7 +10,7 @@ import { Icon } from "./icons"
 type NavItem = {
   label: string
   icon: string
-  to?: "/" | "/compliance" | "/controls" | "/evidence" | "/soa" | "/risks" | "/assets" | "/policies" | "/audits" | "/my-training" | "/users"
+  to?: "/" | "/compliance" | "/controls" | "/evidence" | "/soa" | "/risks" | "/assets" | "/policies" | "/audits" | "/my-training" | "/users" | "/training"
 }
 type NavSection = { group: string | null; items: NavItem[] }
 const MY_TRAINING: NavItem = { label: "My training", icon: "training", to: "/my-training" }
@@ -35,8 +35,13 @@ const itemClass =
 
 function navFor(me: Me): NavSection[] {
   if (isEmployeeOnly(me)) return [{ group: null, items: [MY_TRAINING] }]
-  if (!me.permissions.includes("users:manage")) return NAV
-  return [...NAV, { group: "Admin", items: [{ label: "Users", icon: "users", to: "/users" }] }]
+  const sections = me.permissions.includes("training:manage")
+    ? NAV.map((s) =>
+        s.group === "Assure" ? { ...s, items: [...s.items, { label: "Training", icon: "training", to: "/training" as const }] } : s,
+      )
+    : NAV
+  if (!me.permissions.includes("users:manage")) return sections
+  return [...sections, { group: "Admin", items: [{ label: "Users", icon: "users", to: "/users" }] }]
 }
 
 export function AppShell({ me, children }: { me: Me; children: ReactNode }) {

@@ -128,3 +128,16 @@ test("NIA appears under ISO in the compliance section with its name in bold", as
   expect(titles).toEqual(["ISO/IEC 27001", "NIA v2.1"])
   expect(name.closest("article")).toHaveTextContent("10 controls compliant · 355 total")
 })
+
+test("managers see a training card with completion and overdue", async () => {
+  mockApi({
+    "GET /auth/me": () => json(200, { ...ME, permissions: [...ME.permissions, "training:manage"] }),
+    "GET /dashboard": () => json(200, dashboard({ training: { assigned: 40, passed: 30, overdue: 5 } })),
+    "GET /risk-methodology": () => json(200, METHODOLOGY),
+  })
+  renderApp("/")
+  const card = (await screen.findByRole("heading", { name: "Training" })).closest("section")!
+  expect(card).toHaveTextContent("75%")
+  expect(card).toHaveTextContent("5 overdue")
+  expect(within(card).getByRole("link", { name: /Open training/ })).toHaveAttribute("href", "/training")
+})

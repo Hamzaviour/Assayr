@@ -173,6 +173,20 @@ function Body({ d }: { d: Dashboard }) {
             total={iso.total}
             link={<Link to="/controls" search={{ owner: "none" }} className={LINK}>Assign owners <span aria-hidden="true" className="transition-transform duration-300 group-hover/link:translate-x-1">→</span></Link>}
           />
+          {d.training && (
+            <Monitor
+              title="Training"
+              icon="training"
+              index={6}
+              attention={d.training.overdue}
+              footLeft={`${d.training.assigned ? Math.round((100 * d.training.passed) / d.training.assigned) : 0}% passed`}
+              total={d.training.assigned}
+              link={<Link to="/training" className={LINK}>Open training <span aria-hidden="true" className="transition-transform duration-300 group-hover/link:translate-x-1">→</span></Link>}
+            >
+              <ProgressBar value={d.training.passed} max={d.training.assigned} label="Training passed" color="var(--ok)" />
+              <p className="text-[12.5px] font-medium text-bad">{d.training.overdue} overdue</p>
+            </Monitor>
+          )}
         </div>
       </section>
 
