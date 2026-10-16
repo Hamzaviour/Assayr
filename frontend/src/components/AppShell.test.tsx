@@ -25,7 +25,7 @@ test("navigation marks the current page and lists upcoming modules as unavailabl
   })
   renderApp("/controls")
   expect(await screen.findByRole("link", { name: "Controls" })).toHaveAttribute("aria-current", "page")
-  expect(screen.getByText("Audits").closest("[aria-disabled]")).toHaveAttribute("aria-disabled", "true")
+  expect(screen.getByRole("link", { name: "Audits" })).toHaveAttribute("href", "/audits")
   expect(screen.getByRole("link", { name: "Policies" })).toHaveAttribute("href", "/policies")
   expect(screen.getByRole("link", { name: "Policies" })).toHaveAttribute("href", "/policies")
 })
