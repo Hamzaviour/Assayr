@@ -1,8 +1,11 @@
 """Internal audits: create, choose controls, record results, complete and reopen."""
 
+import re
 import uuid
+from typing import Literal
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile, status
+from fastapi.responses import Response
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -14,15 +17,18 @@ from assayr.audits.schemas import (
     AuditIn,
     AuditOut,
     AuditUpdateIn,
+    ImportOut,
     ItemOut,
     ItemUpdateIn,
     ReopenIn,
 )
 from assayr.audits.service import add_items, catalogue_rows, counts, normalise_ref
+from assayr.audits.workbook import WorkbookError, export_workbook, read_workbook
 from assayr.catalogue.access import check_active_user, has_perm
 from assayr.catalogue.router import FORBIDDEN, resolve_scope
 from assayr.catalogue.schemas import OwnerOut
 from assayr.db import get_session
+from assayr.exports import xlsx_response
 from assayr.identity.deps import actor_for, current_user, get_clock, require
 from assayr.identity.models import User
 from assayr.identity.rbac import Grant, Perm
@@ -323,3 +329,82 @@ def reopen_audit(
     db.commit()
     db.refresh(audit)
     return audit_out(user, audit)
+
+
+MAX_IMPORT_BYTES = 5 * 1024 * 1024
+
+
+@router.get("/audits/{audit_id}/export.xlsx")
+def export_audit(
+    audit_id: uuid.UUID,
+    grant: Grant = Depends(require(Perm.CONTROLS_READ)),
+    db: Session = Depends(get_session),
+) -> Response:
+    audit = get_audit_or_404(db, grant, audit_id)
+    name = re.sub(r"[^A-Za-z0-9._ -]", "", audit.title).strip() or "internal-audit"
+    return xlsx_response(export_workbook(audit), f"{name}.xlsx")
+
+
+@router.post("/audits/import", response_model=ImportOut, status_code=status.HTTP_201_CREATED)
+def import_audit(
+    request: Request,
+    framework: Literal["iso27001", "nia-2.1"] = Form(...),
+    file: UploadFile = File(...),
+    user: User = Depends(current_user),
+    grant: Grant = Depends(require(Perm.CONTROLS_READ)),
+    db: Session = Depends(get_session),
+    scope_id: uuid.UUID | None = None,
+) -> ImportOut:
+    """Creates a new audit from an existing internal audit workbook."""
+    scope = resolve_scope(db, scope_id, grant)
+    if not has_perm(user, scope.id, Perm.AUDITS_WRITE):
+        raise HTTPException(status.HTTP_403_FORBIDDEN, FORBIDDEN)
+    data = file.file.read(MAX_IMPORT_BYTES + 1)
+    if len(data) > MAX_IMPORT_BYTES:
+        raise HTTPException(status.HTTP_413_CONTENT_TOO_LARGE, "The workbook is larger than 5 MB.")
+    try:
+        rows = read_workbook(data)
+    except WorkbookError as exc:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(exc)) from exc
+    catalogue = {r.ref: r for r in catalogue_rows(db, scope.id, framework)}
+    title = (file.filename or "workbook").rsplit(".", 1)[0][:150]
+    audit = Audit(scope_id=scope.id, framework=framework, title=f"Imported: {title}", auditor_id=user.id)
+    db.add(audit)
+    unknown: list[str] = []
+    seen: set[str] = set()
+    for row in rows:
+        ref = normalise_ref(row.ref)
+        known = catalogue.get(ref)
+        if known is None:
+            if ref not in unknown:
+                unknown.append(ref)
+            continue
+        if ref in seen:
+            continue
+        seen.add(ref)
+        audit.items.append(
+            AuditItem(
+                ref=ref,
+                sort_order=len(seen),
+                domain=(row.domain or known.domain)[:200],
+                sub_domain=(row.sub_domain or row.domain or known.domain)[:200],
+                assessment_area=row.assessment_area,
+                test_type=row.test_type,
+                requirement=row.requirement or known.requirement,
+                result=row.result,
+            )
+        )
+    if any(i.result for i in audit.items):
+        audit.status = "in_progress"
+    db.flush()
+    record(
+        db,
+        actor_for(request, user),
+        "audit.import",
+        "audit",
+        str(audit.id),
+        diff={"imported": [None, len(seen)], "unknown": [None, len(unknown)]},
+    )
+    db.commit()
+    db.refresh(audit)
+    return ImportOut(audit=audit_out(user, audit), imported=len(seen), unknown_refs=unknown)
