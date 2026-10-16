@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router"
+import { Link, useNavigate, useSearch } from "@tanstack/react-router"
 import { type FormEvent, useState } from "react"
 import { RISK_STATUS_LABEL, TREATMENT_LABEL, useMethodology, useRisks } from "../api/risks"
 import type { RiskRow } from "../api/types"
@@ -8,6 +8,8 @@ import { Heatmap } from "../components/Heatmap"
 import { LevelPill, RiskStatusPill } from "../components/LevelPill"
 import { Segmented } from "../components/Segmented"
 import { formatDate } from "../lib/format"
+import { StatusBar } from "../components/StatusBar"
+import { countBy, statusSegments } from "../lib/statusBars"
 
 type View = "table" | "board" | "heatmap"
 type Matrix = "inherent" | "current" | "target"
@@ -37,7 +39,12 @@ export function RisksPage() {
   const [cell, setCell] = useState<[number, number] | null>(null)
   const risks = useRisks({ q: query || undefined, owner: owner || undefined })
   const methodology = useMethodology()
-  const rows = risks.data ?? []
+  const search = useSearch({ from: "/app/risks" })
+  const navigate = useNavigate({ from: "/risks" })
+  const all = risks.data ?? []
+  const rows = all.filter(
+    (r) => (!search.status || r.status === search.status) && (!search.level || (r.current ?? r.inherent)?.band === search.level),
+  )
 
   function onSearch(event: FormEvent) {
     event.preventDefault()
@@ -63,6 +70,22 @@ export function RisksPage() {
         </div>
       </header>
       <section className="rounded-xl border border-line bg-surface">
+        {all.length > 0 && (
+          <div className="border-b border-line px-4 py-3">
+            <StatusBar
+              label="Risks by status"
+              selected={search.status ?? null}
+              onSelect={(status) => navigate({ search: (prev) => ({ ...prev, status: status ?? undefined }) })}
+              segments={statusSegments("risk", countBy(all, (r) => r.status))}
+            />
+            {search.level && (
+              <p className="mt-2 inline-flex items-center gap-2 rounded-full bg-subtle px-3 py-1 text-[12.5px]">
+                Level: <b>{methodology.data?.bands.find((b) => b.key === search.level)?.label ?? search.level}</b>
+                <button type="button" aria-label="Show every level" onClick={() => navigate({ search: (prev) => ({ ...prev, level: undefined }) })} className="rounded-full px-1 hover:bg-surface">×</button>
+              </p>
+            )}
+          </div>
+        )}
         <div className="flex flex-wrap items-center gap-3 border-b border-line px-4 py-3">
           <label className="flex items-center gap-2 text-[13px]">
             Owner

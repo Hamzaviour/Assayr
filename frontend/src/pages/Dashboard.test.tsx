@@ -1,4 +1,5 @@
 import { screen, within } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
 import { METHODOLOGY } from "../test/fixtures"
 import { json, ME, mockApi, renderApp } from "../test/render"
 
@@ -32,7 +33,7 @@ function setup(body: unknown = dashboard()) {
     "GET /dashboard": () => json(200, body),
     "GET /risk-methodology": () => json(200, METHODOLOGY),
   })
-  renderApp("/")
+  return renderApp("/")
 }
 
 test("framework row shows the name in bold, controls compliant and partial progress", async () => {
@@ -60,8 +61,15 @@ test("monitoring cards show evidence, risk buckets and unowned controls", async 
 test("charts are present with text alternatives", async () => {
   setup()
   expect(await screen.findByRole("img", { name: "Readiness over the last 90 days" })).toBeInTheDocument()
-  expect(screen.getByRole("img", { name: "Controls by status" })).toBeInTheDocument()
-  expect(screen.getByRole("img", { name: "Risks by level" })).toBeInTheDocument()
+  expect(screen.getByRole("group", { name: "Controls by status" })).toBeInTheDocument()
+  expect(screen.getByRole("group", { name: "Risks by level" })).toBeInTheDocument()
+})
+
+test("clicking a chart opens the filtered list", async () => {
+  const { router } = setup()
+  await userEvent.click(await screen.findByRole("button", { name: "In review: 12. Open these" }))
+  expect(router.state.location.pathname).toBe("/controls")
+  expect(router.state.location.search).toEqual({ status: "in_review" })
 })
 
 test("no Annex A theme section any more", async () => {

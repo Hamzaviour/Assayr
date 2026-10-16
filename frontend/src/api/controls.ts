@@ -9,7 +9,7 @@ export const IMPLEMENTATION_LABEL: Record<string, string> = {
   implemented: "Implemented",
 }
 
-export function useControls(filters: { theme?: string; q?: string; owner?: string }) {
+export function useControls(filters: { theme?: string; q?: string; owner?: string; status?: string }) {
   return useInfiniteQuery({
     queryKey: ["controls", filters],
     initialPageParam: undefined as number | undefined,
@@ -18,6 +18,7 @@ export function useControls(filters: { theme?: string; q?: string; owner?: strin
       if (filters.theme) params.set("theme", filters.theme)
       if (filters.q) params.set("q", filters.q)
       if (filters.owner) params.set("owner", filters.owner)
+      if (filters.status) params.set("status", filters.status)
       if (pageParam !== undefined) params.set("cursor", String(pageParam))
       const query = params.toString()
       return api<ControlPage>(`/controls${query ? `?${query}` : ""}`)

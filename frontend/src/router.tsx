@@ -48,7 +48,8 @@ const controlsRoute = createRoute({
   path: "/controls",
   validateSearch: (
     search: Record<string, unknown>,
-  ): { framework?: "nia"; domain?: string; theme?: string; q?: string; owner?: string } => ({
+  ): { framework?: "nia"; domain?: string; theme?: string; q?: string; owner?: string; status?: string } => ({
+    status: typeof search.status === "string" && /^[a-z_]{2,20}$/.test(search.status) ? search.status : undefined,
     framework: search.framework === "nia" ? "nia" : undefined,
     domain: typeof search.domain === "string" && /^[A-Z]{2}$/.test(search.domain) ? search.domain : undefined,
     theme: typeof search.theme === "string" && search.theme ? search.theme : undefined,
@@ -81,7 +82,15 @@ const usersRoute = createRoute({ getParentRoute: () => appRoute, path: "/users",
 const policiesRoute = createRoute({ getParentRoute: () => appRoute, path: "/policies", component: PoliciesPage })
 const documentRoute = createRoute({ getParentRoute: () => appRoute, path: "/policies/$id", component: DocumentDetailPage })
 const evidenceRoute = createRoute({ getParentRoute: () => appRoute, path: "/evidence", component: ReviewQueuePage })
-const risksRoute = createRoute({ getParentRoute: () => appRoute, path: "/risks", component: RisksPage })
+const risksRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/risks",
+  validateSearch: (search: Record<string, unknown>): { status?: string; level?: string } => ({
+    status: typeof search.status === "string" && /^[a-z_]{2,30}$/.test(search.status) ? search.status : undefined,
+    level: typeof search.level === "string" && /^[a-z_]{2,30}$/.test(search.level) ? search.level : undefined,
+  }),
+  component: RisksPage,
+})
 const riskSnapshotsRoute = createRoute({ getParentRoute: () => appRoute, path: "/risks/snapshots", component: RiskSnapshotsPage })
 const riskRoute = createRoute({ getParentRoute: () => appRoute, path: "/risks/$code", component: RiskDetailPage })
 const riskNewRoute = createRoute({ getParentRoute: () => appRoute, path: "/risks/new", component: RiskNewPage })

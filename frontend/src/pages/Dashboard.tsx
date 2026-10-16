@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router"
+import { Link, useNavigate } from "@tanstack/react-router"
 import type { CSSProperties, ReactNode } from "react"
 import { type Dashboard, type FrameworkRow, type RiskCard, useDashboard, frameworkTitle } from "../api/dashboard"
 import { useMethodology } from "../api/risks"
@@ -129,6 +129,7 @@ function levelBars(risks: RiskCard, bands: { key: string; label: string }[]): Se
 }
 
 function Body({ d }: { d: Dashboard }) {
+  const navigate = useNavigate()
   const iso = d.frameworks[0]
   const methodology = useMethodology()
   const bands = methodology.data?.bands ?? []
@@ -213,12 +214,12 @@ function Body({ d }: { d: Dashboard }) {
           </div>
           <div className={`${CARD} rise`} style={order(7)}>
             <h3 className="mb-3 text-[15px] font-semibold">Controls</h3>
-            <Donut segments={statusSegments(iso.status_counts)} label="Controls by status" centre={percent(iso.readiness)} />
+            <Donut segments={statusSegments(iso.status_counts)} label="Controls by status" centre={percent(iso.readiness)} onSelect={(status) => navigate({ to: "/controls", search: { status } })} />
           </div>
           {d.risks && (
             <div className={`${CARD} rise`} style={order(8)}>
               <h3 className="mb-3 text-[15px] font-semibold">Risk levels</h3>
-              <BarChart label="Risks by level" bars={levelBars(d.risks, bands)} />
+              <BarChart label="Risks by level" bars={levelBars(d.risks, bands)} onSelect={(level) => navigate({ to: "/risks", search: { level } })} />
             </div>
           )}
         </div>
