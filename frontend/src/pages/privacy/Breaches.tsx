@@ -6,6 +6,8 @@ import { LEVEL_COLOR } from "../../components/LevelBadge"
 import { formatDate } from "../../lib/format"
 import { Tag } from "../Privacy"
 import { Status } from "../../components/Status"
+import { StatusBar } from "../../components/StatusBar"
+import { countBy, statusSegments } from "../../lib/statusBars"
 
 const FIELD = "w-full rounded-lg border border-line-2 bg-surface px-2.5 py-1.5 text-[13.5px] text-fg"
 const LABEL = "grid gap-1 text-[12.5px] font-medium text-fg-2"
@@ -97,7 +99,9 @@ function NewBreach({ onClose }: { onClose: () => void }) {
 export function Breaches({ canManage }: { canManage: boolean }) {
   const breaches = useBreaches()
   const [creating, setCreating] = useState(false)
-  const rows = breaches.data ?? []
+  const all = breaches.data ?? []
+  const [status, setStatus] = useState<string | null>(null)
+  const rows = status ? all.filter((x) => x.status === status) : all
   return (
     <div>
       {canManage && !creating && (
@@ -108,6 +112,11 @@ export function Breaches({ canManage }: { canManage: boolean }) {
       {creating && <NewBreach onClose={() => setCreating(false)} />}
       {breaches.isError && <p role="alert" className="p-4">{breaches.error.message}</p>}
       {breaches.isSuccess && rows.length === 0 && <p className="p-8 text-center text-fg-3">No breaches recorded.</p>}
+      {all.length > 0 && (
+        <div className="border-b border-line px-4 py-3">
+          <StatusBar label="Breaches by status" selected={status} onSelect={setStatus} segments={statusSegments("breach", countBy(all, (x) => x.status))} />
+        </div>
+      )}
       {rows.length > 0 && (
         <table className="w-full text-[13.5px]">
           <thead>

@@ -4,6 +4,8 @@ import { REQUEST_OUTCOME, REQUEST_TYPE, type SubjectRequest, useCreateRequest, u
 import { Button } from "../../components/Button"
 import { formatDate } from "../../lib/format"
 import { Tag } from "../Privacy"
+import { StatusBar } from "../../components/StatusBar"
+import { countBy, statusSegments } from "../../lib/statusBars"
 
 const FIELD = "w-full rounded-lg border border-line-2 bg-surface px-2.5 py-1.5 text-[13.5px] text-fg"
 const LABEL = "grid gap-1 text-[12.5px] font-medium text-fg-2"
@@ -70,7 +72,9 @@ function NewRequest({ onClose }: { onClose: () => void }) {
 export function Requests({ canManage }: { canManage: boolean }) {
   const requests = useRequests()
   const [creating, setCreating] = useState(false)
-  const rows = requests.data ?? []
+  const all = requests.data ?? []
+  const [status, setStatus] = useState<string | null>(null)
+  const rows = status ? all.filter((x) => x.status === status) : all
   return (
     <div>
       {canManage && !creating && (
@@ -81,6 +85,11 @@ export function Requests({ canManage }: { canManage: boolean }) {
       {creating && <NewRequest onClose={() => setCreating(false)} />}
       {requests.isError && <p role="alert" className="p-4">{requests.error.message}</p>}
       {requests.isSuccess && rows.length === 0 && <p className="p-8 text-center text-fg-3">No requests logged yet.</p>}
+      {all.length > 0 && (
+        <div className="border-b border-line px-4 py-3">
+          <StatusBar label="Requests by status" selected={status} onSelect={setStatus} segments={statusSegments("request", countBy(all, (x) => x.status))} />
+        </div>
+      )}
       {rows.length > 0 && (
         <table className="w-full text-[13.5px]">
           <thead>

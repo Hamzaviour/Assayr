@@ -6,8 +6,9 @@ import { usePeople } from "../api/people"
 import type { Asset } from "../api/types"
 import { useMe } from "../auth/session"
 import { Button } from "../components/Button"
-import { LEVEL_LABEL, LevelBadge } from "../components/LevelBadge"
+import { LEVEL_COLOR, LEVEL_LABEL, LevelBadge } from "../components/LevelBadge"
 import { PII_CATEGORIES, PII_VOLUME, SENSITIVE } from "../lib/privacy"
+import { StatusBar } from "../components/StatusBar"
 
 const input = "rounded-lg border border-line-2 bg-surface px-3 py-2 text-sm"
 const RATINGS = [1, 2, 3, 4, 5]
@@ -23,7 +24,9 @@ export function AssetsPage() {
   const assets = useAssets(showRetired, { criticality: minimum || undefined, pii: piiOnly || undefined })
   const [editing, setEditing] = useState<Asset | "new" | null>(null)
   const canEdit = (asset: Asset) => canManage || (perms.includes("assets:write_own") && asset.owner?.id === me.data?.id)
-  const rows = assets.data ?? []
+  const all = assets.data ?? []
+  const [level, setLevel] = useState<string | null>(null)
+  const rows = level ? all.filter((a) => String(a.criticality) === level) : all
 
   return (
     <div className="mx-auto grid max-w-6xl gap-4">
@@ -58,6 +61,21 @@ export function AssetsPage() {
           canChangeOwner={canManage} onDone={() => setEditing(null)} />
       )}
       <section className="overflow-x-auto rounded-xl border border-line bg-surface">
+        {all.length > 0 && (
+          <div className="border-b border-line px-3.5 py-3">
+            <StatusBar
+              label="Assets by criticality"
+              selected={level}
+              onSelect={setLevel}
+              segments={[1, 2, 3, 4, 5].map((n) => ({
+                key: String(n),
+                label: LEVEL_LABEL[n],
+                color: LEVEL_COLOR[n],
+                value: all.filter((a) => a.criticality === n).length,
+              }))}
+            />
+          </div>
+        )}
         {assets.isError && <p role="alert" className="p-4">{assets.error.message}</p>}
         <table className="w-full text-[13.5px]">
           <thead>

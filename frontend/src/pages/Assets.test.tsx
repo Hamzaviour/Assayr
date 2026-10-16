@@ -98,3 +98,13 @@ test("filters for criticality and personal data reach the API", async () => {
   expect(last.url.searchParams.get("criticality")).toBe("4")
   expect(last.url.searchParams.get("pii")).toBe("true")
 })
+
+
+test("the criticality bar shows one level at a time", async () => {
+  mockApi({ ...base, "GET /assets": () => json(200, [ASSET, { ...ASSET, id: "a2", code: "AST-002", name: "Printer", confidentiality: 1, integrity: 2, availability: 1, criticality: 2 }]) })
+  renderApp("/assets")
+  await screen.findByRole("row", { name: /AST-002/ })
+  await userEvent.click(screen.getByRole("button", { name: "Very high: 1 (50%)" }))
+  expect(screen.queryByRole("row", { name: /AST-002/ })).not.toBeInTheDocument()
+  expect(screen.getByRole("row", { name: /AST-001/ })).toBeInTheDocument()
+})

@@ -104,7 +104,6 @@ h1, h2, h3 { text-wrap: balance; }
 .brand-rail { background: linear-gradient(180deg, var(--brand) 0%, var(--brand-deep) 100%); }
 
 /* Chart marks that open a filtered list: lift on hover and keyboard focus. */
-.chart-mark { cursor: pointer; transition: opacity 200ms var(--ease-out), stroke-width 200ms var(--ease-out), filter 200ms var(--ease-out); outline: none; }
+.chart-mark { cursor: pointer; transition: opacity 200ms var(--ease-out), filter 200ms var(--ease-out); }
 .chart-mark:hover, .chart-mark:focus-visible { filter: brightness(1.12) drop-shadow(0 1px 2px rgb(0 0 0 / 0.25)); }
-circle.chart-mark:hover, circle.chart-mark:focus-visible { stroke-width: 15; }
 @media (prefers-reduced-motion: reduce) { .chart-mark { transition: none; } }

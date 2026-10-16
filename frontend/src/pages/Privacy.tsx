@@ -20,6 +20,8 @@ import { PdpplTab } from "./privacy/PdpplTab"
 import { Processors } from "./privacy/Processors"
 import { Requests } from "./privacy/Requests"
 import { Status } from "../components/Status"
+import { StatusBar } from "../components/StatusBar"
+import { countBy, statusSegments } from "../lib/statusBars"
 
 const order = (i: number) => ({ "--i": i }) as CSSProperties
 const FIELD = "rounded-lg border border-line-2 bg-surface px-2.5 py-1.5 text-[13.5px] text-fg"
@@ -124,11 +126,17 @@ function NewActivity({ onClose }: { onClose: () => void }) {
   )
 }
 
-function Activities({ rows }: { rows: Activity[] }) {
-  if (rows.length === 0) {
+function Activities({ rows: all }: { rows: Activity[] }) {
+  const [status, setStatus] = useState<string | null>(null)
+  if (all.length === 0) {
     return <p className="p-8 text-center text-fg-3">No processing activities yet. Record what personal data you process and why.</p>
   }
+  const rows = status ? all.filter((a) => a.status === status) : all
   return (
+    <>
+    <div className="border-b border-line px-4 py-3">
+      <StatusBar label="Activities by status" selected={status} onSelect={setStatus} segments={statusSegments("activity", countBy(all, (a) => a.status))} />
+    </div>
     <table className="w-full text-[13.5px]">
       <thead>
         <tr className="text-left text-[11.5px] uppercase tracking-[0.06em] text-fg-3">
@@ -160,6 +168,7 @@ function Activities({ rows }: { rows: Activity[] }) {
         ))}
       </tbody>
     </table>
+    </>
   )
 }
 

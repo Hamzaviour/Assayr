@@ -47,3 +47,12 @@ test("New document creates a draft", async () => {
   const post = calls.find((c) => c.method === "POST")!
   expect(JSON.parse(String(post.init.body))).toEqual({ doc_type: "guideline", code: "GUI-01", title: "Password guideline" })
 })
+
+
+test("the status bar filters the documents", async () => {
+  setup()
+  renderApp("/policies")
+  await userEvent.click(await screen.findByRole("button", { name: /^Draft: 1/ }))
+  expect(screen.getByRole("button", { name: /Policies\s*0/ })).toBeInTheDocument()
+  expect(screen.getByRole("button", { name: /Procedures\s*1/ })).toBeInTheDocument()
+})
