@@ -1,11 +1,13 @@
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile, status
+from pydantic import BaseModel
 from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
 from assayr.audit.service import record
 from assayr.db import get_session
+from assayr.identity.csv_import import CsvError, parse_users_csv, temporary_password
 from assayr.identity.deps import actor_for, current_user, require_global
 from assayr.identity.models import RoleAssignment, Scope, User, UserSession
 from assayr.identity.rbac import Perm, Role
@@ -108,3 +110,74 @@ def update_user(
         record(db, actor_for(request, actor), "user.update", "user", str(target.id), diff=diff)
     db.commit()
     return UserOut.from_user(target)
+
+
+MAX_IMPORT_BYTES = 1024 * 1024
+
+
+class ImportedUser(BaseModel):
+    email: str
+    full_name: str
+    temporary_password: str
+
+
+class SkippedRow(BaseModel):
+    line: int
+    email: str | None
+    reason: str
+
+
+class UserImportOut(BaseModel):
+    created: list[ImportedUser]
+    skipped: list[SkippedRow]
+
+
+@router.post("/import", response_model=UserImportOut)
+def import_users(
+    request: Request,
+    file: UploadFile = File(...),
+    actor: User = Depends(current_user),
+    _grant=Depends(require_global(Perm.USERS_MANAGE)),
+    db: Session = Depends(get_session),
+) -> UserImportOut:
+    """Create accounts from a staff CSV. Temporary passwords are returned once and must be changed at sign-in."""
+    data = file.file.read(MAX_IMPORT_BYTES + 1)
+    if len(data) > MAX_IMPORT_BYTES:
+        raise HTTPException(status.HTTP_413_CONTENT_TOO_LARGE, "The file is larger than 1 MB.")
+    try:
+        rows, problems = parse_users_csv(data)
+    except CsvError as exc:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(exc)) from exc
+    existing = set(db.scalars(select(User.email).where(User.email.in_([r.email for r in rows]))))
+    created: list[ImportedUser] = []
+    skipped = [SkippedRow(line=p.line, email=p.email, reason=p.reason) for p in problems]
+    for row in rows:
+        if row.email in existing:
+            skipped.append(
+                SkippedRow(line=row.line, email=row.email, reason="A user with this email already exists.")
+            )
+            continue
+        password = temporary_password()
+        db.add(
+            User(
+                email=row.email,
+                full_name=row.full_name,
+                department=row.department,
+                password_hash=hash_password(password),
+                must_change_password=True,
+                role_assignments=[RoleAssignment(role=row.role, scope_id=None)],
+            )
+        )
+        created.append(ImportedUser(email=row.email, full_name=row.full_name, temporary_password=password))
+    db.flush()
+    record(
+        db,
+        actor_for(request, actor),
+        "user.import",
+        "user",
+        None,
+        diff={"created": [None, len(created)], "skipped": [None, len(skipped)]},
+    )
+    db.commit()
+    skipped.sort(key=lambda s: s.line)
+    return UserImportOut(created=created, skipped=skipped)

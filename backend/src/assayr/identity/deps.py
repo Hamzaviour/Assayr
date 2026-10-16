@@ -16,6 +16,8 @@ CSRF_COOKIE = "assayr_csrf"
 CSRF_HEADER = "X-CSRF-Token"
 SAFE_METHODS = {"GET", "HEAD", "OPTIONS"}
 _LAST_SEEN_RESOLUTION = timedelta(seconds=60)
+# Paths a user with a temporary password may still call (everything else waits for a new password).
+_PASSWORD_CHANGE_PATHS = ("/auth/me", "/auth/logout", "/auth/password")
 
 
 def get_clock(request: Request) -> Callable[[], datetime]:
@@ -53,6 +55,8 @@ def current_user(request: Request, db: Session = Depends(get_session)) -> User:
         session.last_seen_at = now
         db.commit()
     request.state.session_id = session.id
+    if user.must_change_password and not request.url.path.endswith(_PASSWORD_CHANGE_PATHS):
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "Change your temporary password first.")
     return user
 
 

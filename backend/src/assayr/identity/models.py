@@ -3,7 +3,7 @@ from __future__ import annotations
 import uuid
 from datetime import datetime
 
-from sqlalchemy import JSON, ForeignKey, String, UniqueConstraint
+from sqlalchemy import JSON, ForeignKey, String, UniqueConstraint, false
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from assayr.db import Base, IdMixin, TimestampMixin, UTCDateTime
@@ -34,6 +34,8 @@ class User(IdMixin, TimestampMixin, Base):
     failed_logins: Mapped[int] = mapped_column(default=0)
     locked_until: Mapped[datetime | None] = mapped_column(UTCDateTime)
     last_login_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
+    department: Mapped[str | None] = mapped_column(String(100))
+    must_change_password: Mapped[bool] = mapped_column(default=False, server_default=false())
 
     role_assignments: Mapped[list[RoleAssignment]] = relationship(
         back_populates="user", cascade="all, delete-orphan", lazy="selectin"

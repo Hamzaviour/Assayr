@@ -28,6 +28,8 @@ class UserOut(BaseModel):
     email: str
     full_name: str
     is_active: bool
+    department: str | None = None
+    must_change_password: bool = False
     roles: list[RoleGrantOut]
     permissions: list[str]
 
@@ -39,9 +41,16 @@ class UserOut(BaseModel):
             email=user.email,
             full_name=user.full_name,
             is_active=user.is_active,
+            department=user.department,
+            must_change_password=user.must_change_password,
             roles=[RoleGrantOut(role=r, scope_id=s) for r, s in pairs],
             permissions=permissions_for(pairs),
         )
+
+
+class PasswordChangeIn(BaseModel):
+    current_password: str = Field(min_length=1, max_length=256)
+    new_password: str = Field(min_length=1, max_length=256)
 
 
 class UserCreateIn(BaseModel):

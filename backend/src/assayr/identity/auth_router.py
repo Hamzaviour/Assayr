@@ -1,15 +1,16 @@
 from datetime import timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
-from sqlalchemy import select, update
+from sqlalchemy import delete, select, update
 from sqlalchemy.orm import Session
 
 from assayr.audit.service import record
 from assayr.db import get_session
 from assayr.identity.deps import CSRF_COOKIE, SESSION_COOKIE, actor_for, current_user, get_clock
 from assayr.identity.models import User, UserSession
-from assayr.identity.schemas import LoginIn, UserOut
+from assayr.identity.schemas import LoginIn, PasswordChangeIn, UserOut
 from assayr.identity.security import (
+    WeakPasswordError,
     dummy_hash,
     hash_password,
     needs_rehash,
@@ -126,3 +127,38 @@ def logout(
 @router.get("/me", response_model=UserOut)
 def me(user: User = Depends(current_user)) -> UserOut:
     return UserOut.from_user(user)
+
+
+@router.post("/password", status_code=status.HTTP_204_NO_CONTENT)
+def change_password(
+    body: PasswordChangeIn,
+    request: Request,
+    user: User = Depends(current_user),
+    db: Session = Depends(get_session),
+) -> Response:
+    """Change your own password; clears a temporary password and keeps this session signed in."""
+    if not user.password_hash or not verify_password(user.password_hash, body.current_password):
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "Your current password is not correct.")
+    if body.new_password == body.current_password:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT, "Choose a password different from the current one."
+        )
+    try:
+        user.password_hash = hash_password(body.new_password)
+    except WeakPasswordError as exc:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(exc)) from exc
+    was_temporary = user.must_change_password
+    user.must_change_password = False
+    db.execute(
+        delete(UserSession).where(UserSession.user_id == user.id, UserSession.id != request.state.session_id)
+    )
+    record(
+        db,
+        actor_for(request, user),
+        "auth.password_change",
+        "user",
+        str(user.id),
+        diff={"temporary": [was_temporary, False]},
+    )
+    db.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
