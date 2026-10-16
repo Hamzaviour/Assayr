@@ -16,6 +16,8 @@ import { Button } from "../components/Button"
 import { LevelBadge } from "../components/LevelBadge"
 import { PII_CATEGORIES, SENSITIVE } from "../lib/privacy"
 import { STATUS_TONE, Tag } from "./Privacy"
+import { ActivityProcessors } from "./privacy/ActivityProcessors"
+import { DpiaSection } from "./privacy/DpiaSection"
 
 const CARD = "rounded-2xl border border-line bg-surface p-5"
 const FIELD = "w-full rounded-lg border border-line-2 bg-surface px-2.5 py-1.5 text-[13.5px] text-fg"
@@ -47,6 +49,8 @@ export function ProcessingActivityPage() {
       </header>
       <ActivityForm activity={a} />
       <StoredOn activity={a} />
+      <ActivityProcessors activity={a} />
+      <DpiaSection activityId={a.id} canEdit={a.can_edit} />
     </div>
   )
 }
@@ -72,6 +76,9 @@ function ActivityForm({ activity: a }: { activity: Activity }) {
     owner_id: a.owner?.id ?? null,
     status: a.status,
     review_due: a.review_due,
+    consent_how: a.consent_how ?? null,
+    consent_withdrawal: a.consent_withdrawal ?? null,
+    retention_review_due: a.retention_review_due ?? null,
   }))
   const [saved, setSaved] = useState(false)
   useEffect(() => setSaved(false), [form])
@@ -135,6 +142,22 @@ function ActivityForm({ activity: a }: { activity: Activity }) {
         <label className={LABEL}>
           Retention
           <input value={form.retention ?? ""} onChange={text("retention")} placeholder="e.g. 7 years after leaving" maxLength={300} className={FIELD} />
+        </label>
+        {form.lawful_basis === "consent" && (
+          <>
+            <label className={LABEL}>
+              How consent is collected
+              <input value={form.consent_how ?? ""} onChange={(e) => set("consent_how", e.target.value || null)} maxLength={2000} className={FIELD} />
+            </label>
+            <label className={LABEL}>
+              How people withdraw consent
+              <input value={form.consent_withdrawal ?? ""} onChange={(e) => set("consent_withdrawal", e.target.value || null)} maxLength={2000} className={FIELD} />
+            </label>
+          </>
+        )}
+        <label className={LABEL}>
+          Retention review date
+          <input type="date" value={form.retention_review_due ?? ""} onChange={(e) => set("retention_review_due", e.target.value || null)} className={FIELD} />
         </label>
         <label className="flex items-center gap-2 text-[13px]">
           <input type="checkbox" checked={form.cross_border} onChange={(e) => set("cross_border", e.target.checked)} />
