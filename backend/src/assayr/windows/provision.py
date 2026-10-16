@@ -312,8 +312,10 @@ def make_backup(cfg: InstallConfig, runner, now: datetime | None = None) -> Path
     return create_backup(cfg.backups_dir, cfg.version, sources, db.dump, now or datetime.now(UTC))
 
 
-def rollback(cfg: InstallConfig, backup: Path, runner) -> None:
-    """Run by the restored (old) program: put the pre-upgrade database and files back, then start."""
+def rollback(
+    cfg: InstallConfig, backup: Path, runner, *, health_timeout: float = 180.0, wait=wait_healthy
+) -> None:
+    """Run by the restored (old) program: put the pre-upgrade database and files back, start, check health."""
     password = _env_password(cfg) or ""
     services.unregister(cfg, runner, sleep=_sleep)
     _write_files(cfg, password)
@@ -329,6 +331,10 @@ def rollback(cfg: InstallConfig, backup: Path, runner) -> None:
     finally:
         shutil.rmtree(work, ignore_errors=True)
     services.start_all(cfg, runner)
+    try:
+        wait(cfg.health_url, health_timeout, cfg.version)
+    except HealthError as exc:
+        raise ProvisionError(f"The previous version was put back but does not answer yet: {exc}") from exc
 
 
 def uninstall(cfg: InstallConfig, runner, *, delete_data: bool) -> None:

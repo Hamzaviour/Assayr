@@ -44,7 +44,13 @@ function Run-Setup([string] $exe, [string[]] $extra) {
   return Wait-Program $exe $argv
 }
 
-function Health { Invoke-RestMethod "$Base/api/v1/healthz" -SkipCertificateCheck -TimeoutSec 10 }
+# Services can still be starting for a few seconds after a setup returns: retry before failing.
+function Health {
+  for ($i = 1; $i -le 30; $i++) {
+    try { return Invoke-RestMethod "$Base/api/v1/healthz" -SkipCertificateCheck -TimeoutSec 10 }
+    catch { if ($i -eq 30) { throw } ; Start-Sleep -Seconds 4 }
+  }
+}
 
 function Session {
   $s = $null
