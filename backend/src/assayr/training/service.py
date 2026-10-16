@@ -133,7 +133,8 @@ def sweep(db: Session, now: datetime) -> SweepResult:
             for old in renew:
                 old.renewed = True
             db.flush()
-            result.renewed += assign(db, course, [a.user for a in renew], "renewal", course.due_days, now)
+            active = [a.user for a in renew if a.user.is_active]  # people who left get no new assignment
+            result.renewed += assign(db, course, active, "renewal", course.due_days, now)
         for rule in course.rules:
             result.assigned += assign(
                 db, course, target_users(db, rule.target), rule.target, course.due_days, now

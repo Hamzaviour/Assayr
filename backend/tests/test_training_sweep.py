@@ -131,3 +131,14 @@ def test_the_security_policy_allows_google_drive_frames_only(tmp_path):
         install_dir=tmp_path / "prog", data_dir=tmp_path / "data", hostname="grc.acme.local", org_name="Acme"
     )
     assert "frame-src https://drive.google.com" in render_caddyfile(cfg)
+
+
+def test_people_who_left_are_not_renewed(client, db, setup, clock):
+    pass_omar(client, db)
+    from assayr.identity.models import User
+
+    omar = db.scalar(select(User).where(User.email == "omar@acme.com"))
+    omar.is_active = False
+    db.commit()
+    clock.advance(days=400)
+    assert sweep(db, clock.now).renewed == 0
