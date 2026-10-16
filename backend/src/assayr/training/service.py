@@ -1,6 +1,6 @@
 """Training rules: progress counts, overdue, attempts."""
 
-from datetime import date
+from datetime import date, timedelta
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -39,3 +39,58 @@ def counts(assignments: list[Assignment], today: date) -> CourseCounts:
         overdue=sum(1 for a in current if is_overdue(a, today)),
         failed=sum(1 for a in current if a.status == "failed"),
     )
+
+
+def target_users(db: Session, target: str) -> list:
+    """Active users matching "all", "department:<name>" or "role:<name>" (names compared case-insensitively)."""
+    from assayr.identity.models import User
+
+    users = [u for u in db.scalars(select(User).where(User.is_active.is_(True))).unique()]
+    kind, _, value = target.partition(":")
+    if kind == "department":
+        return [u for u in users if (u.department or "").strip().lower() == value]
+    if kind == "role":
+        return [u for u in users if any(a.role == value for a in u.role_assignments)]
+    return users
+
+
+def assign(db: Session, course: Course, users: list, source: str, due_days: int, now) -> int:
+    """One assignment per person who has no current one for the course. Returns how many were created."""
+    taken = set(
+        db.scalars(
+            select(Assignment.user_id).where(Assignment.course_id == course.id, Assignment.renewed.is_(False))
+        )
+    )
+    created = 0
+    for user in users:
+        if user.id in taken:
+            continue
+        db.add(
+            Assignment(
+                course_id=course.id,
+                user_id=user.id,
+                source=source,
+                assigned_at=now,
+                due_at=now.date() + timedelta(days=due_days),
+                material_progress=[],
+            )
+        )
+        taken.add(user.id)
+        created += 1
+    db.flush()
+    return created
+
+
+def mark(assessment, answers: dict[str, list[str]]) -> tuple[float, list[str]]:
+    """Percent score and the ids of questions answered wrongly. A question counts only if the chosen set
+    equals the correct set; unknown questions and options that belong to other questions are ignored."""
+    wrong: list[str] = []
+    for question in assessment.questions:
+        valid = {str(o.id) for o in question.options}
+        chosen = {a for a in answers.get(str(question.id), []) if a in valid}
+        correct = {str(o.id) for o in question.options if o.is_correct}
+        if chosen != correct:
+            wrong.append(str(question.id))
+    total = len(assessment.questions)
+    score = round(100 * (total - len(wrong)) / total, 1) if total else 100.0
+    return score, wrong

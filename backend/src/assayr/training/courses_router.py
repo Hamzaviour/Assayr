@@ -15,19 +15,39 @@ from assayr.identity.models import User
 from assayr.identity.rbac import Grant, Perm
 from assayr.storage import TooLargeError, safe_filename
 from assayr.training.drive import MP4, PDF, WEBM, drive_file_id, preview_url, training_mime
-from assayr.training.models import Assessment, Assignment, Course, CourseMaterial, Question, QuestionOption
+from assayr.training.models import (
+    Assessment,
+    Assignment,
+    Course,
+    CourseMaterial,
+    CourseRule,
+    Question,
+    QuestionOption,
+)
 from assayr.training.schemas import (
     AssessmentIn,
     AssessmentOut,
+    AssignIn,
+    AssignmentRowOut,
+    AssignOut,
     CourseDetailOut,
     CourseIn,
     CourseOut,
     CourseUpdateIn,
     DriveMaterialIn,
+    ExtraAttemptsIn,
     MaterialOut,
     MaterialUpdateIn,
 )
-from assayr.training.service import counts, course_assignments
+from assayr.training.service import (
+    assign,
+    attempts_allowed,
+    counts,
+    course_assignments,
+    current_assignments,
+    is_overdue,
+    target_users,
+)
 
 router = APIRouter(tags=["training"])
 NOT_FOUND = "Course not found."
@@ -425,3 +445,108 @@ def archive_course(
     course = get_course(db, grant, course_id)
     _set_status(db, request, user, course, "archived")
     return _detail(db, request, course)
+
+
+@router.post("/courses/{course_id}/assign", response_model=AssignOut)
+def assign_course(
+    course_id: uuid.UUID,
+    body: AssignIn,
+    request: Request,
+    user: User = Depends(current_user),
+    grant: Grant = Depends(require(Perm.TRAINING_MANAGE)),
+    db: Session = Depends(get_session),
+) -> AssignOut:
+    course = get_course(db, grant, course_id)
+    if course.status != "published":
+        raise HTTPException(status.HTTP_409_CONFLICT, "Publish the course before assigning it.")
+    if body.user_ids is not None:
+        people = [db.get(User, uid) for uid in body.user_ids]
+        if any(p is None or not p.is_active for p in people):
+            raise HTTPException(
+                status.HTTP_422_UNPROCESSABLE_CONTENT, "Assign the course to active people only."
+            )
+        source, target = "user", None
+    else:
+        target = (
+            "all"
+            if body.target
+            else f"department:{body.department.strip().lower()}"
+            if body.department
+            else f"role:{body.role.strip().lower()}"
+        )
+        people, source = target_users(db, target), target
+    created = assign(db, course, people, source, body.due_days or course.due_days, get_clock(request)())
+    if target and target not in {r.target for r in course.rules}:
+        course.rules.append(CourseRule(target=target))
+    record(
+        db,
+        actor_for(request, user),
+        "course.assign",
+        "course",
+        str(course.id),
+        diff={"target": source, "created": created},
+    )
+    db.commit()
+    return AssignOut(created=created)
+
+
+def assignment_row(a: Assignment, today) -> AssignmentRowOut:
+    scores = [t.score for t in a.attempts if t.score is not None]
+    return AssignmentRowOut(
+        id=a.id,
+        user_id=a.user_id,
+        full_name=a.user.full_name,
+        email=a.user.email,
+        department=a.user.department,
+        status=a.status,
+        overdue=is_overdue(a, today),
+        assigned_at=a.assigned_at,
+        due_at=a.due_at,
+        completed_at=a.completed_at,
+        attempts=len([t for t in a.attempts if t.submitted_at]),
+        attempts_allowed=attempts_allowed(a),
+        best_score=max(scores) if scores else None,
+    )
+
+
+@router.get("/courses/{course_id}/assignments", response_model=list[AssignmentRowOut])
+def list_course_assignments(
+    course_id: uuid.UUID,
+    request: Request,
+    grant: Grant = Depends(require(Perm.TRAINING_MANAGE)),
+    db: Session = Depends(get_session),
+) -> list[AssignmentRowOut]:
+    course = get_course(db, grant, course_id)
+    today = get_clock(request)().date()
+    rows = current_assignments(course_assignments(db, course))
+    return sorted((assignment_row(a, today) for a in rows), key=lambda r: r.full_name.lower())
+
+
+@router.post("/assignments/{assignment_id}/attempts", response_model=AssignmentRowOut)
+def grant_attempts(
+    assignment_id: uuid.UUID,
+    body: ExtraAttemptsIn,
+    request: Request,
+    user: User = Depends(current_user),
+    grant: Grant = Depends(require(Perm.TRAINING_MANAGE)),
+    db: Session = Depends(get_session),
+) -> AssignmentRowOut:
+    a = db.get(Assignment, assignment_id)
+    if a is None or not grant.allows(a.course.scope_id):
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Assignment not found.")
+    if a.status == "passed":
+        raise HTTPException(status.HTTP_409_CONFLICT, "This person has already passed.")
+    a.extra_attempts += body.extra
+    if a.status == "failed":
+        a.status = "in_progress"
+    record(
+        db,
+        actor_for(request, user),
+        "assignment.attempts",
+        "assignment",
+        str(a.id),
+        diff={"extra": body.extra, "user": a.user.email},
+        reason=body.reason,
+    )
+    db.commit()
+    return assignment_row(a, get_clock(request)().date())
