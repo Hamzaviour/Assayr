@@ -27,6 +27,7 @@ from assayr.privacy.models import (  # noqa: F401, E402
     ProcessingActivity,
     ProcessingAsset,
     Processor,
+    SubjectRequest,
 )
 from assayr.risk.models import (  # noqa: F401
     MethodologyVersion,

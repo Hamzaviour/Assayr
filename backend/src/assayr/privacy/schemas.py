@@ -133,3 +133,5 @@ class PrivacySummary(BaseModel):
     active_activities: int
     cross_border: int
     reviews_due: int
+    requests_open: int = 0
+    requests_overdue: int = 0

@@ -22,6 +22,7 @@ from assayr.nia.router import frameworks_router as nia_frameworks_router
 from assayr.nia.router import router as nia_router
 from assayr.privacy.dpia_router import router as privacy_dpia_router
 from assayr.privacy.processors_router import router as privacy_processors_router
+from assayr.privacy.requests_router import router as privacy_requests_router
 from assayr.privacy.router import router as privacy_router
 from assayr.risk.library_router import router as risk_library_router
 from assayr.risk.router import router as risk_router
@@ -82,4 +83,5 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(privacy_router, prefix="/api/v1")
     app.include_router(privacy_processors_router, prefix="/api/v1")
     app.include_router(privacy_dpia_router, prefix="/api/v1")
+    app.include_router(privacy_requests_router, prefix="/api/v1")
     return app

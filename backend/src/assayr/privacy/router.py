@@ -20,7 +20,7 @@ from assayr.identity.deps import actor_for, current_user, get_clock, require
 from assayr.identity.models import User
 from assayr.identity.rbac import Grant, Perm
 from assayr.privacy.categories import PII_CATEGORIES, SENSITIVE, level_label, normalise_pii
-from assayr.privacy.models import ProcessingActivity
+from assayr.privacy.models import ProcessingActivity, SubjectRequest
 from assayr.privacy.schemas import (
     ActivityIn,
     ActivityOut,
@@ -332,6 +332,7 @@ def privacy_summary(
         db.scalars(select(ProcessingActivity).where(ProcessingActivity.scope_id == scope.id)).unique()
     )
     today = _today(request)
+    requests = list(db.scalars(select(SubjectRequest).where(SubjectRequest.scope_id == scope.id)))
     return PrivacySummary(
         pii_assets=len(inventory),
         sensitive_assets=sum(1 for r in inventory if r.pii_sensitive),
@@ -339,6 +340,8 @@ def privacy_summary(
         active_activities=sum(1 for a in activities if a.status == "active"),
         cross_border=sum(1 for a in activities if a.cross_border and a.status != "retired"),
         reviews_due=sum(1 for a in activities if _overdue(a, today)),
+        requests_open=sum(1 for r in requests if r.status != "closed"),
+        requests_overdue=sum(1 for r in requests if r.status != "closed" and r.due_on < today),
     )
 
 

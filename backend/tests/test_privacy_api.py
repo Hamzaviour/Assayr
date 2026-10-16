@@ -103,7 +103,17 @@ def test_inventory_and_summary(client, db, seeded):
     ]
     assert rows[1]["pii_sensitive"] is True and rows[1]["pii_volume"] == "1k_10k"
     summary = client.get("/api/v1/privacy/summary").json()
-    assert summary == {
+    assert {
+        k: summary[k]
+        for k in (
+            "pii_assets",
+            "sensitive_assets",
+            "activities",
+            "active_activities",
+            "cross_border",
+            "reviews_due",
+        )
+    } == {
         "pii_assets": 2,
         "sensitive_assets": 1,
         "activities": 1,

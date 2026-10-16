@@ -151,3 +151,36 @@ class DpiaRisk(IdMixin, TimestampMixin, Base):
 
     dpia: Mapped[Dpia] = relationship(back_populates="risks")
     owner: Mapped[User | None] = relationship(foreign_keys=[owner_id], lazy="joined")
+
+
+REQUEST_TYPES = ("access", "correction", "erasure", "objection", "restriction", "withdraw_consent", "other")
+REQUEST_OUTCOMES = ("fulfilled", "partially", "refused", "withdrawn")
+
+
+class SubjectRequest(IdMixin, TimestampMixin, Base):
+    """A request from an individual about their personal data (access, correction, erasure...)."""
+
+    __tablename__ = "subject_request"
+    __table_args__ = (UniqueConstraint("scope_id", "code", name="uq_subject_request_scope_code"),)
+
+    scope_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("scope.id", ondelete="CASCADE"))
+    code: Mapped[str] = mapped_column(String(20))
+    seq: Mapped[int] = mapped_column(Integer)
+    type: Mapped[str] = mapped_column(String(30))
+    requester_name: Mapped[str] = mapped_column(String(200))
+    requester_contact: Mapped[str | None] = mapped_column(String(300))
+    channel: Mapped[str] = mapped_column(String(20), default="email")
+    received_on: Mapped[date] = mapped_column(Date)
+    due_on: Mapped[date] = mapped_column(Date)
+    identity_verified: Mapped[bool] = mapped_column(Boolean, default=False)
+    identity_method: Mapped[str | None] = mapped_column(String(300))
+    assignee_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("user_account.id", ondelete="SET NULL"))
+    activity_ids: Mapped[list[str] | None] = mapped_column(JSON, default=list)
+    steps: Mapped[list[dict] | None] = mapped_column(JSON, default=list)
+    response: Mapped[str | None] = mapped_column(Text)
+    status: Mapped[str] = mapped_column(String(20), default="open")
+    outcome: Mapped[str | None] = mapped_column(String(20))
+    refusal_reason: Mapped[str | None] = mapped_column(Text)
+    closed_on: Mapped[date | None] = mapped_column(Date)
+
+    assignee: Mapped[User | None] = relationship(lazy="joined")
