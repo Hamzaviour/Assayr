@@ -41,6 +41,7 @@ def test_permissions_are_a_sorted_union():
         "audit_log:read",
         "controls:read",
         "controls:write",
+        "documents:create",
         "evidence:review",
         "risks:accept_high",
         "risks:read",

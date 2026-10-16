@@ -11,6 +11,7 @@ from assayr.catalogue.router import router as catalogue_router
 from assayr.config import Settings, get_settings
 from assayr.dashboard.router import router as dashboard_router
 from assayr.db import Database, utcnow
+from assayr.documents.router import router as documents_router
 from assayr.evidence.router import router as evidence_router
 from assayr.health import router as health_router
 from assayr.identity.auth_router import router as auth_router
@@ -66,4 +67,5 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(dashboard_router, prefix="/api/v1")
     app.include_router(nia_router, prefix="/api/v1")
     app.include_router(nia_frameworks_router, prefix="/api/v1")
+    app.include_router(documents_router, prefix="/api/v1")
     return app

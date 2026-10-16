@@ -9,6 +9,7 @@ from assayr.catalogue.models import (  # noqa: F401
     Framework,
     Requirement,
 )
+from assayr.documents.models import Document, DocumentControl  # noqa: F401
 from assayr.evidence.models import (  # noqa: F401
     Artefact,
     ArtefactLink,
