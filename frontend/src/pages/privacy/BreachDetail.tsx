@@ -4,8 +4,8 @@ import { type Breach, NOTIFY, useBreach, useRaiseBreachRisk, useUpdateBreach } f
 import { useMe } from "../../auth/session"
 import { Button } from "../../components/Button"
 import { formatDate } from "../../lib/format"
-import { Tag } from "../Privacy"
 import { BREACH_STATUS, NotifyBadge, SEVERITY, SeverityBadge } from "./Breaches"
+import { Status } from "../../components/Status"
 
 const CARD = "rounded-2xl border border-line bg-surface p-5"
 const FIELD = "w-full rounded-lg border border-line-2 bg-surface px-2.5 py-1.5 text-[13.5px] text-fg"
@@ -76,7 +76,7 @@ export function BreachDetailPage() {
           <h1 className="font-display text-[26px] font-extrabold tracking-tight">{b.code} · {b.title}</h1>
           <span className="flex flex-wrap gap-1.5">
             <SeverityBadge b={b} />
-            <Tag tone={BREACH_STATUS[b.status][1]}>{BREACH_STATUS[b.status][0]}</Tag>
+            <Status area="breach" value={b.status} />
             <NotifyBadge b={b} />
           </span>
         </div>

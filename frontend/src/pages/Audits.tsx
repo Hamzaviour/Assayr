@@ -3,7 +3,6 @@ import { type CSSProperties, type FormEvent, useState } from "react"
 import {
   type Audit,
   type AuditCounts,
-  AUDIT_STATUS_LABEL,
   type AuditFramework,
   FRAMEWORK_LABEL,
   useAudits,
@@ -13,6 +12,7 @@ import {
 import { useMe } from "../auth/session"
 import { Button } from "../components/Button"
 import { formatDate } from "../lib/format"
+import { Status } from "../components/Status"
 
 const order = (i: number) => ({ "--i": i }) as CSSProperties
 const FIELD = "rounded-lg border border-line-2 bg-surface px-2.5 py-1.5 text-[13.5px] text-fg"
@@ -41,17 +41,7 @@ export function ResultBar({ counts }: { counts: AuditCounts }) {
 }
 
 export function AuditStatus({ status }: { status: Audit["status"] }) {
-  const tone =
-    status === "completed"
-      ? "bg-ok-soft text-ok border-ok/25"
-      : status === "in_progress"
-        ? "bg-primary-soft text-primary border-primary/25"
-        : "bg-transparent text-fg-2 border-line-2 border-dashed"
-  return (
-    <span className={`inline-flex whitespace-nowrap rounded-full border px-2 py-0.5 text-[11.5px] font-semibold ${tone}`}>
-      {AUDIT_STATUS_LABEL[status]}
-    </span>
-  )
+  return <Status area="audit" value={status} />
 }
 
 function Panel({ title, children }: { title: string; children: React.ReactNode }) {

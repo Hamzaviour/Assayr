@@ -1,7 +1,6 @@
 import { Link, useNavigate, useSearch } from "@tanstack/react-router"
 import { type CSSProperties, type FormEvent, useState } from "react"
 import {
-  ACTIVITY_STATUS,
   type Activity,
   LAWFUL_BASIS,
   privacyExportUrl,
@@ -20,6 +19,7 @@ import { Overview, type PrivacyTab } from "./privacy/Overview"
 import { PdpplTab } from "./privacy/PdpplTab"
 import { Processors } from "./privacy/Processors"
 import { Requests } from "./privacy/Requests"
+import { Status } from "../components/Status"
 
 const order = (i: number) => ({ "--i": i }) as CSSProperties
 const FIELD = "rounded-lg border border-line-2 bg-surface px-2.5 py-1.5 text-[13.5px] text-fg"
@@ -154,7 +154,7 @@ function Activities({ rows }: { rows: Activity[] }) {
               </span>
             </td>
             <td className="px-4 py-2.5 tabular-nums text-fg-2">{a.assets.length}</td>
-            <td className="px-4 py-2.5"><Tag tone={STATUS_TONE[a.status]}>{ACTIVITY_STATUS[a.status] ?? a.status}</Tag></td>
+            <td className="px-4 py-2.5"><Status area="activity" value={a.status} /></td>
             <td className="whitespace-nowrap px-4 py-2.5 text-fg-2">{a.review_due ? formatDate(a.review_due) : "—"}</td>
           </tr>
         ))}

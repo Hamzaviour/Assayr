@@ -43,6 +43,8 @@
   --color-bad-soft: var(--bad-soft);
   --color-review: var(--review);
   --color-review-soft: var(--review-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
   --color-idle: var(--idle);
   --color-idle-soft: var(--idle-soft);
   --color-na: var(--na);

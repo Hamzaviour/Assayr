@@ -1,15 +1,8 @@
 import { useState } from "react"
-import { type PdpplObligation, usePdppl } from "../../api/privacy2"
+import { usePdppl } from "../../api/privacy2"
 import { ProgressBar } from "../../components/charts"
 import { StatusPill } from "../../components/StatusPill"
-import { Tag } from "../Privacy"
-
-const EVIDENCE: Record<PdpplObligation["evidence"]["result"], [string, string]> = {
-  met: ["Met", "bg-ok-soft text-ok border-ok/25"],
-  partial: ["Partial", "bg-warn-soft text-warn border-warn/25"],
-  missing: ["Missing", "bg-bad-soft text-bad border-bad/25"],
-  na: ["Shown by controls", "bg-subtle text-fg-2 border-line"],
-}
+import { Status } from "../../components/Status"
 
 export function PdpplTab() {
   const pdppl = usePdppl()
@@ -53,7 +46,7 @@ export function PdpplTab() {
                     </p>
                     <p className="text-[12.5px] text-fg-2">{o.summary}</p>
                     <p className="mt-1 flex flex-wrap items-center gap-1.5 text-[12px] text-fg-2">
-                      <Tag tone={EVIDENCE[o.evidence.result][1]}>{EVIDENCE[o.evidence.result][0]}</Tag>
+                      <Status area="evidence" value={o.evidence.result} />
                       <span>{o.evidence.reason}</span>
                     </p>
                     <p className="mt-1 text-[11.5px] text-fg-3">Controls: {o.iso.map((c) => c.code).join(", ") || "—"}</p>

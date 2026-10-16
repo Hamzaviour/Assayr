@@ -5,6 +5,7 @@ import { Button } from "../../components/Button"
 import { LEVEL_COLOR } from "../../components/LevelBadge"
 import { formatDate } from "../../lib/format"
 import { Tag } from "../Privacy"
+import { Status } from "../../components/Status"
 
 const FIELD = "w-full rounded-lg border border-line-2 bg-surface px-2.5 py-1.5 text-[13.5px] text-fg"
 const LABEL = "grid gap-1 text-[12.5px] font-medium text-fg-2"
@@ -126,7 +127,7 @@ export function Breaches({ canManage }: { canManage: boolean }) {
                 <td className="whitespace-nowrap px-4 py-2.5 text-fg-2">{formatDate(b.discovered_at)}</td>
                 <td className="px-4 py-2.5"><SeverityBadge b={b} /></td>
                 <td className="px-4 py-2.5"><NotifyBadge b={b} /></td>
-                <td className="px-4 py-2.5"><Tag tone={BREACH_STATUS[b.status][1]}>{BREACH_STATUS[b.status][0]}</Tag></td>
+                <td className="px-4 py-2.5"><Status area="breach" value={b.status} /></td>
               </tr>
             ))}
           </tbody>

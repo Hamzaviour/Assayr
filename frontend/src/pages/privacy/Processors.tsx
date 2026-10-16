@@ -5,6 +5,7 @@ import { LevelBadge } from "../../components/LevelBadge"
 import { formatDate } from "../../lib/format"
 import { PII_CATEGORIES } from "../../lib/privacy"
 import { CategoryChips, Tag } from "../Privacy"
+import { Status } from "../../components/Status"
 
 const FIELD = "w-full rounded-lg border border-line-2 bg-surface px-2.5 py-1.5 text-[13.5px] text-fg"
 const LABEL = "grid gap-1 text-[12.5px] font-medium text-fg-2"
@@ -155,7 +156,7 @@ export function Processors({ canManage }: { canManage: boolean }) {
                   )}
                 </td>
                 <td className="px-4 py-2.5">
-                  {p.security_result ? <Tag tone={RESULT[p.security_result][1]}>{RESULT[p.security_result][0]}</Tag> : <span className="text-fg-3">Not reviewed</span>}
+                  {p.security_result ? <Status area="review" value={p.security_result} /> : <span className="text-fg-3">Not reviewed</span>}
                 </td>
                 <td className="px-4 py-2.5"><LevelBadge level={p.risk_level} /></td>
                 <td className="px-4 py-2.5 text-[12.5px] text-fg-2">{p.activities.map((a) => a.code).join(", ") || "—"}</td>

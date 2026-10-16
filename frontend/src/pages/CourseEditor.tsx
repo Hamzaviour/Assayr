@@ -28,8 +28,8 @@ const CARD = "rounded-2xl border border-line bg-surface p-5"
 const FIELD = "rounded-lg border border-line-2 bg-surface px-2.5 py-1.5 text-[13px] text-fg"
 const LABEL = "grid gap-1 text-[12.5px] text-fg-2"
 export const ASSIGNMENT_TONE: Record<AssignmentRow["status"], string> = {
-  assigned: "text-fg-2",
-  in_progress: "text-primary",
+  assigned: "text-idle",
+  in_progress: "text-info",
   passed: "text-ok",
   failed: "text-bad",
 }

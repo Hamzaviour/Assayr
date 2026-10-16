@@ -13,18 +13,12 @@ import {
 import { Button } from "../../components/Button"
 import { LEVEL_COLOR, LEVEL_LABEL } from "../../components/LevelBadge"
 import { formatDate } from "../../lib/format"
-import { Tag } from "../Privacy"
+import { Status } from "../../components/Status"
 
 const CARD = "rounded-2xl border border-line bg-surface p-5"
 const FIELD = "w-full rounded-lg border border-line-2 bg-surface px-2.5 py-1.5 text-[13.5px] text-fg"
 const LABEL = "grid gap-1 text-[12.5px] font-medium text-fg-2"
 const DECISIVE = new Set(["sensitive", "children", "automated"])
-const STATUS: Record<Dpia["status"], [string, string]> = {
-  draft: ["Draft", "bg-transparent text-fg-2 border-line-2 border-dashed"],
-  in_review: ["In review", "bg-review-soft text-review border-review/25"],
-  approved: ["Approved", "bg-ok-soft text-ok border-ok/25"],
-}
-
 const recommended = (answers: Record<string, boolean>) => {
   const yes = Object.keys(answers).filter((k) => answers[k])
   return yes.some((k) => DECISIVE.has(k)) || yes.length >= 2
@@ -100,7 +94,7 @@ function Assessment({ activityId, dpia }: { activityId: string; dpia: Dpia }) {
   return (
     <div className="grid gap-4">
       <div className="flex flex-wrap items-center gap-2">
-        <Tag tone={STATUS[dpia.status][1]}>{STATUS[dpia.status][0]}</Tag>
+        <Status area="dpia" value={dpia.status} />
         {dpia.approved_by && dpia.approved_at && (
           <span className="text-[12.5px] text-fg-2">Approved by {dpia.approved_by.full_name} on {formatDate(dpia.approved_at)}</span>
         )}

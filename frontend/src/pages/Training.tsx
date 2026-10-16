@@ -3,6 +3,7 @@ import { type CSSProperties, type FormEvent, useState } from "react"
 import { type Course, trainingReportUrl, useCourses, useCreateCourse, useTrainingSummary } from "../api/training"
 import { Button } from "../components/Button"
 import { ProgressBar } from "../components/charts"
+import { Status } from "../components/Status"
 
 const order = (i: number) => ({ "--i": i }) as CSSProperties
 const R = 26
@@ -38,8 +39,7 @@ export const COURSE_STATUS: Record<Course["status"], [string, string]> = {
 }
 
 export function CourseStatus({ status }: { status: Course["status"] }) {
-  const [label, tone] = COURSE_STATUS[status]
-  return <span className={`inline-flex rounded-full border px-2 py-0.5 text-[11.5px] font-semibold ${tone}`}>{label}</span>
+  return <Status area="course" value={status} />
 }
 
 function NewCourse({ onClose }: { onClose: () => void }) {

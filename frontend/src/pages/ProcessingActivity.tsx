@@ -15,9 +15,10 @@ import {
 import { Button } from "../components/Button"
 import { LevelBadge } from "../components/LevelBadge"
 import { PII_CATEGORIES, SENSITIVE } from "../lib/privacy"
-import { STATUS_TONE, Tag } from "./Privacy"
+import { Tag } from "./Privacy"
 import { ActivityProcessors } from "./privacy/ActivityProcessors"
 import { DpiaSection } from "./privacy/DpiaSection"
+import { Status } from "../components/Status"
 
 const CARD = "rounded-2xl border border-line bg-surface p-5"
 const FIELD = "w-full rounded-lg border border-line-2 bg-surface px-2.5 py-1.5 text-[13.5px] text-fg"
@@ -41,7 +42,7 @@ export function ProcessingActivityPage() {
           <h1 className="font-display text-[26px] font-extrabold tracking-tight">{a.code} · {a.name}</h1>
         </div>
         <span className="flex flex-wrap gap-1.5">
-          <Tag tone={STATUS_TONE[a.status]}>{ACTIVITY_STATUS[a.status] ?? a.status}</Tag>
+          <Status area="activity" value={a.status} />
           {a.sensitive && <Tag tone="bg-bad-soft text-bad border-bad/25">Sensitive</Tag>}
           {a.cross_border && <Tag tone="bg-warn-soft text-warn border-warn/25">Cross-border</Tag>}
           {a.review_overdue && <Tag tone="bg-bad text-white border-bad">Review due</Tag>}
