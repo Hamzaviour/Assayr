@@ -1,11 +1,11 @@
 import uuid
-from datetime import date
+from datetime import date, datetime
 
 from sqlalchemy import JSON, Boolean, Date, ForeignKey, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from assayr.assets.models import Asset
-from assayr.db import Base, IdMixin, TimestampMixin
+from assayr.db import Base, IdMixin, TimestampMixin, UTCDateTime
 from assayr.identity.models import User
 
 LAWFUL_BASES = (
@@ -107,3 +107,47 @@ class ActivityProcessor(Base):
     processor_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("processor.id", ondelete="CASCADE"), primary_key=True
     )
+
+
+class Dpia(IdMixin, TimestampMixin, Base):
+    """The data protection impact assessment of one processing activity."""
+
+    __tablename__ = "dpia"
+
+    activity_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("processing_activity.id", ondelete="CASCADE"), unique=True
+    )
+    status: Mapped[str] = mapped_column(String(20), default="draft")
+    screening: Mapped[dict | None] = mapped_column(JSON, default=dict)
+    description: Mapped[str | None] = mapped_column(Text)
+    necessity: Mapped[str | None] = mapped_column(Text)
+    consultation: Mapped[str | None] = mapped_column(Text)
+    conclusion: Mapped[str | None] = mapped_column(Text)
+    approved_by_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("user_account.id", ondelete="SET NULL")
+    )
+    approved_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
+    review_due: Mapped[date | None] = mapped_column(Date)
+
+    activity: Mapped[ProcessingActivity] = relationship()
+    approved_by: Mapped[User | None] = relationship(lazy="joined")
+    risks: Mapped[list["DpiaRisk"]] = relationship(
+        back_populates="dpia", order_by="DpiaRisk.created_at", cascade="all, delete-orphan"
+    )
+
+
+class DpiaRisk(IdMixin, TimestampMixin, Base):
+    __tablename__ = "dpia_risk"
+
+    dpia_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("dpia.id", ondelete="CASCADE"))
+    title: Mapped[str] = mapped_column(String(300))
+    likelihood: Mapped[int] = mapped_column(Integer)
+    impact: Mapped[int] = mapped_column(Integer)
+    measures: Mapped[str | None] = mapped_column(Text)
+    owner_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("user_account.id", ondelete="SET NULL"))
+    residual_likelihood: Mapped[int | None] = mapped_column(Integer)
+    residual_impact: Mapped[int | None] = mapped_column(Integer)
+    risk_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("risk.id", ondelete="SET NULL"))
+
+    dpia: Mapped[Dpia] = relationship(back_populates="risks")
+    owner: Mapped[User | None] = relationship(foreign_keys=[owner_id], lazy="joined")

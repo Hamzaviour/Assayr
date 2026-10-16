@@ -22,6 +22,8 @@ from assayr.identity.models import Organization, RoleAssignment, Scope, User, Us
 from assayr.jobs import Job  # noqa: F401
 from assayr.privacy.models import (  # noqa: F401, E402
     ActivityProcessor,
+    Dpia,
+    DpiaRisk,
     ProcessingActivity,
     ProcessingAsset,
     Processor,
