@@ -1,8 +1,9 @@
 import { Link, useParams } from "@tanstack/react-router"
 import { type FormEvent, useEffect, useState } from "react"
-import { type NiaDetail, type NiaLink, useNiaControl, useSetNiaApplicability, useSetNiaMapping } from "../api/nia"
+import { type NiaDetail, type NiaLink, niaOnlyCode, useNiaControl, useSetNiaApplicability, useSetNiaMapping } from "../api/nia"
 import { Button } from "../components/Button"
 import { ControlId } from "../components/ControlId"
+import { DocumentSections } from "../components/DocumentSections"
 import { StatusPill } from "../components/StatusPill"
 
 const CARD = "rounded-xl border border-line bg-surface p-5"
@@ -42,6 +43,15 @@ export function NiaControlPage() {
         <div className="grid content-start gap-4">
           <Statement control={c} />
           <MappedControls control={c} />
+          {c.mapped.length === 0 ? (
+            <DocumentSections codes={[niaOnlyCode(c.ref)]} linkTo={niaOnlyCode(c.ref)} canLink={c.can_edit} />
+          ) : (
+            <DocumentSections
+              codes={c.mapped.map((m) => m.code)}
+              canLink={false}
+              hint="Documents linked to the mapped ISO controls. Link new documents on those control pages."
+            />
+          )}
         </div>
         <aside className="grid content-start gap-4">
           <Applicability control={c} />

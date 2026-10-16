@@ -7,6 +7,7 @@ import type { ControlDetail as Detail, EvidenceSlot as Slot } from "../api/types
 import { useMe } from "../auth/session"
 import { Button } from "../components/Button"
 import { ControlId } from "../components/ControlId"
+import { DocumentSections } from "../components/DocumentSections"
 import { Icon } from "../components/icons"
 import { SlotStatePill } from "../components/SlotStatePill"
 import { StatusPill } from "../components/StatusPill"
@@ -50,6 +51,7 @@ export function ControlDetailPage() {
         <div className="grid content-start gap-4">
           <EvidenceSlots control={c} canEdit={canEdit} />
           <ImplementationSection control={c} canEdit={canEdit} />
+          <DocumentSections codes={[c.code]} linkTo={c.code} canLink={canEdit} />
         </div>
         <aside className="grid content-start gap-4">
           <section className="rounded-xl border border-line bg-surface p-5">

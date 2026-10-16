@@ -11,7 +11,7 @@ export const ME: Me = {
   is_active: true,
   roles: [{ role: "isms_manager", scope_id: null }],
   permissions: [
-    "assets:read", "assets:write", "audit_log:read", "controls:read", "controls:write", "evidence:review",
+    "assets:read", "assets:write", "audit_log:read", "controls:read", "controls:write", "documents:create", "evidence:review",
     "risks:accept_high", "risks:read", "risks:write", "soa:read", "soa:write",
   ],
 }
