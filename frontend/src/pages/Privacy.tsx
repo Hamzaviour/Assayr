@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "@tanstack/react-router"
+import { Link, useNavigate, useSearch } from "@tanstack/react-router"
 import { type CSSProperties, type FormEvent, useState } from "react"
 import {
   ACTIVITY_STATUS,
@@ -15,6 +15,11 @@ import { Button } from "../components/Button"
 import { LevelBadge } from "../components/LevelBadge"
 import { formatDate } from "../lib/format"
 import { PII_CATEGORIES, PII_VOLUME, SENSITIVE } from "../lib/privacy"
+import { Breaches } from "./privacy/Breaches"
+import { Overview, type PrivacyTab } from "./privacy/Overview"
+import { PdpplTab } from "./privacy/PdpplTab"
+import { Processors } from "./privacy/Processors"
+import { Requests } from "./privacy/Requests"
 
 const order = (i: number) => ({ "--i": i }) as CSSProperties
 const FIELD = "rounded-lg border border-line-2 bg-surface px-2.5 py-1.5 text-[13.5px] text-fg"
@@ -194,12 +199,28 @@ function Inventory() {
   )
 }
 
+const TABS: { key: PrivacyTab; label: string; sensitive?: boolean }[] = [
+  { key: "overview", label: "Overview" },
+  { key: "activities", label: "Processing activities" },
+  { key: "inventory", label: "PII inventory" },
+  { key: "requests", label: "Requests", sensitive: true },
+  { key: "breaches", label: "Breaches", sensitive: true },
+  { key: "processors", label: "Processors" },
+  { key: "pdppl", label: "PDPPL" },
+]
+
 export function PrivacyPage() {
   const me = useMe()
+  const navigate = useNavigate({ from: "/privacy" })
+  const { tab = "overview" } = useSearch({ from: "/app/privacy" })
   const activities = useActivities()
-  const [tab, setTab] = useState<"activities" | "inventory">("activities")
   const [creating, setCreating] = useState(false)
-  const canManage = (me.data?.permissions ?? []).includes("privacy:manage")
+  const perms = me.data?.permissions ?? []
+  const canManage = perms.includes("privacy:manage")
+  const sensitive = perms.includes("privacy:sensitive")
+  const tabs = TABS.filter((t) => !t.sensitive || sensitive)
+  const current = tabs.some((t) => t.key === tab) ? tab : "overview"
+  const go = (next: PrivacyTab) => navigate({ search: { tab: next === "overview" ? undefined : next } })
 
   return (
     <div className="mx-auto grid max-w-6xl gap-4">
@@ -219,21 +240,16 @@ export function PrivacyPage() {
       <Summary />
       {creating && <NewActivity onClose={() => setCreating(false)} />}
       <section className="rounded-xl border border-line bg-surface">
-        <div role="tablist" aria-label="Data privacy views" className="flex gap-1 border-b border-line px-3 pt-2">
-          {(
-            [
-              ["activities", "Processing activities"],
-              ["inventory", "PII inventory"],
-            ] as const
-          ).map(([key, label]) => (
+        <div role="tablist" aria-label="Data privacy views" className="flex flex-wrap gap-1 border-b border-line px-3 pt-2">
+          {tabs.map(({ key, label }) => (
             <button
               key={key}
               type="button"
               role="tab"
-              aria-selected={tab === key}
-              onClick={() => setTab(key)}
+              aria-selected={current === key}
+              onClick={() => go(key)}
               className={`-mb-px border-b-2 px-3 py-2 text-[13.5px] font-semibold transition-colors ${
-                tab === key ? "border-primary text-primary" : "border-transparent text-fg-2 hover:text-fg"
+                current === key ? "border-primary text-primary" : "border-transparent text-fg-2 hover:text-fg"
               }`}
             >
               {label}
@@ -242,7 +258,13 @@ export function PrivacyPage() {
         </div>
         <div role="tabpanel" className="overflow-x-auto">
           {activities.isError && <p role="alert" className="p-4">{activities.error.message}</p>}
-          {tab === "activities" ? activities.isSuccess && <Activities rows={activities.data} /> : <Inventory />}
+          {current === "overview" && <Overview go={go} sensitive={sensitive} />}
+          {current === "activities" && activities.isSuccess && <Activities rows={activities.data} />}
+          {current === "inventory" && <Inventory />}
+          {current === "requests" && <Requests canManage={canManage} />}
+          {current === "breaches" && <Breaches canManage={canManage} />}
+          {current === "processors" && <Processors canManage={canManage} />}
+          {current === "pdppl" && <PdpplTab />}
         </div>
       </section>
     </div>

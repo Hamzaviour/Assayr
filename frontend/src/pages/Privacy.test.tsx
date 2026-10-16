@@ -17,7 +17,11 @@ function setup(me = MANAGER) {
   return mockApi({
     "GET /auth/me": () => json(200, me),
     "GET /privacy/summary": () =>
-      json(200, { pii_assets: 4, sensitive_assets: 2, activities: 3, active_activities: 2, cross_border: 1, reviews_due: 1 }),
+      json(200, {
+        pii_assets: 4, sensitive_assets: 2, activities: 3, active_activities: 2, cross_border: 1, reviews_due: 1,
+        requests_open: 0, requests_overdue: 0, breaches_open: 0, notifications_overdue: 0, dpia_due: 0, processors_without_dpa: 0,
+      }),
+    "GET /privacy/pdppl": () => json(200, { name: "PDPPL", title: "", notice: "", topics: [], total: 30, compliant: 10, obligations: [] }),
     "GET /privacy/activities": () => json(200, [activity()]),
     "GET /privacy/inventory": () => json(200, [ROW]),
     "POST /privacy/activities": (_u, init) => json(201, activity({ id: "p9", code: "PA-002", ...JSON.parse(String(init.body)) })),
@@ -35,6 +39,7 @@ test("summary strip and processing activities", async () => {
   await within(strip).findByText("4")
   expect(within(strip).getByText("PII assets").closest("li")).toHaveTextContent("4")
   expect(within(strip).getByText("Cross-border transfers").closest("li")).toHaveTextContent("1")
+  await userEvent.click(screen.getByRole("tab", { name: "Processing activities" }))
   const row = (await screen.findByRole("link", { name: "Payroll" })).closest("tr")!
   expect(row).toHaveTextContent("PA-001")
   expect(row).toHaveTextContent("Contract")
@@ -73,7 +78,7 @@ test("a new processing activity", async () => {
 
 test("people without privacy rights only read", async () => {
   setup({ ...ME, permissions: ["assets:read"] })
-  renderApp("/privacy")
+  renderApp("/privacy?tab=activities")
   await screen.findByRole("link", { name: "Payroll" })
   expect(screen.queryByRole("button", { name: "New activity" })).not.toBeInTheDocument()
 })

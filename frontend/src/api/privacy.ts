@@ -39,6 +39,9 @@ export type ActivityInput = {
   owner_id: string | null
   status: string
   review_due: string | null
+  consent_how?: string | null
+  consent_withdrawal?: string | null
+  retention_review_due?: string | null
 }
 
 export type Activity = Omit<ActivityInput, "owner_id"> & {
@@ -48,6 +51,10 @@ export type Activity = Omit<ActivityInput, "owner_id"> & {
   sensitive: boolean
   review_overdue: boolean
   assets: { id: string; code: string; name: string; criticality_label: string }[]
+  processors?: { id: string; name: string; dpa_signed: boolean }[]
+  retention_review_overdue?: boolean
+  has_dpia?: boolean
+  dpia_status?: string | null
   can_edit: boolean
 }
 
@@ -72,6 +79,12 @@ export type PrivacySummary = {
   active_activities: number
   cross_border: number
   reviews_due: number
+  requests_open: number
+  requests_overdue: number
+  breaches_open: number
+  notifications_overdue: number
+  dpia_due: number
+  processors_without_dpa: number
 }
 
 export function usePrivacySummary() {

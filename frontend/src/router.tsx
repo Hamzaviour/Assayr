@@ -63,7 +63,15 @@ const myTrainingRoute = createRoute({ getParentRoute: () => appRoute, path: "/my
 const trainingRoute = createRoute({ getParentRoute: () => appRoute, path: "/training", component: TrainingPage })
 const courseRoute = createRoute({ getParentRoute: () => appRoute, path: "/training/$id", component: CourseEditorPage })
 const coursePlayerRoute = createRoute({ getParentRoute: () => appRoute, path: "/my-training/$id", component: CoursePlayerPage })
-const privacyRoute = createRoute({ getParentRoute: () => appRoute, path: "/privacy", component: PrivacyPage })
+const PRIVACY_TABS = ["activities", "inventory", "requests", "breaches", "processors", "pdppl"] as const
+const privacyRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/privacy",
+  validateSearch: (search: Record<string, unknown>): { tab?: (typeof PRIVACY_TABS)[number] } => ({
+    tab: PRIVACY_TABS.includes(search.tab as (typeof PRIVACY_TABS)[number]) ? (search.tab as (typeof PRIVACY_TABS)[number]) : undefined,
+  }),
+  component: PrivacyPage,
+})
 const activityRoute = createRoute({ getParentRoute: () => appRoute, path: "/privacy/$id", component: ProcessingActivityPage })
 const usersRoute = createRoute({ getParentRoute: () => appRoute, path: "/users", component: UsersPage })
 const policiesRoute = createRoute({ getParentRoute: () => appRoute, path: "/policies", component: PoliciesPage })
