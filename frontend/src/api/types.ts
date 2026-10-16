@@ -4,9 +4,14 @@ export interface Me {
   email: string
   full_name: string
   is_active: boolean
+  department?: string | null
+  must_change_password?: boolean
   roles: RoleGrant[]
   permissions: string[]
 }
+/** Staff whose only role is Employee see My training and nothing else. */
+export const isEmployeeOnly = (me: Pick<Me, "roles">) =>
+  me.roles.length > 0 && me.roles.every((r) => r.role === "employee")
 export interface Owner { id: string; full_name: string }
 export interface ControlSummary {
   id: string

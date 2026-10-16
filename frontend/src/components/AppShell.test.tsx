@@ -29,3 +29,28 @@ test("navigation marks the current page and lists upcoming modules as unavailabl
   expect(screen.getByRole("link", { name: "Policies" })).toHaveAttribute("href", "/policies")
   expect(screen.getByRole("link", { name: "Policies" })).toHaveAttribute("href", "/policies")
 })
+
+const EMPLOYEE = { ...ME, roles: [{ role: "employee", scope_id: null }], permissions: [] }
+
+test("staff with only the employee role see just My training", async () => {
+  mockApi({
+    "GET /auth/me": () => json(200, EMPLOYEE),
+    "GET /my/assignments": () => json(200, []),
+  })
+  const { router } = renderApp("/")
+  expect(await screen.findByRole("link", { name: "My training" })).toBeInTheDocument()
+  expect(screen.queryByRole("link", { name: "Controls" })).not.toBeInTheDocument()
+  expect(screen.queryByRole("link", { name: "Home" })).not.toBeInTheDocument()
+  await screen.findByRole("heading", { name: "My training", level: 1 })
+  expect(router.state.location.pathname).toBe("/my-training")
+})
+
+test("managers see My training and Users next to the rest", async () => {
+  mockApi({
+    "GET /auth/me": () => json(200, { ...ME, permissions: [...ME.permissions, "users:manage"] }),
+    "GET /controls": () => json(200, { items: [], next_cursor: null }),
+  })
+  renderApp("/controls")
+  expect(await screen.findByRole("link", { name: "My training" })).toHaveAttribute("href", "/my-training")
+  expect(screen.getByRole("link", { name: "Users" })).toHaveAttribute("href", "/users")
+})

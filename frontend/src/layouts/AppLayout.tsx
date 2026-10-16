@@ -2,8 +2,10 @@ import { useQueryClient } from "@tanstack/react-query"
 import { Outlet, useLocation, useNavigate } from "@tanstack/react-router"
 import { useEffect, useRef } from "react"
 import { ApiError } from "../api/client"
+import { isEmployeeOnly } from "../api/types"
 import { useMe } from "../auth/session"
 import { AppShell } from "../components/AppShell"
+import { ChangePasswordPage } from "../pages/ChangePassword"
 
 export function AppLayout() {
   const me = useMe()
@@ -32,6 +34,11 @@ export function AppLayout() {
     }
   }, [signedOut, navigate, location.href])
 
+  const employeeHome = me.data && isEmployeeOnly(me.data) && location.pathname === "/"
+  useEffect(() => {
+    if (employeeHome) navigate({ to: "/my-training", replace: true })
+  }, [employeeHome, navigate])
+
   if (me.isPending || signedOut) return <p role="status" className="p-8 text-fg-3">Loading…</p>
   if (me.isError) {
     return (
@@ -40,6 +47,8 @@ export function AppLayout() {
       </p>
     )
   }
+  if (me.data.must_change_password) return <ChangePasswordPage />
+  if (employeeHome) return <p role="status" className="p-8 text-fg-3">Loading…</p>
   return (
     <AppShell me={me.data}>
       <Outlet />

@@ -1,15 +1,21 @@
 import { useQueryClient } from "@tanstack/react-query"
 import { Link, useRouter } from "@tanstack/react-router"
 import type { ReactNode } from "react"
-import type { Me } from "../api/types"
+import { isEmployeeOnly, type Me } from "../api/types"
 import { useLogout } from "../auth/session"
 import { toggleTheme } from "../lib/theme"
 import { Button } from "./Button"
 import { Icon } from "./icons"
 
-type NavItem = { label: string; icon: string; to?: "/" | "/compliance" | "/controls" | "/evidence" | "/soa" | "/risks" | "/assets" | "/policies" | "/audits" }
-const NAV: { group: string | null; items: NavItem[] }[] = [
-  { group: null, items: [{ label: "Home", icon: "home", to: "/" }] },
+type NavItem = {
+  label: string
+  icon: string
+  to?: "/" | "/compliance" | "/controls" | "/evidence" | "/soa" | "/risks" | "/assets" | "/policies" | "/audits" | "/my-training" | "/users"
+}
+type NavSection = { group: string | null; items: NavItem[] }
+const MY_TRAINING: NavItem = { label: "My training", icon: "training", to: "/my-training" }
+const NAV: NavSection[] = [
+  { group: null, items: [{ label: "Home", icon: "home", to: "/" }, MY_TRAINING] },
   {
     group: "Comply",
     items: [
@@ -26,6 +32,12 @@ const NAV: { group: string | null; items: NavItem[] }[] = [
 
 const itemClass =
   "relative flex items-center gap-2.5 rounded-lg px-2.5 py-[8px] font-medium transition-colors duration-200"
+
+function navFor(me: Me): NavSection[] {
+  if (isEmployeeOnly(me)) return [{ group: null, items: [MY_TRAINING] }]
+  if (!me.permissions.includes("users:manage")) return NAV
+  return [...NAV, { group: "Admin", items: [{ label: "Users", icon: "users", to: "/users" }] }]
+}
 
 export function AppShell({ me, children }: { me: Me; children: ReactNode }) {
   const logout = useLogout()
@@ -45,7 +57,7 @@ export function AppShell({ me, children }: { me: Me; children: ReactNode }) {
           <img src="/favicon.svg" alt="" width={30} height={30} className="rounded-lg ring-1 ring-white/25" />
           <span className="font-display text-[22px] font-extrabold tracking-tight text-on-brand">assayr</span>
         </div>
-        {NAV.map((section) => (
+        {navFor(me).map((section) => (
           <div key={section.group ?? "top"} className="grid gap-0.5">
             {section.group && (
               <p className="px-2.5 pb-1.5 pt-4 text-[11px] font-semibold uppercase tracking-[0.1em] text-on-brand-3">
