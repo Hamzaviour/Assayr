@@ -33,7 +33,7 @@ class Course(IdMixin, TimestampMixin, Base):
     title: Mapped[str] = mapped_column(String(200))
     description: Mapped[str | None] = mapped_column(Text)
     status: Mapped[str] = mapped_column(String(20), default="draft")
-    recurrence_months: Mapped[int | None] = mapped_column(Integer, default=12)
+    recurrence_months: Mapped[int | None] = mapped_column(Integer)  # None = one-off; the API defaults to 12
     due_days: Mapped[int] = mapped_column(Integer, default=30)
     created_by_id: Mapped[uuid.UUID | None] = mapped_column(
         ForeignKey("user_account.id", ondelete="SET NULL")

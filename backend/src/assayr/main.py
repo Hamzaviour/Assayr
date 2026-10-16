@@ -26,6 +26,7 @@ from assayr.scoring.router import router as scoring_router
 from assayr.soa.router import router as soa_router
 from assayr.storage import BlobStore
 from assayr.tasks.router import router as tasks_router
+from assayr.training.courses_router import router as training_courses_router
 
 _REQUEST_ID_UNSAFE = re.compile(r"[^A-Za-z0-9_-]")
 
@@ -70,4 +71,5 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(nia_frameworks_router, prefix="/api/v1")
     app.include_router(documents_router, prefix="/api/v1")
     app.include_router(audits_router, prefix="/api/v1")
+    app.include_router(training_courses_router, prefix="/api/v1")
     return app
