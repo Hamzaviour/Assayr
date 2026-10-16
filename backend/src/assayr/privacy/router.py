@@ -29,6 +29,7 @@ from assayr.privacy.schemas import (
     AssetLinksIn,
     InventoryRow,
     LinkedAssetOut,
+    LinkedProcessorOut,
     PrivacySummary,
 )
 
@@ -95,6 +96,7 @@ def activity_out(a: ProcessingActivity, today: date, can_edit: bool) -> Activity
             LinkedAssetOut(id=x.id, code=x.code, name=x.name, criticality_label=level_label(_criticality(x)))
             for x in a.assets
         ],
+        processors=[LinkedProcessorOut(id=p.id, name=p.name, dpa_signed=p.dpa_signed) for p in a.processors],
         can_edit=can_edit,
     )
 

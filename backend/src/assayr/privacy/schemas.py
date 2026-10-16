@@ -78,6 +78,12 @@ class LinkedAssetOut(BaseModel):
     criticality_label: str
 
 
+class LinkedProcessorOut(BaseModel):
+    id: uuid.UUID
+    name: str
+    dpa_signed: bool
+
+
 class ActivityOut(BaseModel):
     id: uuid.UUID
     code: str
@@ -97,6 +103,7 @@ class ActivityOut(BaseModel):
     sensitive: bool
     review_overdue: bool
     assets: list[LinkedAssetOut]
+    processors: list[LinkedProcessorOut] = []
     can_edit: bool
 
 

@@ -20,7 +20,12 @@ from assayr.evidence.models import (  # noqa: F401
 )
 from assayr.identity.models import Organization, RoleAssignment, Scope, User, UserSession  # noqa: F401
 from assayr.jobs import Job  # noqa: F401
-from assayr.privacy.models import ProcessingActivity, ProcessingAsset  # noqa: F401, E402
+from assayr.privacy.models import (  # noqa: F401, E402
+    ActivityProcessor,
+    ProcessingActivity,
+    ProcessingAsset,
+    Processor,
+)
 from assayr.risk.models import (  # noqa: F401
     MethodologyVersion,
     Risk,
