@@ -51,3 +51,21 @@ test("linking a document from the control page", async () => {
   expect(calls.some((c) => c.method === "POST" && c.url.pathname.endsWith("/controls/A.5.1/documents/d2"))).toBe(true)
   expect(await within(region).findByRole("link", { name: /Acceptable use policy/ })).toBeInTheDocument()
 })
+
+test("unlinking a document from the control page", async () => {
+  let linked = [ISP]
+  const calls = mockApi({
+    "GET /auth/me": () => json(200, ME),
+    "GET /controls/A.5.1": () => json(200, CONTROL),
+    "GET /controls/A.5.1/documents": () => json(200, { policy: linked, procedure: [], guideline: [] }),
+    "DELETE /controls/A.5.1/documents/d1": () => {
+      linked = []
+      return json(200, { policy: [], procedure: [], guideline: [] })
+    },
+  })
+  renderApp("/controls/A.5.1")
+  await userEvent.click(await screen.findByRole("button", { name: /Policies\s*1/ }))
+  await userEvent.click(screen.getByRole("button", { name: "Unlink POL-01" }))
+  expect(calls.some((c) => c.method === "DELETE")).toBe(true)
+  expect(await screen.findByText("No policies linked yet")).toBeInTheDocument()
+})

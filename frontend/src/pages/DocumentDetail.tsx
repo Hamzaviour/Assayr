@@ -1,5 +1,15 @@
 import { Link, useParams } from "@tanstack/react-router"
-import { DOC_TYPES, documentFileUrl, useApproveDocument, useDocument, useUploadDocumentFile } from "../api/documents"
+import { type FormEvent, useState } from "react"
+import {
+  DOC_TYPES,
+  type DocumentDetail,
+  documentFileUrl,
+  useApproveDocument,
+  useDocument,
+  useUpdateDocument,
+  useUploadDocumentFile,
+} from "../api/documents"
+import { usePeople } from "../api/people"
 import { useMe } from "../auth/session"
 import { Button } from "../components/Button"
 import { ControlId } from "../components/ControlId"
@@ -67,6 +77,16 @@ export function DocumentDetailPage() {
         <div className="grid content-start gap-4">
           <section className={CARD} aria-labelledby="file-title">
             <h2 id="file-title" className={LABEL}>Current file</h2>
+            {d.status === "draft" && d.approved_version && (
+              <p className="mb-3 rounded-lg bg-ok-soft px-3 py-2 text-[13px] text-fg-2">
+                Version {d.approved_version} stays in force until this draft is approved.{" "}
+                {d.approved_filename && (
+                  <a href={`${documentFileUrl(d.id)}?approved=true`} className="font-medium text-primary hover:underline">
+                    Download approved {d.approved_filename}
+                  </a>
+                )}
+              </p>
+            )}
             {d.filename ? (
               <a href={documentFileUrl(d.id)} className="inline-flex items-center gap-2 font-medium text-primary hover:underline">
                 Download {d.filename}
@@ -121,6 +141,7 @@ export function DocumentDetailPage() {
           </section>
         </div>
         <aside className="grid content-start gap-4">
+          {(d.can_edit || d.can_approve) && <EditDetails d={d} />}
           <section className={CARD}>
             <h2 className={LABEL}>Details</h2>
             <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-2 text-[13px]">
@@ -149,5 +170,93 @@ export function DocumentDetailPage() {
         </aside>
       </div>
     </div>
+  )
+}
+
+function EditDetails({ d }: { d: DocumentDetail }) {
+  const [open, setOpen] = useState(false)
+  const update = useUpdateDocument(d.id)
+  const people = usePeople()
+  const [title, setTitle] = useState(d.title)
+  const [code, setCode] = useState(d.code)
+  const [description, setDescription] = useState(d.description ?? "")
+  const [ownerId, setOwnerId] = useState(d.owner?.id ?? "")
+  const [reviewDue, setReviewDue] = useState(d.review_due ?? "")
+  const manager = d.can_approve
+  const field = "rounded-lg border border-line-2 bg-surface px-2.5 py-1.5 text-[13px] text-fg"
+
+  function onSubmit(event: FormEvent) {
+    event.preventDefault()
+    const changes: Parameters<typeof update.mutate>[0] = {}
+    if (title.trim() !== d.title) changes.title = title.trim()
+    if (code.trim().toUpperCase() !== d.code) changes.code = code.trim()
+    if (description.trim() !== (d.description ?? "")) changes.description = description.trim() || null
+    if (manager && ownerId !== (d.owner?.id ?? "")) changes.owner_id = ownerId || null
+    if (manager && reviewDue !== (d.review_due ?? "")) changes.review_due = reviewDue || null
+    update.mutate(changes, { onSuccess: () => setOpen(false) })
+  }
+
+  return (
+    <section className={CARD}>
+      <h2 className={LABEL}>Manage</h2>
+      {!open ? (
+        <div className="flex flex-wrap gap-2">
+          {d.can_edit && (
+            <Button size="sm" variant="secondary" onClick={() => setOpen(true)}>
+              Edit details
+            </Button>
+          )}
+          {manager && d.status !== "retired" && (
+            <Button size="sm" variant="secondary" disabled={update.isPending} onClick={() => update.mutate({ status: "retired" })}>
+              Retire document
+            </Button>
+          )}
+        </div>
+      ) : (
+        <form onSubmit={onSubmit} className="grid gap-2.5">
+          <label className="grid gap-1 text-[12.5px] text-fg-2">
+            Title
+            <input value={title} onChange={(e) => setTitle(e.target.value)} required maxLength={300} className={field} />
+          </label>
+          <label className="grid gap-1 text-[12.5px] text-fg-2">
+            Reference
+            <input value={code} onChange={(e) => setCode(e.target.value)} required maxLength={30} className={`${field} font-mono`} />
+          </label>
+          <label className="grid gap-1 text-[12.5px] text-fg-2">
+            Description
+            <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} maxLength={5000} className={field} />
+          </label>
+          {manager && (
+            <>
+              <label className="grid gap-1 text-[12.5px] text-fg-2">
+                Owner
+                <select value={ownerId} onChange={(e) => setOwnerId(e.target.value)} className={field}>
+                  <option value="">Unassigned</option>
+                  {d.owner && !(people.data ?? []).some((p) => p.id === d.owner?.id) && (
+                    <option value={d.owner.id}>{d.owner.full_name}</option>
+                  )}
+                  {(people.data ?? []).map((p) => (
+                    <option key={p.id} value={p.id}>{p.full_name}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="grid gap-1 text-[12.5px] text-fg-2">
+                Next review
+                <input type="date" value={reviewDue} onChange={(e) => setReviewDue(e.target.value)} className={field} />
+              </label>
+            </>
+          )}
+          <div className="flex gap-2">
+            <Button type="submit" size="sm" disabled={update.isPending || !title.trim() || !code.trim()}>
+              Save details
+            </Button>
+            <Button type="button" size="sm" variant="secondary" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
+          </div>
+        </form>
+      )}
+      {update.isError && <p role="alert" className="mt-2 text-[13px] text-bad">{update.error.message}</p>}
+    </section>
   )
 }

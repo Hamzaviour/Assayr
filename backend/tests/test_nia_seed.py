@@ -63,3 +63,21 @@ def test_cli_seed_also_seeds_nia(cli_db):  # noqa: F811
     run("migrate")
     out = run("seed")
     assert out.exit_code == 0 and "NIA: 355 controls" in out.output
+
+
+def test_reseeding_keeps_a_managers_mapping_changes(client, db, seeded):
+    from tests.conftest import create_user, sign_in
+
+    seed_nia(db, seeded)
+    db.commit()
+    create_user(db, "sana@acme.com", full_name="Sana Malik")
+    sign_in(client, "sana@acme.com")
+    before = [m["code"] for m in client.get("/api/v1/nia/controls/IG 3").json()["mapped"]]
+    assert len(before) >= 2
+    client.put(
+        "/api/v1/nia/controls/IG 3/mapping", json={"links": [{"code": before[-1], "coverage": "full"}]}
+    )
+    result = seed_nia(db, seeded)
+    db.commit()
+    assert result.links_created == 0
+    assert [m["code"] for m in client.get("/api/v1/nia/controls/IG 3").json()["mapped"]] == [before[-1]]

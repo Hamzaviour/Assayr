@@ -41,6 +41,8 @@ class ControlDocumentOut(BaseModel):
     status: str
     version_label: str
     review_due: date | None
+    review_overdue: bool = False
+    approved_version: str | None
 
 
 class ControlDocumentsOut(BaseModel):
@@ -76,6 +78,8 @@ class DocumentOut(BaseModel):
     review_overdue: bool
     filename: str | None
     size: int | None
+    approved_version: str | None
+    approved_filename: str | None
     can_edit: bool
     can_approve: bool
 
@@ -105,6 +109,8 @@ def document_out(doc: Document, today: date, can_edit: bool, can_approve: bool) 
         review_overdue=doc.status == "approved" and doc.review_due is not None and doc.review_due < today,
         filename=doc.filename,
         size=doc.size,
+        approved_version=doc.approved_version,
+        approved_filename=doc.approved_filename,
         can_edit=can_edit,
         can_approve=can_approve,
     )

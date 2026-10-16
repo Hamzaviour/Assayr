@@ -121,10 +121,10 @@ function NiaControls({ domain }: { domain?: string }) {
                   {c.applicable ? <StatusPill status={c.status} /> : <span className="text-[12.5px] text-fg-3">Not applicable</span>}
                 </td>
                 <td className="px-3.5 py-2.5 text-[12.5px] text-fg-2">
-                  {c.mapped.length === 0 ? (
+                  {c.own_control ? (
                     <span className="rounded-full border border-line px-2 py-0.5 text-[11px] font-medium">NIA only</span>
                   ) : (
-                    c.mapped.map((m) => m.code).join(", ")
+                    c.mapped.map((m) => m.code).join(", ") || "—"
                   )}
                 </td>
               </tr>

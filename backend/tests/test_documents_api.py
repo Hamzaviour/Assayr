@@ -171,3 +171,19 @@ def test_documents_link_to_nia_only_controls(client, db, seeded):
     assert [d["code"] for d in client.get("/api/v1/controls/NIA AC 3/documents").json()["policy"]] == [
         "POL-01"
     ]
+
+
+def test_approved_file_stays_downloadable_while_a_new_draft_is_pending(client, db, seeded):
+    manager(client, db)
+    doc = new_doc(client).json()
+    upload(client, doc["id"], data=b"%PDF-1.4 approved text")
+    client.post(f"/api/v1/documents/{doc['id']}/approve")
+    body = upload(client, doc["id"], data=b"%PDF-1.4 revised").json()
+    assert body["status"] == "draft" and body["approved_version"] == "1.0"
+    approved = client.get(f"/api/v1/documents/{doc['id']}/file?approved=true")
+    assert approved.content == b"%PDF-1.4 approved text"
+    assert client.get(f"/api/v1/documents/{doc['id']}/file").content == b"%PDF-1.4 revised"
+    rows = client.get("/api/v1/controls/A.5.1/documents").json()
+    assert rows["policy"] == []  # not linked; shape check below
+    client.put(f"/api/v1/documents/{doc['id']}/controls", json={"codes": ["A.5.1"]})
+    assert client.get("/api/v1/controls/A.5.1/documents").json()["policy"][0]["approved_version"] == "1.0"

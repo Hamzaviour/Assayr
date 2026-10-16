@@ -25,6 +25,8 @@ export type DocumentRow = {
   review_overdue: boolean
   filename: string | null
   size: number | null
+  approved_version: string | null
+  approved_filename: string | null
   can_edit: boolean
   can_approve: boolean
 }
@@ -34,7 +36,10 @@ export type DocumentDetail = DocumentRow & {
   history: { at: string; actor: string | null; action: string }[]
 }
 
-export type ControlDocument = Pick<DocumentRow, "id" | "code" | "title" | "status" | "version_label" | "review_due">
+export type ControlDocument = Pick<
+  DocumentRow,
+  "id" | "code" | "title" | "status" | "version_label" | "review_due" | "review_overdue" | "approved_version"
+>
 export type ControlDocuments = Record<DocType, ControlDocument[]>
 
 export const documentFileUrl = (id: string) => `/api/v1/documents/${id}/file`
@@ -97,7 +102,9 @@ export function useCreateDocument() {
 export function useUpdateDocument(id: string) {
   const invalidate = useInvalidateDocuments()
   return useMutation({
-    mutationFn: (changes: Partial<{ title: string; description: string | null; code: string; status: "retired"; review_due: string | null }>) =>
+    mutationFn: (
+      changes: Partial<{ title: string; description: string | null; code: string; status: "retired"; review_due: string | null; owner_id: string | null }>,
+    ) =>
       api<DocumentRow>(`/documents/${id}`, { method: "PATCH", body: JSON.stringify(changes) }),
     onSuccess: invalidate,
   })

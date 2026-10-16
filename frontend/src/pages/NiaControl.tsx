@@ -1,6 +1,6 @@
 import { Link, useParams } from "@tanstack/react-router"
 import { type FormEvent, useEffect, useState } from "react"
-import { type NiaDetail, type NiaLink, niaOnlyCode, useNiaControl, useSetNiaApplicability, useSetNiaMapping } from "../api/nia"
+import { type NiaDetail, type NiaLink, useNiaControl, useSetNiaApplicability, useSetNiaMapping } from "../api/nia"
 import { Button } from "../components/Button"
 import { ControlId } from "../components/ControlId"
 import { DocumentSections } from "../components/DocumentSections"
@@ -31,7 +31,7 @@ export function NiaControlPage() {
           <h1 className="font-display text-[28px] font-extrabold tracking-tight">{c.title}</h1>
           <p className="mt-2 flex flex-wrap gap-2 text-[12.5px]">
             {c.mandatory && <span className="rounded-full bg-primary-soft px-2.5 py-0.5 font-semibold text-primary">Mandatory</span>}
-            {c.mapped.length === 0 && <span className="rounded-full border border-line px-2.5 py-0.5 font-medium text-fg-2">NIA only</span>}
+            {c.own_control && <span className="rounded-full border border-line px-2.5 py-0.5 font-medium text-fg-2">NIA only</span>}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -43,8 +43,8 @@ export function NiaControlPage() {
         <div className="grid content-start gap-4">
           <Statement control={c} />
           <MappedControls control={c} />
-          {c.mapped.length === 0 ? (
-            <DocumentSections codes={[niaOnlyCode(c.ref)]} linkTo={niaOnlyCode(c.ref)} canLink={c.can_edit} />
+          {c.own_control ? (
+            <DocumentSections codes={c.mapped.map((m) => m.code)} linkTo={c.own_control} canLink={c.can_edit} />
           ) : (
             <DocumentSections
               codes={c.mapped.map((m) => m.code)}
@@ -104,7 +104,7 @@ function MappedControls({ control }: { control: NiaDetail }) {
         Evidence is shared: this NIA control is only as far along as the ISO controls it maps to.
       </p>
       {links.length === 0 ? (
-        <p className="text-[13px] text-fg-3">Not mapped to any ISO control. It is tracked as an NIA-only control.</p>
+        <p className="text-[13px] text-fg-3">No controls in the mapping.</p>
       ) : (
         <ul className="grid gap-1">
           {links.map((l) => {
@@ -112,7 +112,7 @@ function MappedControls({ control }: { control: NiaDetail }) {
             return (
               <li key={l.code} className="flex items-center gap-3 rounded-lg px-2 py-2 hover:bg-subtle">
                 <Link to="/controls/$code" params={{ code: l.code }} className="min-w-0 flex-1 truncate text-[13.5px] hover:text-primary">
-                  <ControlId code={l.code} /> {m?.title ?? "Not saved yet"}
+                  <ControlId code={l.code} /> {l.code.startsWith("NIA ") ? "Own NIA control (its own evidence)" : (m?.title ?? "Not saved yet")}
                 </Link>
                 {l.coverage === "partial" && <span className="text-[12px] text-fg-3">Partial</span>}
                 {m && <StatusPill status={m.status} />}
@@ -157,9 +157,12 @@ function MappedControls({ control }: { control: NiaDetail }) {
             <Button type="submit" variant="secondary" size="sm">Add</Button>
           </form>
           <div className="flex items-center gap-3">
-            <Button size="sm" disabled={!dirty || save.isPending} onClick={() => save.mutate(links)}>
+            <Button size="sm" disabled={!dirty || links.length === 0 || save.isPending} onClick={() => save.mutate(links)}>
               {save.isPending ? "Saving…" : "Save mapping"}
             </Button>
+            {links.length === 0 && (
+              <p className="text-[12.5px] text-fg-3">Keep at least one control. If this NIA control does not apply, mark it not applicable.</p>
+            )}
             {save.isError && <p role="alert" className="text-[13px] text-bad">{save.error.message}</p>}
           </div>
         </div>

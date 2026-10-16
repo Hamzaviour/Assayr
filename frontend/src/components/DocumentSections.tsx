@@ -24,9 +24,6 @@ export function ReviewDue() {
   return <span className="whitespace-nowrap rounded-full bg-bad-soft px-2 py-0.5 text-[11.5px] font-semibold text-bad">Review due</span>
 }
 
-const isOverdue = (d: Pick<ControlDocument, "status" | "review_due">) =>
-  d.status === "approved" && !!d.review_due && d.review_due < new Date().toISOString().slice(0, 10)
-
 /** An accessible disclosure: a button with aria-expanded that shows or hides a labelled region. */
 export function Disclosure({
   title,
@@ -130,6 +127,22 @@ function Picker({ type, singular, linked, code }: { type: DocType; singular: str
   )
 }
 
+function Unlink({ code, doc }: { code: string; doc: ControlDocument }) {
+  const link = useLinkControlDocument(code)
+  return (
+    <button
+      type="button"
+      aria-label={`Unlink ${doc.code}`}
+      title="Unlink from this control"
+      disabled={link.isPending}
+      onClick={() => link.mutate({ id: doc.id, link: false })}
+      className="rounded px-2 py-1 text-fg-3 transition-colors hover:bg-subtle hover:text-bad"
+    >
+      ×
+    </button>
+  )
+}
+
 /**
  * Policies, procedures and guidelines linked to one or more controls.
  * `linkTo` is the control that "Link a document" adds to; without it the sections are read-only.
@@ -150,18 +163,22 @@ export function DocumentSections({ codes, linkTo, canLink, hint }: { codes: stri
             ) : (
               <ul className="grid gap-0.5">
                 {list.map((d) => (
-                  <li key={d.id}>
+                  <li key={d.id} className="flex items-center gap-1">
                     <Link
                       to="/policies/$id"
                       params={{ id: d.id }}
-                      className="flex flex-wrap items-center gap-2 rounded-md px-2 py-1.5 text-[13.5px] hover:bg-subtle"
+                      className="flex min-w-0 flex-1 flex-wrap items-center gap-2 rounded-md px-2 py-1.5 text-[13.5px] hover:bg-subtle"
                     >
                       <span className="font-mono text-[12px] text-fg-3">{d.code}</span>
                       <span className="min-w-0 flex-1 truncate font-medium">{d.title}</span>
-                      <span className="text-[12px] text-fg-3">v{d.version_label}</span>
-                      {isOverdue(d) && <ReviewDue />}
+                      <span className="text-[12px] text-fg-3">
+                        v{d.version_label}
+                        {d.status === "draft" && d.approved_version && ` · v${d.approved_version} in force`}
+                      </span>
+                      {d.review_overdue && <ReviewDue />}
                       <DocStatus status={d.status} />
                     </Link>
+                    {canLink && linkTo && <Unlink code={linkTo} doc={d} />}
                   </li>
                 ))}
               </ul>

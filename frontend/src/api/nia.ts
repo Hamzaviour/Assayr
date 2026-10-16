@@ -5,6 +5,8 @@ export type NiaMapped = { code: string; title: string; status: string; coverage:
 
 export type NiaRow = {
   ref: string
+  /** Set for NIA-only controls: the "NIA <ref>" control that carries their evidence and documents. */
+  own_control: string | null
   domain: string
   domain_name: string
   title: string
@@ -25,9 +27,6 @@ export type NiaDetail = NiaRow & {
 export type NiaLink = { code: string; coverage: "full" | "partial" }
 
 const path = (ref: string) => `/nia/controls/${encodeURIComponent(ref)}`
-
-/** NIA-only controls live in the ISO control table under this code. */
-export const niaOnlyCode = (ref: string) => `NIA ${ref}`
 
 export function useNiaControls() {
   return useQuery({ queryKey: ["nia", "controls"], queryFn: () => api<NiaRow[]>("/nia/controls") })

@@ -35,6 +35,9 @@ def upgrade() -> None:
         sa.Column("filename", sa.String(length=255), nullable=True),
         sa.Column("mime", sa.String(length=100), nullable=True),
         sa.Column("size", sa.BigInteger(), nullable=True),
+        sa.Column("approved_version", sa.String(length=20), nullable=True),
+        sa.Column("approved_sha256", sa.String(length=64), nullable=True),
+        sa.Column("approved_filename", sa.String(length=255), nullable=True),
         sa.Column("created_at", UTCDateTime(), nullable=False),
         sa.Column("updated_at", UTCDateTime(), nullable=False),
         sa.ForeignKeyConstraint(

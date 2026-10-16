@@ -35,6 +35,7 @@ class NiaImportError(Exception):
 @dataclass
 class ParsedNia:
     version: str | None
+    is_nia: bool = True
     statements: dict[str, str] = field(default_factory=dict)
 
 
@@ -72,10 +73,15 @@ def parse_nia_pdf(data: bytes) -> ParsedNia:
         if section:
             body = body[: section.start()]
         statements[ref] = " ".join(body.split()).strip()
-    return ParsedNia(version=version, statements=statements)
+    is_nia = "NATIONAL INFORMATION ASSURANCE" in head.upper()
+    return ParsedNia(version=version, statements=statements, is_nia=is_nia)
 
 
 def apply_import(db: Session, parsed: ParsedNia) -> ImportResult:
+    if not parsed.is_nia:
+        raise NiaImportError(
+            "This document is not the National Information Assurance standard. Choose your copy of the NCSA PDF."
+        )
     if parsed.version != EXPECTED_VERSION:
         found = f"version {parsed.version}" if parsed.version else "no version number"
         raise NiaImportError(f"This document shows {found}; Assayr expects NIA version {EXPECTED_VERSION}.")
@@ -85,6 +91,11 @@ def apply_import(db: Session, parsed: ParsedNia) -> ImportResult:
     controls = db.scalars(
         select(Requirement).where(Requirement.framework_id == fw.id, Requirement.kind == "control")
     )
+    controls = list(controls)
+    if not any(parsed.statements.get(req.ref) for req in controls):
+        raise NiaImportError(
+            "This document has no NIA control statements Assayr recognises; nothing was changed."
+        )
     matched, unmatched = 0, []
     for req in controls:
         statement = parsed.statements.get(req.ref)

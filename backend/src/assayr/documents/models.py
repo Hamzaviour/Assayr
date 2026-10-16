@@ -34,6 +34,10 @@ class Document(IdMixin, TimestampMixin, Base):
     filename: Mapped[str | None] = mapped_column(String(255))
     mime: Mapped[str | None] = mapped_column(String(100))
     size: Mapped[int | None] = mapped_column(BigInteger)
+    # The last approved version stays available while a new draft waits for approval.
+    approved_version: Mapped[str | None] = mapped_column(String(20))
+    approved_sha256: Mapped[str | None] = mapped_column(String(64))
+    approved_filename: Mapped[str | None] = mapped_column(String(255))
 
     owner: Mapped[User | None] = relationship(foreign_keys=[owner_id], lazy="joined")
     approved_by: Mapped[User | None] = relationship(foreign_keys=[approved_by_id], lazy="joined")

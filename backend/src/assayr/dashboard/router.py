@@ -192,6 +192,8 @@ def dashboard(
         frameworks=_frameworks(db, scope.id, controls),
         evidence=_evidence_card(db, scope.id, now.date(), request.app.state.settings.expiry_warning_days),
         risks=_risk_card(db, scope.id) if has_perm(user, scope.id, Perm.RISKS_READ) else None,
-        unowned_controls=sum(1 for c in _in_scope(controls) if c.owner_id is None),
+        unowned_controls=sum(
+            1 for c in _in_scope(controls) if c.owner_id is None and not c.code.startswith("NIA ")
+        ),
         trend=_daily(snapshots),
     )

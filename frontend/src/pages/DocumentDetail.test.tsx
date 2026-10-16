@@ -46,3 +46,31 @@ test("people who cannot approve see no Approve button", async () => {
   expect(screen.queryByRole("button", { name: "Approve" })).not.toBeInTheDocument()
   expect(screen.queryByLabelText("Upload a new file")).not.toBeInTheDocument()
 })
+
+test("the approved version stays downloadable while a new draft waits", async () => {
+  setup({ ...DETAIL, status: "draft", version_label: "1.1", approved_version: "1.0", approved_filename: "isp-v1.pdf" })
+  renderApp("/policies/d1")
+  const link = await screen.findByRole("link", { name: /isp-v1\.pdf/ })
+  expect(link).toHaveAttribute("href", "/api/v1/documents/d1/file?approved=true")
+  expect(screen.getByText(/Version 1\.0 stays in force/)).toBeInTheDocument()
+})
+
+test("an editor changes the title and a manager retires the document", async () => {
+  document.cookie = "assayr_csrf=t; path=/"
+  const calls = mockApi({
+    "GET /auth/me": () => json(200, ME),
+    "GET /documents/d1": () => json(200, DETAIL),
+    "PATCH /documents/d1": (_url, init) => json(200, { ...DETAIL, ...JSON.parse(String(init.body)) }),
+    "GET /people": () => json(200, [{ id: "u1", full_name: "Sana Malik", email: "sana@acme.com" }]),
+  })
+  renderApp("/policies/d1")
+  await userEvent.click(await screen.findByRole("button", { name: "Edit details" }))
+  const title = screen.getByLabelText("Title")
+  await userEvent.clear(title)
+  await userEvent.type(title, "ISMS policy")
+  await userEvent.click(screen.getByRole("button", { name: "Save details" }))
+  const patch = calls.find((c) => c.method === "PATCH")!
+  expect(JSON.parse(String(patch.init.body))).toMatchObject({ title: "ISMS policy" })
+  await userEvent.click(screen.getByRole("button", { name: "Retire document" }))
+  expect(calls.some((c) => c.method === "PATCH" && JSON.parse(String(c.init.body)).status === "retired")).toBe(true)
+})

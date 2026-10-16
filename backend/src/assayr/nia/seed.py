@@ -79,6 +79,7 @@ def seed_nia(db: Session, scope: Scope, path: Path = DATA_PATH) -> NiaSeedResult
     db.flush()
 
     controls = {c.code: c for c in db.scalars(select(Control).where(Control.scope_id == scope.id))}
+    scope_ids = {c.id for c in controls.values()}
     existing_links = set(
         db.execute(
             select(ControlRequirement.control_id, ControlRequirement.requirement_id)
@@ -86,9 +87,15 @@ def seed_nia(db: Session, scope: Scope, path: Path = DATA_PATH) -> NiaSeedResult
             .where(Requirement.framework_id == framework.id)
         ).all()
     )
+    linked_requirements = {
+        requirement_id for control_id, requirement_id in existing_links if control_id in scope_ids
+    }
     links: list[ControlRequirement] = []
     for m in data["mapping"]:
         req = requirements[m["ref"]]
+        # Seed only fills in a mapping that was never set: never undo an ISMS manager's changes.
+        if req.id in linked_requirements or (req.attributes or {}).get("mapping_custom"):
+            continue
         targets = [(controls[code], m["coverage"]) for code in m["iso"] if code in controls]
         if not m["iso"]:
             code = own_control_code(m["ref"])

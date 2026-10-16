@@ -31,6 +31,7 @@ class MappedOut(BaseModel):
 
 class NiaRowOut(BaseModel):
     ref: str
+    own_control: str | None
     domain: str
     domain_name: str
     title: str
@@ -71,6 +72,7 @@ class ApplicabilityIn(BaseModel):
 def _row(v: NiaControlView) -> dict:
     return {
         "ref": v.ref,
+        "own_control": next((c.code for c in v.mapped if c.code.startswith("NIA ")), None),
         "domain": v.domain,
         "domain_name": v.domain_name,
         "title": v.title,
@@ -158,6 +160,11 @@ def set_nia_mapping(
     scope = resolve_scope(db, scope_id, grant)
     _require_manager(user, scope.id)
     v = _view(db, scope.id, ref)
+    if not body.links:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
+            "Map at least one control. If this NIA control does not apply, mark it not applicable instead.",
+        )
     codes = [link.code for link in body.links]
     controls = {
         c.code: c
@@ -182,6 +189,7 @@ def set_nia_mapping(
         )
         for link in body.links
     )
+    v.requirement.attributes = {**(v.requirement.attributes or {}), "mapping_custom": True}
     db.flush()
     record(
         db,

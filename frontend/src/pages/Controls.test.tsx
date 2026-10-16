@@ -54,7 +54,7 @@ test("the unowned filter from the dashboard reaches the API and can be cleared",
 })
 
 const nia = (ref: string, domain: string, domainName: string, title: string, extra = {}) => ({
-  ref, domain, domain_name: domainName, title, status: "not_started", score: null, applicable: true, mandatory: false,
+  ref, own_control: null as string | null, domain, domain_name: domainName, title, status: "not_started", score: null, applicable: true, mandatory: false,
   mapped: [{ code: "A.6.1", title: "Screening", status: "compliant", coverage: "full" }], ...extra,
 })
 
@@ -65,7 +65,10 @@ test("the NIA switch lists NIA controls and filters by domain", async () => {
     "GET /nia/controls": () =>
       json(200, [
         nia("PS 1", "PS", "Personnel Security", "Screening before employment", { mandatory: true }),
-        nia("AC 3", "AC", "Access Control", "Access reviews", { mapped: [] }),
+        nia("AC 3", "AC", "Access Control", "Access reviews", {
+          own_control: "NIA AC 3",
+          mapped: [{ code: "NIA AC 3", title: "AC 3", status: "not_started", coverage: "full" }],
+        }),
       ]),
   })
   const { router } = renderApp("/controls")

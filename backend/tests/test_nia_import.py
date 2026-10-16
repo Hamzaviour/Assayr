@@ -108,3 +108,17 @@ def test_last_statement_stops_at_the_closing_chapter():
         ]
     )
     assert parse_nia_pdf(pdf).statements["VL 8"] == "Example last statement."
+
+
+def test_a_document_that_is_not_the_nia_standard_is_refused(client, db, nia):
+    manager(client, db)
+    other = make_pdf(["ACME Travel Policy Version 2.1", "PS 1. Example travel rule."])
+    response = upload(client, other)
+    assert response.status_code == 422 and "National Information Assurance" in response.json()["detail"]
+
+
+def test_an_import_that_matches_nothing_is_refused(client, db, nia):
+    manager(client, db)
+    empty = make_pdf(["NATIONAL INFORMATION ASSURANCE STANDARD VERSION 2.1", "No statements here."])
+    response = upload(client, empty)
+    assert response.status_code == 422 and "no NIA control statements" in response.json()["detail"]

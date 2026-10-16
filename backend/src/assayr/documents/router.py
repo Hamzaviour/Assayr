@@ -251,6 +251,9 @@ def approve_document(
     doc.approved_by_id = user.id
     doc.approved_at = now
     doc.review_due = now.date() + REVIEW_PERIOD
+    doc.approved_version = doc.version_label
+    doc.approved_sha256 = doc.current_sha256
+    doc.approved_filename = doc.filename
     record(
         db,
         actor_for(request, user),
@@ -314,11 +317,19 @@ def download_document_file(
     user: User = Depends(current_user),
     grant: Grant = Depends(require(Perm.CONTROLS_READ)),
     db: Session = Depends(get_session),
+    approved: bool = False,
 ) -> FileResponse:
+    """The current file, or with ?approved=true the file of the last approved version."""
     doc = _get(db, grant, doc_id)
-    if doc.current_sha256 is None:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "This document has no file yet.")
-    path = request.app.state.store.path_for(doc.current_sha256)
+    sha256, filename = (
+        (doc.approved_sha256, doc.approved_filename) if approved else (doc.current_sha256, doc.filename)
+    )
+    if sha256 is None:
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND,
+            "No approved file yet." if approved else "This document has no file yet.",
+        )
+    path = request.app.state.store.path_for(sha256)
     if not path.exists():
         raise HTTPException(
             status.HTTP_404_NOT_FOUND,
@@ -330,12 +341,12 @@ def download_document_file(
         "document.download",
         "document",
         str(doc.id),
-        diff={"filename": doc.filename},
+        diff={"filename": filename, "approved": approved},
     )
     db.commit()
     return FileResponse(
         path,
-        filename=doc.filename or "document",
+        filename=filename or "document",
         media_type="application/octet-stream",
         content_disposition_type="attachment",
         headers={"X-Content-Type-Options": "nosniff"},
@@ -386,7 +397,7 @@ def set_document_controls(
     return _detail(db, request, user, doc)
 
 
-def _control_documents(db: Session, control: Control) -> ControlDocumentsOut:
+def _control_documents(db: Session, control: Control, today: date) -> ControlDocumentsOut:
     docs = db.scalars(
         select(Document)
         .join(DocumentControl, DocumentControl.document_id == Document.id)
@@ -395,19 +406,22 @@ def _control_documents(db: Session, control: Control) -> ControlDocumentsOut:
     ).unique()
     grouped: dict[str, list[ControlDocumentOut]] = {"policy": [], "procedure": [], "guideline": []}
     for d in docs:
-        grouped[d.doc_type].append(ControlDocumentOut.model_validate(d, from_attributes=True))
+        row = ControlDocumentOut.model_validate(d, from_attributes=True)
+        row.review_overdue = d.status == "approved" and d.review_due is not None and d.review_due < today
+        grouped[d.doc_type].append(row)
     return ControlDocumentsOut(**grouped)
 
 
 @router.get("/controls/{code}/documents", response_model=ControlDocumentsOut)
 def list_control_documents(
     code: str,
+    request: Request,
     grant: Grant = Depends(require(Perm.CONTROLS_READ)),
     db: Session = Depends(get_session),
     scope_id: uuid.UUID | None = None,
 ) -> ControlDocumentsOut:
     scope = resolve_scope(db, scope_id, grant)
-    return _control_documents(db, _get_control(db, scope, code))
+    return _control_documents(db, _get_control(db, scope, code), _today(request))
 
 
 def _link_target(
@@ -447,7 +461,7 @@ def link_control_document(
             diff={"control": control.code},
         )
         db.commit()
-    return _control_documents(db, control)
+    return _control_documents(db, control, _today(request))
 
 
 @router.delete("/controls/{code}/documents/{doc_id}", response_model=ControlDocumentsOut)
@@ -473,4 +487,4 @@ def unlink_control_document(
             diff={"control": control.code},
         )
         db.commit()
-    return _control_documents(db, control)
+    return _control_documents(db, control, _today(request))

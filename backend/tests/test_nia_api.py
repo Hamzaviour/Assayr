@@ -91,3 +91,21 @@ def test_iso_views_do_not_include_nia_only_controls(client, db, nia):
     assert sum(client.get("/api/v1/readiness").json()["status_counts"].values()) == 93
     items = client.get("/api/v1/soa").json()["items"]
     assert len(items) == 93 and not any(i["code"].startswith("NIA ") for i in items)
+
+
+def test_empty_mapping_is_refused(client, db, nia):
+    manager(client, db)
+    response = client.put("/api/v1/nia/controls/IG 1/mapping", json={"links": []})
+    assert response.status_code == 422 and "at least one" in response.json()["detail"]
+
+
+def test_nia_only_controls_report_their_own_control(client, db, nia):
+    manager(client, db)
+    body = client.get("/api/v1/nia/controls/RM 1").json()
+    assert body["own_control"] == "NIA RM 1"
+    assert client.get("/api/v1/nia/controls/PS 8").json()["own_control"] is None
+
+
+def test_unowned_count_covers_iso_controls_only(client, db, nia):
+    manager(client, db)
+    assert client.get("/api/v1/dashboard").json()["unowned_controls"] == 93

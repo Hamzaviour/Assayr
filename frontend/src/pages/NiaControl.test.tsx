@@ -4,6 +4,7 @@ import { json, ME, mockApi, renderApp } from "../test/render"
 
 const DETAIL = {
   ref: "PS 8",
+  own_control: null as string | null,
   domain: "PS",
   domain_name: "Personnel Security",
   title: "Return of assets on leaving",
@@ -94,4 +95,26 @@ test("people without edit rights see no editors", async () => {
   await screen.findByRole("heading", { name: "Return of assets on leaving", level: 1 })
   expect(screen.queryByRole("button", { name: "Save mapping" })).not.toBeInTheDocument()
   expect(screen.queryByRole("checkbox", { name: /applies to us/i })).not.toBeInTheDocument()
+})
+
+test("an NIA-only control links documents to its own control and cannot save an empty mapping", async () => {
+  const own = {
+    ...DETAIL,
+    ref: "PS 8",
+    own_control: "NIA PS 8",
+    mapped: [{ code: "NIA PS 8", title: "PS 8 · Personnel Security", status: "not_started", coverage: "full" as const }],
+  }
+  mockApi({
+    "GET /auth/me": () => json(200, ME),
+    "GET /nia/controls/PS%208": () => json(200, own),
+    "GET /controls/NIA%20PS%208/documents": () => json(200, DOCS),
+    "GET /documents": () => json(200, []),
+  })
+  renderApp("/nia/PS%208")
+  expect(await screen.findByText("NIA only")).toBeInTheDocument()
+  await userEvent.click(screen.getByRole("button", { name: /Policies\s*0/ }))
+  expect(screen.getByRole("button", { name: "Link a document" })).toBeInTheDocument()
+  const mapped = screen.getByRole("region", { name: "Mapped ISO controls" })
+  await userEvent.click(within(mapped).getByRole("button", { name: "Remove NIA PS 8" }))
+  expect(within(mapped).getByRole("button", { name: "Save mapping" })).toBeDisabled()
 })
