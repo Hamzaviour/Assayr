@@ -13,6 +13,8 @@ import { CourseEditorPage } from "./pages/CourseEditor"
 import { CoursePlayerPage } from "./pages/CoursePlayer"
 import { PrivacyPage } from "./pages/Privacy"
 import { ProcessingActivityPage } from "./pages/ProcessingActivity"
+import { BreachDetailPage } from "./pages/privacy/BreachDetail"
+import { RequestDetailPage } from "./pages/privacy/RequestDetail"
 import { DocumentDetailPage } from "./pages/DocumentDetail"
 import { ControlsPage } from "./pages/Controls"
 import { DashboardPage } from "./pages/Dashboard"
@@ -72,6 +74,8 @@ const privacyRoute = createRoute({
   }),
   component: PrivacyPage,
 })
+const requestRoute = createRoute({ getParentRoute: () => appRoute, path: "/privacy/requests/$id", component: RequestDetailPage })
+const breachRoute = createRoute({ getParentRoute: () => appRoute, path: "/privacy/breaches/$id", component: BreachDetailPage })
 const activityRoute = createRoute({ getParentRoute: () => appRoute, path: "/privacy/$id", component: ProcessingActivityPage })
 const usersRoute = createRoute({ getParentRoute: () => appRoute, path: "/users", component: UsersPage })
 const policiesRoute = createRoute({ getParentRoute: () => appRoute, path: "/policies", component: PoliciesPage })
@@ -88,7 +92,7 @@ const styleguideRoute = createRoute({ getParentRoute: () => appRoute, path: "/st
 
 export const routeTree = rootRoute.addChildren([
   loginRoute,
-  appRoute.addChildren([dashboardRoute, complianceRoute, controlsRoute, controlRoute, niaControlRoute, policiesRoute, documentRoute, auditsRoute, auditRoute, myTrainingRoute, usersRoute, trainingRoute, courseRoute, coursePlayerRoute, privacyRoute, activityRoute, evidenceRoute, risksRoute, riskNewRoute, riskSnapshotsRoute, riskRoute, riskAssessRoute, assetsRoute, soaRoute, styleguideRoute]),
+  appRoute.addChildren([dashboardRoute, complianceRoute, controlsRoute, controlRoute, niaControlRoute, policiesRoute, documentRoute, auditsRoute, auditRoute, myTrainingRoute, usersRoute, trainingRoute, courseRoute, coursePlayerRoute, privacyRoute, activityRoute, requestRoute, breachRoute, evidenceRoute, risksRoute, riskNewRoute, riskSnapshotsRoute, riskRoute, riskAssessRoute, assetsRoute, soaRoute, styleguideRoute]),
 ])
 
 export function createAppRouter(history?: RouterHistory) {
