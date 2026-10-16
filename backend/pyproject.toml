@@ -1,6 +1,6 @@
 [project]
 name = "assayr"
-version = "0.4.1"
+version = "0.5.0"
 description = "Assayr - on-premise GRC for ISO/IEC 27001"
 requires-python = ">=3.12"
 dependencies = [

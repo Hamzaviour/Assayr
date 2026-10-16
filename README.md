@@ -22,6 +22,7 @@ no telemetry, no outbound calls, and it installs on servers with no internet acc
 | **Assets** | Asset inventory with owners and classification, linked to risks |
 | **Statement of Applicability** | Generated from controls and risks, with traceability checks and executive approval |
 | **Internal audits** | ISO 27001 (clause 9.2) and NIA internal audits: pick controls, record the test type (DA / OEA / Both) and result per control, sign off, and export the report as Excel in the familiar "NIA - IA report" layout; existing audit workbooks can be imported |
+| **Training and awareness** | Courses with Google Drive videos or uploaded videos and documents, an auto-marked assessment (pass mark, attempts), assignment to everyone, a department, a role or named people, yearly refresh, automatic assignment for new joiners, completion tracking and an Excel report as A.6.3 evidence. Staff are imported from CSV and choose their own password at first sign-in |
 | **Audit trail** | Tamper-evident (hash-chained) record of every change |
 
 ## Download and install
@@ -52,7 +53,7 @@ not start. Backups are the same format on Windows and Linux, so you can move bet
 
 ## Roadmap
 
-- **Next:** training and awareness (videos and mandatory assessments).
+- **Next:** audit findings with corrective actions tracked to closure, and email reminders through your own mail server.
 
 ---
 
