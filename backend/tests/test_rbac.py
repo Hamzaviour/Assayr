@@ -50,6 +50,7 @@ def test_permissions_are_a_sorted_union():
         "settings:manage",
         "soa:read",
         "soa:write",
+        "training:manage",
         "users:manage",
     ]
 

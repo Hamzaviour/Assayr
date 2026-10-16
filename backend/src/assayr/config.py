@@ -19,6 +19,7 @@ class Settings(BaseSettings):
     org_name: str = "My Organization"
     storage_dir: str = "./data/blobs"
     max_upload_mb: int = 100
+    training_upload_mb: int = 500
     clamav_host: str | None = None
     clamav_port: int = 3310
     expiry_warning_days: int = 30

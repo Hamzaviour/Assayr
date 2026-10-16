@@ -34,3 +34,13 @@ from assayr.risk.models import (  # noqa: F401
 from assayr.scoring.models import Attestation, ScoreSnapshot, StatusTransition  # noqa: F401
 from assayr.soa.models import SoaVersion  # noqa: F401
 from assayr.tasks.models import Task  # noqa: F401
+from assayr.training.models import (  # noqa: F401, E402
+    Assessment,
+    Assignment,
+    Attempt,
+    Course,
+    CourseMaterial,
+    CourseRule,
+    Question,
+    QuestionOption,
+)
