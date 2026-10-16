@@ -289,3 +289,26 @@ def test_program_folder_inside_the_data_folder_is_refused(tmp_path):
         provision.install(
             c, "a@b.c", "a-very-long-password", CertChoice("self-signed"), FakeRunner(), wait=healthy
         )
+
+
+def test_rollback_waits_until_the_restored_version_answers(tmp_path, monkeypatch):
+    c, _ = run_install(tmp_path)
+    monkeypatch.setattr(provision, "read_backup", lambda backup, work: work)
+    monkeypatch.setattr(provision, "restore_data", lambda *a, **k: None)
+    seen = []
+    provision.rollback(
+        c, tmp_path / "b.tar.gz", FakeRunner(), wait=lambda url, timeout, version: seen.append((url, version))
+    )
+    assert seen == [(c.health_url, c.version)]
+
+
+def test_rollback_reports_a_version_that_never_answers(tmp_path, monkeypatch):
+    c, _ = run_install(tmp_path)
+    monkeypatch.setattr(provision, "read_backup", lambda backup, work: work)
+    monkeypatch.setattr(provision, "restore_data", lambda *a, **k: None)
+
+    def down(*a, **k):
+        raise provision.HealthError("down")
+
+    with pytest.raises(ProvisionError, match="down"):
+        provision.rollback(c, tmp_path / "b.tar.gz", FakeRunner(), wait=down)
