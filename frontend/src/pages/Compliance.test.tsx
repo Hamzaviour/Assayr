@@ -67,3 +67,38 @@ test("NIA domains open from the Domains button", async () => {
   expect(screen.getByRole("link", { name: /Personnel Security/ })).toHaveAttribute("href", expect.stringContaining("domain=PS"))
   expect(screen.getByText("2 of 12 compliant")).toBeInTheDocument()
 })
+
+function setupImport(response: () => Response, me = ME) {
+  return mockApi({
+    "GET /auth/me": () => json(200, me),
+    "GET /dashboard": () =>
+      json(200, { frameworks: [ISO, NIA], evidence: { needs_attention: 0, ok: 0, total: 0 }, risks: null, unowned_controls: 0, trend: [] }),
+    "POST /frameworks/nia-2.1/import": response,
+  })
+}
+
+const pdf = () => new File(["%PDF-1.4"], "nia.pdf", { type: "application/pdf" })
+
+test("an ISMS manager imports the official NIA text", async () => {
+  const calls = setupImport(() => json(200, { version: "2.1", matched: 188, unmatched: ["AC 1", "AC 2", "AC 3", "AC 4"] }))
+  renderApp("/compliance")
+  await userEvent.upload(await screen.findByLabelText("Import official text (PDF)"), pdf())
+  expect(await screen.findByText("Matched 188 controls · 4 not found")).toBeInTheDocument()
+  const post = calls.find((c) => c.method === "POST")!
+  expect(post.url.pathname).toBe("/api/v1/frameworks/nia-2.1/import")
+  expect(post.init.body).toBeInstanceOf(FormData)
+})
+
+test("a wrong version is reported as the server says", async () => {
+  setupImport(() => json(422, { detail: "This document shows version 2.0; Assayr expects NIA version 2.1." }))
+  renderApp("/compliance")
+  await userEvent.upload(await screen.findByLabelText("Import official text (PDF)"), pdf())
+  expect(await screen.findByRole("alert")).toHaveTextContent("This document shows version 2.0; Assayr expects NIA version 2.1.")
+})
+
+test("people without manager rights see no import", async () => {
+  setupImport(() => json(500, {}), { ...ME, permissions: ["controls:read"] })
+  renderApp("/compliance")
+  await screen.findByText("NIA v2.1")
+  expect(screen.queryByLabelText("Import official text (PDF)")).not.toBeInTheDocument()
+})

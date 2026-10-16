@@ -71,7 +71,7 @@ function Statement({ control }: { control: NiaDetail }) {
         <>
           <p className="text-[14px] leading-relaxed text-fg-2">{control.summary ?? "No summary yet."}</p>
           <p className="mt-3 rounded-lg bg-subtle px-3 py-2 text-[12.5px] text-fg-3">
-            The official text has not been imported. An ISMS manager can import it from your copy of the NCSA standard.
+            The official text has not been imported. An ISMS manager can import it on the Compliance page from your copy of the NCSA standard.
           </p>
         </>
       )}

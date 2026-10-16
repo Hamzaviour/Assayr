@@ -60,3 +60,18 @@ export function useSetNiaApplicability(ref: string) {
     api<NiaDetail>(`${path(ref)}/applicability`, { method: "POST", body: JSON.stringify(body) }),
   )
 }
+
+export type NiaImportResult = { version: string; matched: number; unmatched: string[] }
+
+/** Reads the official text from the customer's own copy of the NCSA standard; it stays in this installation. */
+export function useImportNiaText() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (file: File) => {
+      const form = new FormData()
+      form.append("file", file)
+      return api<NiaImportResult>("/frameworks/nia-2.1/import", { method: "POST", body: form })
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["nia"] }),
+  })
+}

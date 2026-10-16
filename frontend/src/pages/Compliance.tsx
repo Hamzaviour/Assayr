@@ -1,6 +1,8 @@
 import { Link } from "@tanstack/react-router"
 import { useId, useState } from "react"
 import { type FrameworkRow, type GroupRow, frameworkTitle, isNia, useDashboard } from "../api/dashboard"
+import { useImportNiaText } from "../api/nia"
+import { useMe } from "../auth/session"
 import { ProgressBar } from "../components/charts"
 
 const percent = (value: number | null) => (value === null ? "—" : `${Math.round(value)}%`)
@@ -18,7 +20,41 @@ function GroupLine({ g }: { g: GroupRow }) {
   )
 }
 
+function NiaImport() {
+  const importText = useImportNiaText()
+  const result = importText.data
+  return (
+    <div className="grid gap-1.5 rounded-lg bg-subtle px-4 py-3">
+      <label htmlFor="nia-import" className="text-[13px] font-semibold">Import official text (PDF)</label>
+      <p className="text-[12.5px] text-fg-3">
+        Choose your organisation's copy of the NCSA standard, version 2.1. The text stays in this installation.
+      </p>
+      <input
+        id="nia-import"
+        type="file"
+        accept="application/pdf,.pdf"
+        disabled={importText.isPending}
+        onChange={(e) => {
+          const file = e.target.files?.[0]
+          if (file) importText.mutate(file)
+          e.target.value = ""
+        }}
+        className="text-[13px]"
+      />
+      {importText.isPending && <p role="status" className="text-[12.5px] text-fg-3">Reading the document…</p>}
+      {result && (
+        <p role="status" className="text-[13px] font-medium text-ok">
+          Matched {result.matched} controls · {result.unmatched.length} not found
+        </p>
+      )}
+      {importText.isError && <p role="alert" className="text-[13px] text-bad">{importText.error.message}</p>}
+    </div>
+  )
+}
+
 function FrameworkCard({ f }: { f: FrameworkRow }) {
+  const me = useMe()
+  const canImport = (me.data?.permissions ?? []).includes("controls:write")
   const [open, setOpen] = useState(false)
   const panelId = useId()
   const title = frameworkTitle(f)
@@ -60,6 +96,7 @@ function FrameworkCard({ f }: { f: FrameworkRow }) {
           </button>
         )}
       </div>
+      {nia && canImport && <NiaImport />}
       {open && (
         <div id={panelId} role="region" aria-label={`${title.name} ${breakdown.toLowerCase()}`} className="border-t border-line pt-4">
           <ul className="grid gap-1">
