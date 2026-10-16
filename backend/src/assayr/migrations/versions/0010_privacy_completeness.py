@@ -19,6 +19,9 @@ TABLES = ["breach", "subject_request", "dpia_risk", "dpia", "activity_processor"
 
 
 def upgrade() -> None:
+    op.add_column("processing_activity", sa.Column("consent_how", sa.Text(), nullable=True))
+    op.add_column("processing_activity", sa.Column("consent_withdrawal", sa.Text(), nullable=True))
+    op.add_column("processing_activity", sa.Column("retention_review_due", sa.Date(), nullable=True))
     op.create_table(
         "processor",
         sa.Column("id", sa.Uuid(), nullable=False),
@@ -198,3 +201,5 @@ def upgrade() -> None:
 def downgrade() -> None:
     for table in TABLES:
         op.drop_table(table)
+    for column in ("retention_review_due", "consent_withdrawal", "consent_how"):
+        op.drop_column("processing_activity", column)

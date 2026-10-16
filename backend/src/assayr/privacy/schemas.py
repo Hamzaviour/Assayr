@@ -43,6 +43,9 @@ class ActivityIn(BaseModel):
     owner_id: uuid.UUID | None = None
     status: Status = "draft"
     review_due: date | None = None
+    consent_how: str | None = Field(None, max_length=2000)
+    consent_withdrawal: str | None = Field(None, max_length=2000)
+    retention_review_due: date | None = None
 
     _c = field_validator("data_categories")(_categories)
     _s = field_validator("data_subjects")(_subjects)
@@ -62,6 +65,9 @@ class ActivityUpdateIn(BaseModel):
     owner_id: uuid.UUID | None = None
     status: Status | None = None
     review_due: date | None = None
+    consent_how: str | None = Field(None, max_length=2000)
+    consent_withdrawal: str | None = Field(None, max_length=2000)
+    retention_review_due: date | None = None
 
     _c = field_validator("data_categories")(_categories)
     _s = field_validator("data_subjects")(_subjects)
@@ -100,6 +106,12 @@ class ActivityOut(BaseModel):
     owner: OwnerOut | None
     status: str
     review_due: date | None
+    consent_how: str | None = None
+    consent_withdrawal: str | None = None
+    retention_review_due: date | None = None
+    retention_review_overdue: bool = False
+    has_dpia: bool = False
+    dpia_status: str | None = None
     sensitive: bool
     review_overdue: bool
     assets: list[LinkedAssetOut]
@@ -137,3 +149,5 @@ class PrivacySummary(BaseModel):
     requests_overdue: int = 0
     breaches_open: int = 0
     notifications_overdue: int = 0
+    dpia_due: int = 0
+    processors_without_dpa: int = 0

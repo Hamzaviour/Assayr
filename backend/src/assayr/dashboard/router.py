@@ -12,13 +12,14 @@ from sqlalchemy.orm import Session
 from assayr.catalogue.access import has_perm
 from assayr.catalogue.models import Control, EvidenceSlot, Framework
 from assayr.catalogue.router import resolve_scope
-from assayr.db import get_session
+from assayr.db import get_session, utcnow
 from assayr.evidence.models import ArtefactLink
 from assayr.identity.deps import current_user, get_clock, require
 from assayr.identity.models import User
 from assayr.identity.rbac import Grant, Perm
 from assayr.nia.service import framework as nia_framework
 from assayr.nia.service import nia_framework_row
+from assayr.privacy.pdppl import framework_row as pdppl_framework_row
 from assayr.risk.models import Risk
 from assayr.risk.service import risk_row
 from assayr.scoring.models import ScoreSnapshot
@@ -170,6 +171,7 @@ def _frameworks(db: Session, scope_id: uuid.UUID, controls: list[Control]) -> li
     rows = [_framework_row(db, iso, has_evidence)]
     if nia_framework(db) is not None:
         rows.append(FrameworkRow(**nia_framework_row(db, scope_id, has_evidence)))
+    rows.append(FrameworkRow(**pdppl_framework_row(db, scope_id, utcnow())))
     return rows
 
 

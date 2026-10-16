@@ -21,7 +21,8 @@ from assayr.identity.models import User
 from assayr.identity.rbac import Grant, Perm
 from assayr.privacy.breaches import notification_overdue
 from assayr.privacy.categories import PII_CATEGORIES, SENSITIVE, level_label, normalise_pii
-from assayr.privacy.models import Breach, ProcessingActivity, SubjectRequest
+from assayr.privacy.dpia import dpia_recommended
+from assayr.privacy.models import Breach, ProcessingActivity, Processor, SubjectRequest
 from assayr.privacy.schemas import (
     ActivityIn,
     ActivityOut,
@@ -49,6 +50,9 @@ FIELDS = (
     "security_measures",
     "status",
     "review_due",
+    "consent_how",
+    "consent_withdrawal",
+    "retention_review_due",
 )
 REQUIRED = {"name", "data_subjects", "data_categories", "lawful_basis", "cross_border", "status"}
 BASIS_LABEL = {
@@ -91,6 +95,14 @@ def activity_out(a: ProcessingActivity, today: date, can_edit: bool) -> Activity
         owner=_person(a.owner),
         status=a.status,
         review_due=a.review_due,
+        consent_how=a.consent_how,
+        consent_withdrawal=a.consent_withdrawal,
+        retention_review_due=a.retention_review_due,
+        retention_review_overdue=a.status != "retired"
+        and a.retention_review_due is not None
+        and a.retention_review_due < today,
+        has_dpia=a.dpia is not None,
+        dpia_status=a.dpia.status if a.dpia is not None else None,
         sensitive=bool(SENSITIVE & set(categories)),
         review_overdue=_overdue(a, today),
         assets=[
@@ -347,6 +359,19 @@ def privacy_summary(
         requests_overdue=sum(1 for r in requests if r.status != "closed" and r.due_on < today),
         breaches_open=sum(1 for b in breaches if b.status != "closed"),
         notifications_overdue=sum(1 for b in breaches if notification_overdue(b, now)),
+        dpia_due=sum(
+            1
+            for a in activities
+            if a.dpia is not None and dpia_recommended(a.dpia.screening or {}) and a.dpia.status != "approved"
+        ),
+        processors_without_dpa=db.scalar(
+            select(func.count())
+            .select_from(Processor)
+            .where(
+                Processor.scope_id == scope.id, Processor.status == "active", Processor.dpa_signed.is_(False)
+            )
+        )
+        or 0,
     )
 
 

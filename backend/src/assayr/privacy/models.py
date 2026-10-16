@@ -52,12 +52,16 @@ class ProcessingActivity(IdMixin, TimestampMixin, Base):
     owner_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("user_account.id", ondelete="SET NULL"))
     status: Mapped[str] = mapped_column(String(20), default="draft")
     review_due: Mapped[date | None] = mapped_column(Date)
+    consent_how: Mapped[str | None] = mapped_column(Text)
+    consent_withdrawal: Mapped[str | None] = mapped_column(Text)
+    retention_review_due: Mapped[date | None] = mapped_column(Date)
 
     owner: Mapped[User | None] = relationship(lazy="joined")
     assets: Mapped[list[Asset]] = relationship(secondary="processing_asset", order_by=Asset.seq)
     processors: Mapped[list["Processor"]] = relationship(
         secondary="activity_processor", back_populates="activities", order_by="Processor.name"
     )
+    dpia: Mapped["Dpia | None"] = relationship(back_populates="activity", uselist=False, viewonly=True)
 
 
 class ProcessingAsset(Base):
@@ -129,7 +133,7 @@ class Dpia(IdMixin, TimestampMixin, Base):
     approved_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
     review_due: Mapped[date | None] = mapped_column(Date)
 
-    activity: Mapped[ProcessingActivity] = relationship()
+    activity: Mapped[ProcessingActivity] = relationship(back_populates="dpia")
     approved_by: Mapped[User | None] = relationship(lazy="joined")
     risks: Mapped[list["DpiaRisk"]] = relationship(
         back_populates="dpia", order_by="DpiaRisk.created_at", cascade="all, delete-orphan"

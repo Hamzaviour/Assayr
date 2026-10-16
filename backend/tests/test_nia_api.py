@@ -78,7 +78,7 @@ def test_applicability_needs_a_reason(client, db, nia):
 def test_dashboard_shows_nia_after_iso(client, db, nia):
     manager(client, db)
     frameworks = client.get("/api/v1/dashboard").json()["frameworks"]
-    assert [f["name"] for f in frameworks] == ["ISO/IEC 27001", "NIA"]
+    assert [f["name"] for f in frameworks][:2] == ["ISO/IEC 27001", "NIA"]
     assert frameworks[1]["total"] == 355 and len(frameworks[1]["groups"]) == 26
     ps = next(g for g in frameworks[1]["groups"] if g["name"] == "Personnel Security")
     assert ps["code"] == "PS"
