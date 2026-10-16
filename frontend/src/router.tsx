@@ -11,6 +11,8 @@ import { UsersPage } from "./pages/Users"
 import { TrainingPage } from "./pages/Training"
 import { CourseEditorPage } from "./pages/CourseEditor"
 import { CoursePlayerPage } from "./pages/CoursePlayer"
+import { PrivacyPage } from "./pages/Privacy"
+import { ProcessingActivityPage } from "./pages/ProcessingActivity"
 import { DocumentDetailPage } from "./pages/DocumentDetail"
 import { ControlsPage } from "./pages/Controls"
 import { DashboardPage } from "./pages/Dashboard"
@@ -61,6 +63,8 @@ const myTrainingRoute = createRoute({ getParentRoute: () => appRoute, path: "/my
 const trainingRoute = createRoute({ getParentRoute: () => appRoute, path: "/training", component: TrainingPage })
 const courseRoute = createRoute({ getParentRoute: () => appRoute, path: "/training/$id", component: CourseEditorPage })
 const coursePlayerRoute = createRoute({ getParentRoute: () => appRoute, path: "/my-training/$id", component: CoursePlayerPage })
+const privacyRoute = createRoute({ getParentRoute: () => appRoute, path: "/privacy", component: PrivacyPage })
+const activityRoute = createRoute({ getParentRoute: () => appRoute, path: "/privacy/$id", component: ProcessingActivityPage })
 const usersRoute = createRoute({ getParentRoute: () => appRoute, path: "/users", component: UsersPage })
 const policiesRoute = createRoute({ getParentRoute: () => appRoute, path: "/policies", component: PoliciesPage })
 const documentRoute = createRoute({ getParentRoute: () => appRoute, path: "/policies/$id", component: DocumentDetailPage })
@@ -76,7 +80,7 @@ const styleguideRoute = createRoute({ getParentRoute: () => appRoute, path: "/st
 
 export const routeTree = rootRoute.addChildren([
   loginRoute,
-  appRoute.addChildren([dashboardRoute, complianceRoute, controlsRoute, controlRoute, niaControlRoute, policiesRoute, documentRoute, auditsRoute, auditRoute, myTrainingRoute, usersRoute, trainingRoute, courseRoute, coursePlayerRoute, evidenceRoute, risksRoute, riskNewRoute, riskSnapshotsRoute, riskRoute, riskAssessRoute, assetsRoute, soaRoute, styleguideRoute]),
+  appRoute.addChildren([dashboardRoute, complianceRoute, controlsRoute, controlRoute, niaControlRoute, policiesRoute, documentRoute, auditsRoute, auditRoute, myTrainingRoute, usersRoute, trainingRoute, courseRoute, coursePlayerRoute, privacyRoute, activityRoute, evidenceRoute, risksRoute, riskNewRoute, riskSnapshotsRoute, riskRoute, riskAssessRoute, assetsRoute, soaRoute, styleguideRoute]),
 ])
 
 export function createAppRouter(history?: RouterHistory) {
