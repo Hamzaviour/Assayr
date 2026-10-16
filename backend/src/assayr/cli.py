@@ -19,6 +19,7 @@ from assayr.identity.rbac import Role
 from assayr.identity.security import WeakPasswordError, hash_password, normalize_email
 from assayr.jobs import JobEnv, run_one, run_pending
 from assayr.migrate import upgrade
+from assayr.nia.seed import NIA_CONTROLS, seed_nia
 from assayr.risk.seed import ensure_methodology, ensure_risk_library
 from assayr.storage import BlobStore
 
@@ -86,6 +87,7 @@ def seed() -> None:
         result = seed_iso27001(session, scope)
         ensure_methodology(session, utcnow())
         library = ensure_risk_library(session)
+        nia = seed_nia(session, scope)
         session.commit()
     typer.echo(
         f"Seed complete: {result.requirements_created} requirements and {result.controls_created} controls created."
@@ -93,6 +95,9 @@ def seed() -> None:
     typer.echo(
         f"Risk library: {library.threats} threats, {library.vulnerabilities} vulnerabilities "
         f"and {library.templates} templates added."
+    )
+    typer.echo(
+        f"NIA: {NIA_CONTROLS} controls, {nia.links_created} new ISO links, {nia.own_controls_created} NIA-only controls added."
     )
 
 
