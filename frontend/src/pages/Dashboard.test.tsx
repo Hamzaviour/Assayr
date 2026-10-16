@@ -141,3 +141,18 @@ test("managers see a training card with completion and overdue", async () => {
   expect(card).toHaveTextContent("5 overdue")
   expect(within(card).getByRole("link", { name: /Open training/ })).toHaveAttribute("href", "/training")
 })
+
+
+test("each monitoring card opens its page", async () => {
+  mockApi({
+    "GET /auth/me": () => json(200, { ...ME, permissions: [...ME.permissions, "training:manage"] }),
+    "GET /dashboard": () => json(200, dashboard({ training: { assigned: 4, passed: 2, overdue: 1 } })),
+    "GET /risk-methodology": () => json(200, METHODOLOGY),
+  })
+  renderApp("/")
+  const monitoring = (await screen.findByRole("heading", { name: "Monitoring" })).closest("section")!
+  expect(within(monitoring).getByRole("link", { name: /^Evidence/ })).toHaveAttribute("href", "/evidence")
+  expect(within(monitoring).getByRole("link", { name: /^Risks/ })).toHaveAttribute("href", "/risks")
+  expect(within(monitoring).getByRole("link", { name: /^Control owners/ })).toHaveAttribute("href", "/controls?owner=none")
+  expect(within(monitoring).getByRole("link", { name: /^Training/ })).toHaveAttribute("href", "/training")
+})
