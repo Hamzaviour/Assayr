@@ -21,6 +21,7 @@ no telemetry, no outbound calls, and it installs on servers with no internet acc
 | **Risk** | Risk register with a guided assessment wizard, risk owners, treatment plans, residual-risk acceptance, snapshots and comparison, register export |
 | **Assets** | Asset inventory with owners and classification, linked to risks |
 | **Statement of Applicability** | Generated from controls and risks, with traceability checks and executive approval |
+| **Internal audits** | ISO 27001 (clause 9.2) and NIA internal audits: pick controls, record the test type (DA / OEA / Both) and result per control, sign off, and export the report as Excel in the familiar "NIA - IA report" layout; existing audit workbooks can be imported |
 | **Audit trail** | Tamper-evident (hash-chained) record of every change |
 
 ## Download and install
@@ -51,8 +52,7 @@ not start. Backups are the same format on Windows and Linux, so you can move bet
 
 ## Roadmap
 
-- **Next:** internal audit reports (NIA internal audit workbook layout).
-- **Then:** training and awareness (videos and mandatory assessments).
+- **Next:** training and awareness (videos and mandatory assessments).
 
 ---
 
