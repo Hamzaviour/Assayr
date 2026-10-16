@@ -39,6 +39,7 @@ def test_permissions_are_a_sorted_union():
         "assets:read",
         "assets:write",
         "audit_log:read",
+        "audits:write",
         "controls:read",
         "controls:write",
         "documents:create",
@@ -58,3 +59,8 @@ def test_acceptance_permissions_follow_the_authority_levels():
     assert "risks:accept_high" in permissions_for([("isms_manager", None)])
     assert "risks:accept_medium_own" in permissions_for([("risk_owner", None)])
     assert "soa:approve" not in permissions_for([("isms_manager", None)])
+
+
+def test_internal_auditors_can_run_audits():
+    assert "audits:write" in permissions_for([("internal_auditor", None)])
+    assert "audits:write" not in permissions_for([("control_owner", None)])

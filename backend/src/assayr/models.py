@@ -2,6 +2,7 @@
 
 from assayr.assets.models import Asset  # noqa: F401
 from assayr.audit.models import AuditLog  # noqa: F401
+from assayr.audits.models import Audit, AuditItem  # noqa: F401
 from assayr.catalogue.models import (  # noqa: F401
     Control,
     ControlRequirement,

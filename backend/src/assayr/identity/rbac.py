@@ -40,6 +40,7 @@ class Perm(StrEnum):
     SOA_WRITE = "soa:write"
     SOA_APPROVE = "soa:approve"
     DOCUMENTS_CREATE = "documents:create"
+    AUDITS_WRITE = "audits:write"
 
 
 _READ_ALL = frozenset({Perm.CONTROLS_READ, Perm.RISKS_READ, Perm.ASSETS_READ, Perm.SOA_READ})
@@ -56,11 +57,12 @@ ROLE_PERMISSIONS: dict[Role, frozenset[Perm]] = {
         Perm.ASSETS_WRITE,
         Perm.SOA_WRITE,
         Perm.DOCUMENTS_CREATE,
+        Perm.AUDITS_WRITE,
     },
     Role.CONTROL_OWNER: _READ_ALL | {Perm.CONTROLS_WRITE_OWN, Perm.ASSETS_WRITE_OWN, Perm.DOCUMENTS_CREATE},
     Role.RISK_OWNER: _READ_ALL | {Perm.RISKS_WRITE_OWN, Perm.RISKS_ACCEPT_MEDIUM_OWN},
     Role.CONTRIBUTOR: _READ_ALL | {Perm.DOCUMENTS_CREATE},
-    Role.INTERNAL_AUDITOR: _READ_ALL | {Perm.AUDIT_LOG_READ},
+    Role.INTERNAL_AUDITOR: _READ_ALL | {Perm.AUDIT_LOG_READ, Perm.AUDITS_WRITE},
     Role.EXTERNAL_AUDITOR: _READ_ALL,
     Role.EXECUTIVE: _READ_ALL | {Perm.RISKS_ACCEPT_CRITICAL, Perm.SOA_APPROVE},
     Role.EMPLOYEE: frozenset(),
