@@ -34,6 +34,7 @@ class NiaControlView:
     mandatory: bool
     mapped: list[Control] = field(default_factory=list)
     requirement: Requirement | None = None
+    coverage: dict[str, str] = field(default_factory=dict)
 
 
 def framework(db: Session) -> Framework | None:
@@ -55,14 +56,16 @@ def nia_views(db: Session, scope_id: uuid.UUID) -> list[NiaControlView]:
     )
     domains = {r.ref: r for r in reqs if r.kind == "domain"}
     mapped: dict[uuid.UUID, list[Control]] = {}
+    coverage: dict[uuid.UUID, dict[str, str]] = {}
     rows = db.execute(
-        select(ControlRequirement.requirement_id, Control)
+        select(ControlRequirement.requirement_id, Control, ControlRequirement.coverage)
         .join(Control, ControlRequirement.control_id == Control.id)
         .join(Requirement, ControlRequirement.requirement_id == Requirement.id)
         .where(Requirement.framework_id == fw.id, Control.scope_id == scope_id)
     ).all()
-    for requirement_id, control in rows:
+    for requirement_id, control, cover in rows:
         mapped.setdefault(requirement_id, []).append(control)
+        coverage.setdefault(requirement_id, {})[control.code] = cover or "full"
     views = []
     for req in (r for r in reqs if r.kind == "control"):
         domain = (req.attributes or {}).get("domain") or req.ref.split()[0]
@@ -81,6 +84,7 @@ def nia_views(db: Session, scope_id: uuid.UUID) -> list[NiaControlView]:
                 mandatory=bool((req.attributes or {}).get("mandatory")),
                 mapped=controls,
                 requirement=req,
+                coverage=coverage.get(req.id, {}),
             )
         )
     return views
@@ -131,6 +135,7 @@ def nia_framework_row(db: Session, scope_id: uuid.UUID, has_evidence: bool) -> d
         "groups": [
             {
                 "name": name,
+                "code": group[0].domain,
                 "total": len(group),
                 "compliant": sum(1 for v in group if v.status == "compliant"),
                 "readiness": _readiness(group) if has_evidence else None,

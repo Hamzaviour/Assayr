@@ -25,7 +25,7 @@ const NIA = {
   readiness: 12,
   status_counts: { compliant: 10, not_started: 345 },
   excluded: 0,
-  groups: [group("Personnel Security", 12, 2, 20), group("Access Control", 20, 1, 5)],
+  groups: [{ ...group("Personnel Security", 12, 2, 20), code: "PS" }, { ...group("Access Control", 20, 1, 5), code: "AC" }],
 }
 
 function setup() {
@@ -64,6 +64,6 @@ test("NIA domains open from the Domains button", async () => {
   expect(screen.queryByText("Personnel Security")).not.toBeInTheDocument()
   await userEvent.click(domains)
   expect(domains).toHaveAttribute("aria-expanded", "true")
-  expect(screen.getByText("Personnel Security")).toBeInTheDocument()
+  expect(screen.getByRole("link", { name: /Personnel Security/ })).toHaveAttribute("href", expect.stringContaining("domain=PS"))
   expect(screen.getByText("2 of 12 compliant")).toBeInTheDocument()
 })

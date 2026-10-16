@@ -37,6 +37,7 @@ class GroupRow(BaseModel):
     total: int
     compliant: int
     readiness: float | None
+    code: str | None = None
 
 
 class FrameworkRow(BaseModel):

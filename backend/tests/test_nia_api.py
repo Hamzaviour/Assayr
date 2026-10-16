@@ -45,6 +45,7 @@ def test_mapping_update_changes_status_and_is_audited(client, db, nia):
     )
     assert response.status_code == 200, response.text
     assert response.json()["status"] == "compliant"
+    assert response.json()["mapped"][0]["coverage"] == "full"
     assert db.scalar(select(AuditLog).where(AuditLog.action == "nia.mapping")) is not None
     bad = client.put(
         "/api/v1/nia/controls/PS 8/mapping", json={"links": [{"code": "A.99.9", "coverage": "full"}]}
@@ -79,6 +80,8 @@ def test_dashboard_shows_nia_after_iso(client, db, nia):
     frameworks = client.get("/api/v1/dashboard").json()["frameworks"]
     assert [f["name"] for f in frameworks] == ["ISO/IEC 27001", "NIA"]
     assert frameworks[1]["total"] == 355 and len(frameworks[1]["groups"]) == 26
+    ps = next(g for g in frameworks[1]["groups"] if g["name"] == "Personnel Security")
+    assert ps["code"] == "PS"
 
 
 def test_iso_views_do_not_include_nia_only_controls(client, db, nia):

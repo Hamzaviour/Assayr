@@ -52,3 +52,31 @@ test("the unowned filter from the dashboard reaches the API and can be cleared",
   const lists = calls.filter((c) => c.url.pathname.endsWith("/controls"))
   expect(lists[lists.length - 1].url.searchParams.has("owner")).toBe(false)
 })
+
+const nia = (ref: string, domain: string, domainName: string, title: string, extra = {}) => ({
+  ref, domain, domain_name: domainName, title, status: "not_started", score: null, applicable: true, mandatory: false,
+  mapped: [{ code: "A.6.1", title: "Screening", status: "compliant", coverage: "full" }], ...extra,
+})
+
+test("the NIA switch lists NIA controls and filters by domain", async () => {
+  mockApi({
+    "GET /auth/me": () => json(200, ME),
+    "GET /controls": () => json(200, { items: [row(1, "A.5.1", "Policies for information security")], next_cursor: null }),
+    "GET /nia/controls": () =>
+      json(200, [
+        nia("PS 1", "PS", "Personnel Security", "Screening before employment", { mandatory: true }),
+        nia("AC 3", "AC", "Access Control", "Access reviews", { mapped: [] }),
+      ]),
+  })
+  const { router } = renderApp("/controls")
+  await screen.findByText("Policies for information security")
+  await userEvent.click(screen.getByRole("radio", { name: "NIA v2.1" }))
+  const link = await screen.findByRole("link", { name: "Screening before employment" })
+  expect(link).toHaveAttribute("href", "/nia/PS%201")
+  expect(screen.getByText("Access reviews")).toBeInTheDocument()
+  expect(screen.getByText("NIA only")).toBeInTheDocument()
+  expect(screen.getByText("Mandatory")).toBeInTheDocument()
+  await userEvent.selectOptions(screen.getByLabelText("Domain"), "AC")
+  expect(screen.queryByText("Screening before employment")).not.toBeInTheDocument()
+  expect(router.state.location.search).toEqual({ framework: "nia", domain: "AC" })
+})

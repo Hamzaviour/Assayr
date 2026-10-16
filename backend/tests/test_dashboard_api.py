@@ -69,7 +69,7 @@ def test_framework_row_breaks_down_by_theme(client, db, seeded):
     groups = {g["name"]: g for g in iso["groups"]}
     assert set(groups) == {"Organizational", "People", "Physical", "Technological"}
     assert sum(g["total"] for g in groups.values()) == 93
-    assert groups["People"] == {"name": "People", "total": 8, "compliant": 0, "readiness": None}
+    assert groups["People"] == {"name": "People", "total": 8, "compliant": 0, "readiness": None, "code": None}
 
 
 def test_trend_keeps_the_last_snapshot_of_each_day(client, db, seeded):

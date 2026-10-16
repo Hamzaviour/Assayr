@@ -26,6 +26,7 @@ class MappedOut(BaseModel):
     code: str
     title: str
     status: str
+    coverage: str
 
 
 class NiaRowOut(BaseModel):
@@ -77,7 +78,10 @@ def _row(v: NiaControlView) -> dict:
         "score": v.score,
         "applicable": v.applicable,
         "mandatory": v.mandatory,
-        "mapped": [{"code": c.code, "title": c.title, "status": c.status} for c in v.mapped],
+        "mapped": [
+            {"code": c.code, "title": c.title, "status": c.status, "coverage": v.coverage.get(c.code, "full")}
+            for c in v.mapped
+        ],
     }
 
 

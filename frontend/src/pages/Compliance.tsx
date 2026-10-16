@@ -66,9 +66,9 @@ function FrameworkCard({ f }: { f: FrameworkRow }) {
             {f.groups.map((g) => (
               <li key={g.name}>
                 {nia ? (
-                  <div className={ROW}>
+                  <Link to="/controls" search={{ framework: "nia", domain: g.code ?? undefined }} className={`${ROW} hover:bg-subtle`}>
                     <GroupLine g={g} />
-                  </div>
+                  </Link>
                 ) : (
                   <Link to="/controls" search={{ theme: g.name }} className={`${ROW} hover:bg-subtle`}>
                     <GroupLine g={g} />

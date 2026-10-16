@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query"
 import { api } from "./client"
 
-export type GroupRow = { name: string; total: number; compliant: number; readiness: number | null }
+export type GroupRow = { name: string; total: number; compliant: number; readiness: number | null; code?: string | null }
 
 export type FrameworkRow = {
   code: string

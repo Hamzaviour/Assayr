@@ -2,6 +2,7 @@ import { createRootRoute, createRoute, createRouter, Outlet, type RouterHistory 
 import { AppLayout } from "./layouts/AppLayout"
 import { AssetsPage } from "./pages/Assets"
 import { ControlDetailPage } from "./pages/ControlDetail"
+import { NiaControlPage } from "./pages/NiaControl"
 import { ControlsPage } from "./pages/Controls"
 import { DashboardPage } from "./pages/Dashboard"
 import { CompliancePage } from "./pages/Compliance"
@@ -32,7 +33,11 @@ const complianceRoute = createRoute({ getParentRoute: () => appRoute, path: "/co
 const controlsRoute = createRoute({
   getParentRoute: () => appRoute,
   path: "/controls",
-  validateSearch: (search: Record<string, unknown>): { theme?: string; q?: string; owner?: string } => ({
+  validateSearch: (
+    search: Record<string, unknown>,
+  ): { framework?: "nia"; domain?: string; theme?: string; q?: string; owner?: string } => ({
+    framework: search.framework === "nia" ? "nia" : undefined,
+    domain: typeof search.domain === "string" && /^[A-Z]{2}$/.test(search.domain) ? search.domain : undefined,
     theme: typeof search.theme === "string" && search.theme ? search.theme : undefined,
     q: typeof search.q === "string" && search.q ? search.q : undefined,
     owner: search.owner === "none" || search.owner === "me" ? search.owner : undefined,
@@ -40,6 +45,7 @@ const controlsRoute = createRoute({
   component: ControlsPage,
 })
 const controlRoute = createRoute({ getParentRoute: () => appRoute, path: "/controls/$code", component: ControlDetailPage })
+const niaControlRoute = createRoute({ getParentRoute: () => appRoute, path: "/nia/$ref", component: NiaControlPage })
 const evidenceRoute = createRoute({ getParentRoute: () => appRoute, path: "/evidence", component: ReviewQueuePage })
 const risksRoute = createRoute({ getParentRoute: () => appRoute, path: "/risks", component: RisksPage })
 const riskSnapshotsRoute = createRoute({ getParentRoute: () => appRoute, path: "/risks/snapshots", component: RiskSnapshotsPage })
@@ -52,7 +58,7 @@ const styleguideRoute = createRoute({ getParentRoute: () => appRoute, path: "/st
 
 export const routeTree = rootRoute.addChildren([
   loginRoute,
-  appRoute.addChildren([dashboardRoute, complianceRoute, controlsRoute, controlRoute, evidenceRoute, risksRoute, riskNewRoute, riskSnapshotsRoute, riskRoute, riskAssessRoute, assetsRoute, soaRoute, styleguideRoute]),
+  appRoute.addChildren([dashboardRoute, complianceRoute, controlsRoute, controlRoute, niaControlRoute, evidenceRoute, risksRoute, riskNewRoute, riskSnapshotsRoute, riskRoute, riskAssessRoute, assetsRoute, soaRoute, styleguideRoute]),
 ])
 
 export function createAppRouter(history?: RouterHistory) {
