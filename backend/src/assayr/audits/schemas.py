@@ -96,3 +96,4 @@ class ImportOut(BaseModel):
     audit: AuditOut
     imported: int
     unknown_refs: list[str]
+    skipped_rows: list[str] = []

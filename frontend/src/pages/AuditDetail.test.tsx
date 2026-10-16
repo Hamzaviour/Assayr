@@ -110,3 +110,30 @@ test("a completed audit is read-only and a manager can reopen it with a reason",
   await userEvent.click(confirm)
   expect(bodyOf(calls, "POST", "/reopen")).toEqual({ reason: "Missed evidence" })
 })
+
+test("a failed save is shown on the row", async () => {
+  mockApi({
+    "GET /auth/me": () => json(200, ME),
+    "GET /audits/a1": () => json(200, detail()),
+    "PATCH /audits/a1/items/i2": () => json(409, { detail: "This audit is completed. Reopen it to make changes." }),
+  })
+  renderApp("/audits/a1")
+  await userEvent.selectOptions(await screen.findByLabelText("Result for SU 7"), "fail")
+  expect(await screen.findByText("This audit is completed. Reopen it to make changes.")).not.toHaveClass("sr-only")
+})
+
+test("the audit details (period, scope, conclusion) can be edited", async () => {
+  const calls = mockApi({
+    "GET /auth/me": () => json(200, ME),
+    "GET /audits/a1": () => json(200, detail()),
+    "GET /people": () => json(200, [{ id: "u1", full_name: "Ali Auditor", email: "ali@acme.com" }]),
+    "PATCH /audits/a1": (_url, init) => json(200, { ...detail(), ...JSON.parse(String(init.body)) }),
+  })
+  renderApp("/audits/a1")
+  await userEvent.click(await screen.findByRole("button", { name: "Edit details" }))
+  await userEvent.type(screen.getByLabelText("Period start"), "2026-10-01")
+  await userEvent.type(screen.getByLabelText("Conclusion"), "Invented conclusion")
+  await userEvent.click(screen.getByRole("button", { name: "Save details" }))
+  const patch = calls.find((c) => c.method === "PATCH")!
+  expect(JSON.parse(String(patch.init.body))).toMatchObject({ period_start: "2026-10-01", conclusion: "Invented conclusion" })
+})

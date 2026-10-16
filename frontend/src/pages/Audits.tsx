@@ -151,6 +151,9 @@ function ImportWorkbook({ onClose }: { onClose: () => void }) {
           <Link to="/audits/$id" params={{ id: result.audit.id }} className="text-primary hover:underline">Open the audit</Link>
         </p>
       )}
+      {result && result.skipped_rows.length > 0 && (
+        <p className="mt-1 text-[12.5px] text-warn">Not imported: {result.skipped_rows.slice(0, 10).join("; ")}</p>
+      )}
       {importAudit.isError && <p role="alert" className="mt-2 text-[13px] text-bad">{importAudit.error.message}</p>}
       <div className="mt-3">
         <Button type="button" variant="secondary" size="sm" onClick={onClose}>Close</Button>

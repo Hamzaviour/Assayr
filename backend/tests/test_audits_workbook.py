@@ -97,7 +97,12 @@ def test_import_round_trip_tolerates_messy_headers_and_refs(client, auditor):
             [3, "Unknown", "Unknown", "ZZ 1", "Invented", None, "M", "Pass"],
             [4, "System Usage Security", "Usage", "SU 5", "Duplicate row", None, "M", "Fail"],
             [5, "System Usage Security", "Usage", "SU 8", "Invented area three", None, None, "NA"],
-        [None, None, None, "This invented note explains how the audit was carried out and is not a control."],
+            [
+                None,
+                None,
+                None,
+                "This invented note explains how the audit was carried out and is not a control.",
+            ],
         ]
     )
     response = import_(client, data)
@@ -129,3 +134,81 @@ def test_viewers_can_export_but_not_import(client, db, nia):
     create_user(db, "vera@acme.com", roles=(("viewer", None),), full_name="Vera")
     sign_in(client, "vera@acme.com")
     assert import_(client, xlsx([NIA_HEADER])).status_code == 403
+
+
+def test_a_corrupt_sheet_inside_a_valid_zip_is_refused(client, auditor):
+    import zipfile
+
+    good = xlsx([NIA_HEADER, [1, "D", "S", "SU 5", "Invented", None, "M", "Pass"]])
+    out = io.BytesIO()
+    with zipfile.ZipFile(io.BytesIO(good)) as src, zipfile.ZipFile(out, "w") as dst:
+        for info in src.infolist():
+            data = src.read(info.filename)
+            if info.filename.endswith("sheet1.xml"):
+                data = data[: len(data) // 2]
+            dst.writestr(info, data)
+    assert import_(client, out.getvalue()).status_code == 422
+
+
+def test_a_far_away_cell_does_not_stall_the_import(client, auditor):
+    import time
+
+    wb = Workbook()
+    ws = wb.active
+    for row in [NIA_HEADER, [1, "D", "S", "SU 5", "Invented", None, "M", "Pass"]]:
+        ws.append(row)
+    ws.cell(row=1_000_000, column=1, value="far away")
+    buffer = io.BytesIO()
+    wb.save(buffer)
+    started = time.monotonic()
+    response = import_(client, buffer.getvalue())
+    assert response.status_code == 201 and response.json()["imported"] == 1
+    assert time.monotonic() - started < 5
+
+
+def test_rows_without_a_control_reference_are_reported(client, auditor):
+    data = xlsx(
+        [
+            NIA_HEADER,
+            [1, "D", "S", "SU 5", "Invented", None, "M", "Pass"],
+            [
+                2,
+                "D",
+                "S",
+                "An invented long description typed into the control column by mistake",
+                "x",
+                None,
+                "M",
+                "Pass",
+            ],
+            [None, None, None, "An invented closing note with no result."],
+        ]
+    )
+    body = import_(client, data).json()
+    assert body["imported"] == 1 and body["skipped_rows"] == ["Row 3: no control reference"]
+
+
+def test_a_workbook_for_the_other_framework_creates_nothing(client, auditor):
+    data = xlsx([NIA_HEADER, [1, "Org", "Org", "A.5.1", "Invented", None, None, "Pass"]])
+    response = import_(client, data, framework="nia-2.1")
+    assert response.status_code == 422 and "None of the 1 controls" in response.json()["detail"]
+    assert client.get("/api/v1/audits").json() == []
+
+
+def test_many_near_empty_rows_stop_the_scan_early(client, auditor):
+    import time
+
+    from assayr.audits.workbook import read_workbook
+
+    wb = Workbook()
+    ws = wb.active
+    ws.append(NIA_HEADER)
+    ws.append([1, "D", "S", "SU 5", "Invented", None, "M", "Pass"])
+    for r in range(3, 60_000):
+        ws.cell(row=r, column=2, value=" ")
+    buffer = io.BytesIO()
+    wb.save(buffer)
+    started = time.monotonic()
+    rows, skipped = read_workbook(buffer.getvalue())
+    assert [r.ref for r in rows] == ["SU 5"] and skipped == []
+    assert time.monotonic() - started < 2

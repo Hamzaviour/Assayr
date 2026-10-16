@@ -1,7 +1,6 @@
 """The internal audit workbook ("NIA - IA report" layout): export an audit, read an existing workbook."""
 
 import io
-import zipfile
 from dataclasses import dataclass
 
 from openpyxl import Workbook, load_workbook
@@ -12,6 +11,8 @@ from assayr.exports import safe_cell
 
 MAX_ROWS = 2000
 MAX_REF_LENGTH = 20
+HEADER_SEARCH_ROWS = 20
+MAX_EMPTY_RUN = 500
 _RESULTS = {"pass": "pass", "fail": "fail", "partial": "partial", "na": "na", "n/a": "na"}
 _TEST_TYPES = {"da": "DA", "oea": "OEA", "both": "Both"}
 _RESULT_LABEL = {"pass": "Pass", "fail": "Fail", "partial": "Partial", "na": "NA"}
@@ -88,25 +89,41 @@ def _text(row: tuple, index: int | None) -> str | None:
     return text or None
 
 
-def read_workbook(data: bytes) -> list[ImportRow]:
-    """Reads the first sheet; columns are found by their header text, whatever the spacing or case."""
+def read_workbook(data: bytes) -> tuple[list[ImportRow], list[str]]:
+    """Reads the first sheet; columns are found by their header text, whatever the spacing or case.
+
+    Returns the control rows and a note for each row that had content but no usable control reference.
+    """
     try:
         workbook = load_workbook(io.BytesIO(data), read_only=True, data_only=True)
-    except (zipfile.BadZipFile, OSError, KeyError, ValueError) as exc:
+    except Exception as exc:  # any malformed archive or XML is the user's file, not our error
         raise WorkbookError("This file is not an Excel workbook (.xlsx).") from exc
-    rows = list(workbook.worksheets[0].iter_rows(values_only=True))
-    workbook.close()
-    start = next(
-        (i for i, row in enumerate(rows[:20]) if any(_norm(v).startswith("control status") for v in row)),
-        None,
-    )
-    if start is None:
+    try:
+        return _read_rows(workbook.worksheets[0].iter_rows(values_only=True))
+    except WorkbookError:
+        raise
+    except Exception as exc:
+        raise WorkbookError("This workbook could not be read. Save it again from Excel and retry.") from exc
+    finally:
+        workbook.close()
+
+
+def _read_rows(rows) -> tuple[list[ImportRow], list[str]]:
+    header = None
+    for number, row in enumerate(rows, start=1):
+        if any(_norm(v).startswith("control status") for v in row):
+            header = [_norm(v) for v in row]
+            header_row = number
+            break
+        if number >= HEADER_SEARCH_ROWS:
+            break
+    if header is None:
         raise WorkbookError('The workbook has no "Control status (Pass/Fail/Partial)" column.')
-    header = [_norm(v) for v in rows[start]]
     ref_col = _column(header, lambda h: h in ("nia control", "iso control") or h.endswith(" control"))
     if ref_col is None:
         raise WorkbookError('The workbook has no "NIA Control" column.')
     cols = {
+        "number": _column(header, lambda h: h.startswith("sr")),
         "domain": _column(header, lambda h: h.startswith("domain")),
         "sub_domain": _column(header, lambda h: h.startswith("sub domain") or h.startswith("subdomain")),
         "area": _column(header, lambda h: h.startswith("control description") or "assessment area" in h),
@@ -114,18 +131,28 @@ def read_workbook(data: bytes) -> list[ImportRow]:
         "requirement": _column(header, lambda h: h.startswith("mandatory")),
         "result": _column(header, lambda h: h.startswith("control status")),
     }
-    # A control reference is short; longer text in that column is a note (e.g. a closing paragraph).
-    body = [
-        row for row in rows[start + 1 :] if _text(row, ref_col) and len(_text(row, ref_col)) <= MAX_REF_LENGTH
-    ]
-    if len(body) > MAX_ROWS:
-        raise WorkbookError(f"The workbook has more than {MAX_ROWS} controls.")
-    out = []
-    for row in body:
+    out: list[ImportRow] = []
+    skipped: list[str] = []
+    empty_run = 0
+    for row_number, row in enumerate(rows, start=header_row + 1):
+        if not any(_text(row, i) for i in range(len(row))):
+            empty_run += 1
+            if empty_run >= MAX_EMPTY_RUN:
+                break  # the rest of the sheet is blank formatting, not data
+            continue
+        empty_run = 0
+        ref = _text(row, ref_col)
+        if not ref or len(ref) > MAX_REF_LENGTH:
+            # A note row (no number, no result) is skipped quietly; a control row without a reference is reported.
+            if _text(row, cols["number"]) or _text(row, cols["result"]):
+                skipped.append(f"Row {row_number}: no control reference")
+            continue
+        if len(out) >= MAX_ROWS:
+            raise WorkbookError(f"The workbook has more than {MAX_ROWS} controls.")
         requirement = (_text(row, cols["requirement"]) or "").upper()[:1]
         out.append(
             ImportRow(
-                ref=_text(row, ref_col),
+                ref=ref,
                 domain=_text(row, cols["domain"]),
                 sub_domain=_text(row, cols["sub_domain"]),
                 assessment_area=_text(row, cols["area"]),
@@ -134,4 +161,4 @@ def read_workbook(data: bytes) -> list[ImportRow]:
                 result=_RESULTS.get((_text(row, cols["result"]) or "").lower()),
             )
         )
-    return out
+    return out, skipped

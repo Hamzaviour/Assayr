@@ -9,7 +9,7 @@ function setup(me = ME) {
     "GET /audits": () => json(200, [audit(), audit({ id: "a2", framework: "iso27001", title: "ISO audit", status: "draft", counts: { total: 0, tested: 0, pass: 0, partial: 0, fail: 0, na: 0 } })]),
     "POST /audits": (_url, init) => json(201, audit({ id: "a9", ...JSON.parse(String(init.body)), status: "draft" })),
     "GET /audits/a9": () => json(200, { ...audit({ id: "a9", status: "draft" }), items: [] }),
-    "POST /audits/import": () => json(201, { audit: audit({ id: "a5" }), imported: 258, unknown_refs: ["ZZ 1", "ZZ 2"] }),
+    "POST /audits/import": () => json(201, { audit: audit({ id: "a5" }), imported: 258, unknown_refs: ["ZZ 1", "ZZ 2"], skipped_rows: ["Row 18: no control reference"] }),
   })
 }
 
@@ -48,6 +48,7 @@ test("importing a workbook reports what was matched", async () => {
   const file = new File(["xlsx"], "audit.xlsx", { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" })
   await userEvent.upload(within(form).getByLabelText("Workbook (.xlsx)"), file)
   expect(await screen.findByText("Imported 258 controls · 2 not found (ZZ 1, ZZ 2)")).toBeInTheDocument()
+  expect(screen.getByText(/Row 18: no control reference/)).toBeInTheDocument()
   const post = calls.find((c) => c.method === "POST" && c.url.pathname.endsWith("/import"))!
   expect((post.init.body as FormData).get("framework")).toBe("nia-2.1")
 })

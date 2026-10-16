@@ -84,8 +84,25 @@ export function useImportAudit() {
       const form = new FormData()
       form.append("framework", framework)
       form.append("file", file)
-      return api<{ audit: Audit; imported: number; unknown_refs: string[] }>("/audits/import", { method: "POST", body: form })
+      return api<{ audit: Audit; imported: number; unknown_refs: string[]; skipped_rows: string[] }>("/audits/import", { method: "POST", body: form })
     },
+    onSuccess: refresh,
+  })
+}
+
+export type AuditChanges = Partial<{
+  title: string
+  period_start: string | null
+  period_end: string | null
+  auditor_id: string | null
+  scope_note: string | null
+  conclusion: string | null
+}>
+
+export function useUpdateAudit(id: string) {
+  const refresh = useRefresh()
+  return useMutation({
+    mutationFn: (changes: AuditChanges) => api<Audit>(`/audits/${id}`, { method: "PATCH", body: JSON.stringify(changes) }),
     onSuccess: refresh,
   })
 }

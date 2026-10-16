@@ -363,10 +363,16 @@ def import_audit(
     if len(data) > MAX_IMPORT_BYTES:
         raise HTTPException(status.HTTP_413_CONTENT_TOO_LARGE, "The workbook is larger than 5 MB.")
     try:
-        rows = read_workbook(data)
+        rows, skipped = read_workbook(data)
     except WorkbookError as exc:
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(exc)) from exc
     catalogue = {r.ref: r for r in catalogue_rows(db, scope.id, framework)}
+    if rows and not any(normalise_ref(row.ref) in catalogue for row in rows):
+        label = "NIA v2.1" if framework == "nia-2.1" else "ISO/IEC 27001"
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
+            f"None of the {len(rows)} controls in this workbook are in {label}. Check the framework you chose.",
+        )
     title = (file.filename or "workbook").rsplit(".", 1)[0][:150]
     audit = Audit(scope_id=scope.id, framework=framework, title=f"Imported: {title}", auditor_id=user.id)
     db.add(audit)
@@ -407,4 +413,6 @@ def import_audit(
     )
     db.commit()
     db.refresh(audit)
-    return ImportOut(audit=audit_out(user, audit), imported=len(seen), unknown_refs=unknown)
+    return ImportOut(
+        audit=audit_out(user, audit), imported=len(seen), unknown_refs=unknown, skipped_rows=skipped
+    )

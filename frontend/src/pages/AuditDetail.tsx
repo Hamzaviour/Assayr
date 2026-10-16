@@ -3,6 +3,7 @@ import { type FormEvent, useEffect, useState } from "react"
 import {
   type AuditDetail,
   type AuditItem,
+  type AuditChanges,
   type AuditResult,
   auditExportUrl,
   FRAMEWORK_LABEL,
@@ -13,8 +14,10 @@ import {
   useCompleteAudit,
   useReopenAudit,
   useRemoveAuditItem,
+  useUpdateAudit,
   useUpdateAuditItem,
 } from "../api/audits"
+import { usePeople } from "../api/people"
 import { Button } from "../components/Button"
 import { formatDate } from "../lib/format"
 import { AuditStatus, ResultBar } from "./Audits"
@@ -159,6 +162,23 @@ function Header({ audit: a }: { audit: AuditDetail }) {
           </p>
         )}
       </div>
+      {(a.scope_note || a.conclusion) && (
+        <dl className="grid gap-2 text-[13px] md:grid-cols-2">
+          {a.scope_note && (
+            <div>
+              <dt className="text-[11px] font-medium uppercase tracking-[0.08em] text-fg-3">Scope</dt>
+              <dd className="whitespace-pre-line text-fg-2">{a.scope_note}</dd>
+            </div>
+          )}
+          {a.conclusion && (
+            <div>
+              <dt className="text-[11px] font-medium uppercase tracking-[0.08em] text-fg-3">Conclusion</dt>
+              <dd className="whitespace-pre-line text-fg-2">{a.conclusion}</dd>
+            </div>
+          )}
+        </dl>
+      )}
+      {a.can_write && a.status !== "completed" && <DetailsEditor audit={a} />}
       {reopening && (
         <div className="grid gap-2 rounded-lg bg-subtle p-3">
           <label className="grid gap-1 text-[12.5px] text-fg-2">
@@ -246,7 +266,16 @@ function ItemRow({ audit: a, item, editable }: { audit: AuditDetail; item: Audit
   const [notes, setNotes] = useState(item.notes ?? "")
   useEffect(() => setArea(item.assessment_area ?? ""), [item.assessment_area])
   useEffect(() => setNotes(item.notes ?? ""), [item.notes])
-  const save = (changes: Parameters<typeof update.mutate>[0]["changes"]) => update.mutate({ itemId: item.id, changes })
+  const save = (changes: Parameters<typeof update.mutate>[0]["changes"]) =>
+    update.mutate(
+      { itemId: item.id, changes },
+      {
+        onError: () => {
+          setArea(item.assessment_area ?? "")
+          setNotes(item.notes ?? "")
+        },
+      },
+    )
   const link =
     a.framework === "nia-2.1" ? (
       <Link to="/nia/$ref" params={{ ref: item.ref }} className="font-mono text-[12.5px] font-medium text-fg hover:text-primary">
@@ -335,6 +364,7 @@ function ItemRow({ audit: a, item, editable }: { audit: AuditDetail; item: Audit
           onBlur={() => notes.trim() !== (item.notes ?? "") && save({ notes: notes.trim() || null })}
           className={`${FIELD} w-full`}
         />
+        {update.isError && <p role="alert" className="mt-1 text-[12px] font-medium text-bad">{update.error.message}</p>}
       </td>
       <td className="px-2 py-2">
         <button
@@ -346,8 +376,82 @@ function ItemRow({ audit: a, item, editable }: { audit: AuditDetail; item: Audit
         >
           ×
         </button>
-        {update.isError && <span role="alert" className="sr-only">{update.error.message}</span>}
       </td>
     </tr>
+  )
+}
+
+function DetailsEditor({ audit: a }: { audit: AuditDetail }) {
+  const [open, setOpen] = useState(false)
+  const update = useUpdateAudit(a.id)
+  const people = usePeople()
+  const [title, setTitle] = useState(a.title)
+  const [start, setStart] = useState(a.period_start ?? "")
+  const [end, setEnd] = useState(a.period_end ?? "")
+  const [auditorId, setAuditorId] = useState(a.auditor?.id ?? "")
+  const [scope, setScope] = useState(a.scope_note ?? "")
+  const [conclusion, setConclusion] = useState(a.conclusion ?? "")
+
+  if (!open) {
+    return (
+      <div>
+        <Button size="sm" variant="secondary" onClick={() => setOpen(true)}>Edit details</Button>
+      </div>
+    )
+  }
+
+  function onSubmit(event: FormEvent) {
+    event.preventDefault()
+    const changes: AuditChanges = {}
+    if (title.trim() && title.trim() !== a.title) changes.title = title.trim()
+    if (start !== (a.period_start ?? "")) changes.period_start = start || null
+    if (end !== (a.period_end ?? "")) changes.period_end = end || null
+    if (auditorId !== (a.auditor?.id ?? "")) changes.auditor_id = auditorId || null
+    if (scope.trim() !== (a.scope_note ?? "")) changes.scope_note = scope.trim() || null
+    if (conclusion.trim() !== (a.conclusion ?? "")) changes.conclusion = conclusion.trim() || null
+    update.mutate(changes, { onSuccess: () => setOpen(false) })
+  }
+
+  const label = "grid gap-1 text-[12.5px] text-fg-2"
+  return (
+    <form onSubmit={onSubmit} className="grid gap-3 rounded-lg bg-subtle p-4 md:grid-cols-2">
+      <label className={`${label} md:col-span-2`}>
+        Title
+        <input value={title} onChange={(e) => setTitle(e.target.value)} required maxLength={200} className={FIELD} />
+      </label>
+      <label className={label}>
+        Period start
+        <input type="date" value={start} onChange={(e) => setStart(e.target.value)} className={FIELD} />
+      </label>
+      <label className={label}>
+        Period end
+        <input type="date" value={end} onChange={(e) => setEnd(e.target.value)} className={FIELD} />
+      </label>
+      <label className={`${label} md:col-span-2`}>
+        Auditor
+        <select value={auditorId} onChange={(e) => setAuditorId(e.target.value)} className={FIELD}>
+          <option value="">No auditor</option>
+          {a.auditor && !(people.data ?? []).some((p) => p.id === a.auditor?.id) && (
+            <option value={a.auditor.id}>{a.auditor.full_name}</option>
+          )}
+          {(people.data ?? []).map((p) => (
+            <option key={p.id} value={p.id}>{p.full_name}</option>
+          ))}
+        </select>
+      </label>
+      <label className={label}>
+        Scope note
+        <textarea value={scope} onChange={(e) => setScope(e.target.value)} rows={3} maxLength={5000} className={FIELD} />
+      </label>
+      <label className={label}>
+        Conclusion
+        <textarea value={conclusion} onChange={(e) => setConclusion(e.target.value)} rows={3} maxLength={10000} className={FIELD} />
+      </label>
+      <div className="flex items-center gap-2 md:col-span-2">
+        <Button type="submit" size="sm" disabled={update.isPending}>Save details</Button>
+        <Button type="button" size="sm" variant="secondary" onClick={() => setOpen(false)}>Cancel</Button>
+        {update.isError && <p role="alert" className="text-[13px] text-bad">{update.error.message}</p>}
+      </div>
+    </form>
   )
 }

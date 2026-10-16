@@ -70,5 +70,4 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(nia_frameworks_router, prefix="/api/v1")
     app.include_router(documents_router, prefix="/api/v1")
     app.include_router(audits_router, prefix="/api/v1")
-    app.include_router(audits_router, prefix="/api/v1")
     return app
