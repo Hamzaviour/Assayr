@@ -17,6 +17,7 @@ from assayr.dashboard.router import router as dashboard_router
 from assayr.db import Database, utcnow
 from assayr.documents.router import router as documents_router
 from assayr.evidence.router import router as evidence_router
+from assayr.findings.files import router as findings_files_router
 from assayr.findings.router import audits_router as findings_audits_router
 from assayr.findings.router import router as findings_router
 from assayr.health import router as health_router
@@ -76,6 +77,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(tasks_router, prefix="/api/v1")
     app.include_router(soa_router, prefix="/api/v1")
     app.include_router(audit_router, prefix="/api/v1")
+    app.include_router(findings_files_router, prefix="/api/v1")  # before /findings/{id}
     app.include_router(findings_router, prefix="/api/v1")
     app.include_router(findings_audits_router, prefix="/api/v1")
     app.include_router(catalogue_router, prefix="/api/v1")
