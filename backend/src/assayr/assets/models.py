@@ -1,6 +1,6 @@
 import uuid
 
-from sqlalchemy import ForeignKey, Integer, String, Text, UniqueConstraint
+from sqlalchemy import JSON, ForeignKey, Integer, String, Text, UniqueConstraint, false
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from assayr.db import Base, IdMixin, TimestampMixin
@@ -40,5 +40,9 @@ class Asset(IdMixin, TimestampMixin, Base):
     location: Mapped[str | None] = mapped_column(String(200))
     description: Mapped[str | None] = mapped_column(Text)
     lifecycle: Mapped[str] = mapped_column(String(20), default="in_use")
+    holds_pii: Mapped[bool] = mapped_column(default=False, server_default=false())
+    pii_categories: Mapped[list[str] | None] = mapped_column(JSON, default=list)
+    pii_sensitive: Mapped[bool] = mapped_column(default=False, server_default=false())
+    pii_volume: Mapped[str | None] = mapped_column(String(10))
 
     owner: Mapped[User | None] = relationship(lazy="joined")

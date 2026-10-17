@@ -44,6 +44,7 @@ def test_permissions_are_a_sorted_union():
         "controls:write",
         "documents:create",
         "evidence:review",
+        "privacy:manage",
         "risks:accept_high",
         "risks:read",
         "risks:write",
