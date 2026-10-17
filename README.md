@@ -1,6 +1,6 @@
 # Assayr
 
-**On-premise GRC for ISO/IEC 27001: every control, piece of evidence and risk stays on your own servers.**
+**On-premise GRC for ISO/IEC 27001, NIA, ISO/IEC 42001 and SOC 2: every control, piece of evidence and risk stays on your own servers.**
 
 Assayr is a governance, risk and compliance platform that organisations install inside their own network.
 It holds every ISO/IEC 27001:2022 requirement and all 93 Annex A controls, checks each piece of uploaded
@@ -14,15 +14,17 @@ no telemetry, no outbound calls, and it installs on servers with no internet acc
 |---|---|
 | **Controls** | The ISO/IEC 27001:2022 catalogue (clauses 4–10 and Annex A) with evidence slots that say exactly what each control needs |
 | **Qatar NIA v2.1** | All 355 NIA controls in 26 domains, mapped to ISO 27001 so evidence is shared; NIA-only controls tracked on their own; applicability with reasons. Assayr ships control IDs and its own summaries; the official NCSA text is imported from your organisation's copy and stays in your installation |
+| **ISO/IEC 42001 and AI systems** | The AI management system catalogue (clauses 4–10 and the Annex A controls), each linked to the ISO 27001 controls whose evidence it can reuse; an AI systems register (purpose, owner, provider and model type, lifecycle, risk level, personal data, linked assets, human oversight); AI system impact assessments with rated impacts, review and approval, where an impact can be raised to the risk register; and automatic checks that tick a control once the register shows it is done. Assayr ships control IDs and its own summaries, not the ISO text |
+| **SOC 2 Type 2 (Security)** | The Security trust services criteria (CC1–CC9) with your own control activities under each criterion (CC6.1.2 …) and the criterion's status derived from them; evidence shared with ISO 27001; Type 2 audits with an observation period, population, sample size, samples tested, result (no exceptions / exception / not tested) and exception notes; your SOC 2 tracker workbook imported and exported in the same layout. Own summaries, not the AICPA text |
 | **Policies, procedures and guidelines** | A document register with owners, approval, versions, review dates and files, linked to controls; every control page lists its policies, procedures and guidelines |
 | **Evidence** | Upload, versioning and expiry; every file is malware-scanned and verified automatically (dates, approvals, versions, freshness) with the reasons shown, and uncertain files go to a reviewer queue |
 | **Compliance status** | Control status derived from evidence, never ticked by hand: compliant, in review, in progress, at risk, not started, non-compliant, with readiness scores and history |
-| **Dashboard** | ISO 27001 and NIA compliance with partial progress, evidence and risk monitoring (open / in progress / closed), owner gaps, readiness trend and status charts |
+| **Dashboard** | ISO 27001, NIA, ISO 42001 and SOC 2 compliance with partial progress, each opening its own controls; evidence and risk monitoring (open / in progress / closed), owner gaps, readiness trend and status charts |
 | **Risk** | Risk register with a guided assessment wizard, risk owners, treatment plans, residual-risk acceptance, snapshots and comparison, register export |
 | **Assets** | Asset inventory with owners and classification, linked to risks; confidentiality, integrity and availability rated Very low to Very high with a colour-coded criticality, and personal data (PII) recorded per asset: categories, sensitive data and how many people |
 | **Data privacy** | Record of processing activities (Qatar PDPPL, ISO 27001 A.5.34): purpose, whose data, lawful basis, where it is kept, recipients, transfers outside Qatar, retention and review dates; an automatic PII inventory of every asset holding personal data; DPIAs with screening, rated privacy risks and approval; data subject requests with deadlines; a breach register with a notification countdown; a processor register with agreements; consent records; and the PDPPL as a checklist of obligations with evidence checks (own summaries — guidance, not legal advice); Excel export |
 | **Statement of Applicability** | Generated from controls and risks, with traceability checks and executive approval |
-| **Internal audits** | ISO 27001 (clause 9.2) and NIA internal audits: pick controls, record the test type (DA / OEA / Both) and result per control, sign off, and export the report as Excel in the familiar "NIA - IA report" layout; existing audit workbooks can be imported |
+| **Internal audits** | ISO 27001 (clause 9.2), NIA and ISO 42001 internal audits and SOC 2 Type 2 testing: pick controls, record the test type (DA / OEA / Both) and result per control, sign off, and export the report as Excel in the familiar "NIA - IA report" layout; existing audit workbooks can be imported |
 | **Training and awareness** | Courses with Google Drive videos or uploaded videos and documents, an auto-marked assessment (pass mark, attempts), assignment to everyone, a department, a role or named people, yearly refresh, automatic assignment for new joiners, completion tracking and an Excel report as A.6.3 evidence. Staff are imported from CSV and choose their own password at first sign-in |
 | **Audit trail** | Tamper-evident (hash-chained) record of every change |
 
