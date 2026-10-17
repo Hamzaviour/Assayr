@@ -9,6 +9,7 @@ from assayr.assets.router import router as assets_router
 from assayr.audit.router import router as audit_router
 from assayr.audits.router import router as audits_router
 from assayr.catalogue.router import router as catalogue_router
+from assayr.catalogue.soc2_router import router as soc2_router
 from assayr.config import Settings, get_settings
 from assayr.dashboard.router import router as dashboard_router
 from assayr.db import Database, utcnow
@@ -72,6 +73,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(soa_router, prefix="/api/v1")
     app.include_router(audit_router, prefix="/api/v1")
     app.include_router(catalogue_router, prefix="/api/v1")
+    app.include_router(soc2_router, prefix="/api/v1")
     app.include_router(evidence_router, prefix="/api/v1")
     app.include_router(scoring_router, prefix="/api/v1")
     app.include_router(dashboard_router, prefix="/api/v1")
