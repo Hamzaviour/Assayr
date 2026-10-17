@@ -1,0 +1,407 @@
+{
+  "code": "SOC2:2017",
+  "name": "SOC 2",
+  "version": "Security",
+  "notice": "Criterion IDs with Assayr's own summaries. Use the AICPA Trust Services Criteria for the criteria text.",
+  "series": [
+    {
+      "ref": "CC1",
+      "title": "Control environment"
+    },
+    {
+      "ref": "CC2",
+      "title": "Information and communication"
+    },
+    {
+      "ref": "CC3",
+      "title": "Risk assessment"
+    },
+    {
+      "ref": "CC4",
+      "title": "Monitoring activities"
+    },
+    {
+      "ref": "CC5",
+      "title": "Control activities"
+    },
+    {
+      "ref": "CC6",
+      "title": "Logical and physical access controls"
+    },
+    {
+      "ref": "CC7",
+      "title": "System operations"
+    },
+    {
+      "ref": "CC8",
+      "title": "Change management"
+    },
+    {
+      "ref": "CC9",
+      "title": "Risk mitigation"
+    }
+  ],
+  "criteria": [
+    {
+      "ref": "CC1.1",
+      "series": "CC1",
+      "title": "Integrity and ethical values",
+      "summary": "A code of conduct sets expected behaviour, staff accept it, and breaches are dealt with.",
+      "evidence_hint": "Signed code of conduct and handling of breaches",
+      "iso27001": [
+        "A.5.4",
+        "A.6.4"
+      ]
+    },
+    {
+      "ref": "CC1.2",
+      "series": "CC1",
+      "title": "Board oversight",
+      "summary": "The board or an equivalent body is independent of management and oversees how internal control works.",
+      "evidence_hint": "Board or committee minutes covering security oversight",
+      "iso27001": [
+        "A.5.4"
+      ]
+    },
+    {
+      "ref": "CC1.3",
+      "series": "CC1",
+      "title": "Structures, reporting lines and authority",
+      "summary": "Management sets up the structure, reporting lines and authority needed to meet the service commitments.",
+      "evidence_hint": "Organisation chart and security role descriptions",
+      "iso27001": [
+        "A.5.2",
+        "A.5.3"
+      ]
+    },
+    {
+      "ref": "CC1.4",
+      "series": "CC1",
+      "title": "Competence",
+      "summary": "The organisation hires, trains and keeps people with the skills its controls need.",
+      "evidence_hint": "Job descriptions, background checks and training records",
+      "iso27001": [
+        "A.6.1",
+        "A.6.3"
+      ]
+    },
+    {
+      "ref": "CC1.5",
+      "series": "CC1",
+      "title": "Accountability",
+      "summary": "People are held to account for their part in internal control, for example through reviews and discipline.",
+      "evidence_hint": "Performance reviews and disciplinary policy",
+      "iso27001": [
+        "A.5.4",
+        "A.6.4"
+      ]
+    },
+    {
+      "ref": "CC2.1",
+      "series": "CC2",
+      "title": "Quality information for control",
+      "summary": "The organisation gets and uses relevant, good quality information to run its controls.",
+      "evidence_hint": "System inventory, data flow diagrams and monitoring reports",
+      "iso27001": [
+        "A.5.37"
+      ]
+    },
+    {
+      "ref": "CC2.2",
+      "series": "CC2",
+      "title": "Internal communication",
+      "summary": "Staff are told about objectives and their control responsibilities, and have a way to raise issues.",
+      "evidence_hint": "Policy acknowledgements, awareness training and whistleblowing channel",
+      "iso27001": [
+        "A.5.1",
+        "A.6.3",
+        "A.6.8"
+      ]
+    },
+    {
+      "ref": "CC2.3",
+      "series": "CC2",
+      "title": "External communication",
+      "summary": "Customers and other outside parties get the information they need, and can report problems.",
+      "evidence_hint": "Service terms, system description and external contact channel",
+      "iso27001": [
+        "A.5.14",
+        "A.5.24"
+      ]
+    },
+    {
+      "ref": "CC3.1",
+      "series": "CC3",
+      "title": "Objectives specified",
+      "summary": "Objectives are clear enough that the risks to them can be identified and assessed.",
+      "evidence_hint": "Documented service commitments and security objectives",
+      "iso27001": [
+        "6.2"
+      ]
+    },
+    {
+      "ref": "CC3.2",
+      "series": "CC3",
+      "title": "Risk identification and analysis",
+      "summary": "Risks to objectives are identified and analysed across the organisation to decide how to manage them.",
+      "evidence_hint": "Risk assessment and risk register",
+      "iso27001": [
+        "6.1.2",
+        "A.5.7"
+      ]
+    },
+    {
+      "ref": "CC3.3",
+      "series": "CC3",
+      "title": "Fraud risk",
+      "summary": "The chance of fraud is considered when risks are assessed.",
+      "evidence_hint": "Risk assessment entries covering fraud",
+      "iso27001": [
+        "6.1.2"
+      ]
+    },
+    {
+      "ref": "CC3.4",
+      "series": "CC3",
+      "title": "Change affecting controls",
+      "summary": "Significant changes that could affect internal control are identified and assessed.",
+      "evidence_hint": "Change risk reviews",
+      "iso27001": [
+        "6.3"
+      ]
+    },
+    {
+      "ref": "CC4.1",
+      "series": "CC4",
+      "title": "Ongoing and separate evaluations",
+      "summary": "Controls are checked through ongoing monitoring and separate evaluations such as internal audits.",
+      "evidence_hint": "Internal audit reports and control self-assessments",
+      "iso27001": [
+        "9.1",
+        "9.2"
+      ]
+    },
+    {
+      "ref": "CC4.2",
+      "series": "CC4",
+      "title": "Deficiencies communicated",
+      "summary": "Control weaknesses are reported in time to the people who must fix them, including management.",
+      "evidence_hint": "Deficiency log and remediation tracking",
+      "iso27001": [
+        "10.2"
+      ]
+    },
+    {
+      "ref": "CC5.1",
+      "series": "CC5",
+      "title": "Control activities selected",
+      "summary": "Controls are chosen and built to bring risks down to acceptable levels.",
+      "evidence_hint": "Risk treatment plan mapped to controls",
+      "iso27001": [
+        "6.1.3"
+      ]
+    },
+    {
+      "ref": "CC5.2",
+      "series": "CC5",
+      "title": "Technology general controls",
+      "summary": "General controls over technology are chosen and built to support the objectives.",
+      "evidence_hint": "IT general control descriptions",
+      "iso27001": [
+        "A.8.9",
+        "A.8.32"
+      ]
+    },
+    {
+      "ref": "CC5.3",
+      "series": "CC5",
+      "title": "Policies and procedures deployed",
+      "summary": "Controls are put in place through policies that say what is expected and procedures that make it happen.",
+      "evidence_hint": "Approved policies and operating procedures",
+      "iso27001": [
+        "A.5.1",
+        "A.5.37"
+      ]
+    },
+    {
+      "ref": "CC6.1",
+      "series": "CC6",
+      "title": "Logical access security",
+      "summary": "Software, infrastructure and architecture restrict logical access to protected information assets.",
+      "evidence_hint": "Access control policy, MFA and encryption configuration",
+      "iso27001": [
+        "A.5.15",
+        "A.8.2",
+        "A.8.3",
+        "A.8.5",
+        "A.8.24"
+      ]
+    },
+    {
+      "ref": "CC6.2",
+      "series": "CC6",
+      "title": "User registration and credentials",
+      "summary": "Users are registered and authorised before they get credentials, and credentials are removed when no longer needed.",
+      "evidence_hint": "Access request and approval records",
+      "iso27001": [
+        "A.5.16",
+        "A.5.17"
+      ]
+    },
+    {
+      "ref": "CC6.3",
+      "series": "CC6",
+      "title": "Access granted, changed and removed",
+      "summary": "Access is granted, changed and removed based on roles, least privilege and segregation of duties.",
+      "evidence_hint": "Access reviews and leaver removals",
+      "iso27001": [
+        "A.5.18"
+      ]
+    },
+    {
+      "ref": "CC6.4",
+      "series": "CC6",
+      "title": "Physical access",
+      "summary": "Physical access to facilities and protected assets is limited to authorised people.",
+      "evidence_hint": "Badge access lists and visitor logs",
+      "iso27001": [
+        "A.7.1",
+        "A.7.2"
+      ]
+    },
+    {
+      "ref": "CC6.5",
+      "series": "CC6",
+      "title": "Asset disposal",
+      "summary": "Data and software are removed from assets before they are disposed of or reused.",
+      "evidence_hint": "Disposal certificates and wipe records",
+      "iso27001": [
+        "A.7.14",
+        "A.8.10"
+      ]
+    },
+    {
+      "ref": "CC6.6",
+      "series": "CC6",
+      "title": "Protection from external threats",
+      "summary": "Logical access controls protect against threats from outside the system boundary.",
+      "evidence_hint": "Firewall rules, intrusion detection and VPN configuration",
+      "iso27001": [
+        "A.8.20",
+        "A.8.21",
+        "A.8.22"
+      ]
+    },
+    {
+      "ref": "CC6.7",
+      "series": "CC6",
+      "title": "Data transmission and removal",
+      "summary": "Moving and removing information is restricted to authorised users and protected in transit.",
+      "evidence_hint": "TLS configuration and data loss prevention settings",
+      "iso27001": [
+        "A.5.14",
+        "A.8.12",
+        "A.8.24"
+      ]
+    },
+    {
+      "ref": "CC6.8",
+      "series": "CC6",
+      "title": "Malicious software",
+      "summary": "Controls stop or detect unauthorised or malicious software.",
+      "evidence_hint": "Anti-malware deployment and alert records",
+      "iso27001": [
+        "A.8.7"
+      ]
+    },
+    {
+      "ref": "CC7.1",
+      "series": "CC7",
+      "title": "Vulnerability and configuration monitoring",
+      "summary": "Detection and monitoring find configuration changes and new vulnerabilities.",
+      "evidence_hint": "Vulnerability scans and configuration baselines",
+      "iso27001": [
+        "A.8.8",
+        "A.8.9"
+      ]
+    },
+    {
+      "ref": "CC7.2",
+      "series": "CC7",
+      "title": "Anomaly monitoring",
+      "summary": "System components are monitored for anomalies that could mean attacks, errors or failures.",
+      "evidence_hint": "Logging and alerting setup with alert reviews",
+      "iso27001": [
+        "A.8.15",
+        "A.8.16"
+      ]
+    },
+    {
+      "ref": "CC7.3",
+      "series": "CC7",
+      "title": "Security event evaluation",
+      "summary": "Security events are evaluated to decide whether they are incidents.",
+      "evidence_hint": "Event triage records",
+      "iso27001": [
+        "A.5.25"
+      ]
+    },
+    {
+      "ref": "CC7.4",
+      "series": "CC7",
+      "title": "Incident response",
+      "summary": "Confirmed incidents are handled through a defined response programme.",
+      "evidence_hint": "Incident response plan and incident tickets",
+      "iso27001": [
+        "A.5.24",
+        "A.5.26"
+      ]
+    },
+    {
+      "ref": "CC7.5",
+      "series": "CC7",
+      "title": "Incident recovery",
+      "summary": "Activities to recover from security incidents are identified, built and carried out.",
+      "evidence_hint": "Recovery plans, tests and post-incident reviews",
+      "iso27001": [
+        "A.5.27",
+        "A.5.29",
+        "A.5.30"
+      ]
+    },
+    {
+      "ref": "CC8.1",
+      "series": "CC8",
+      "title": "Change management",
+      "summary": "Changes to infrastructure, data, software and procedures are authorised, tested, approved and documented.",
+      "evidence_hint": "Change tickets with approvals and test evidence",
+      "iso27001": [
+        "A.8.25",
+        "A.8.32"
+      ]
+    },
+    {
+      "ref": "CC9.1",
+      "series": "CC9",
+      "title": "Business disruption risk",
+      "summary": "Risks of business disruption are identified and mitigation activities are chosen.",
+      "evidence_hint": "Business continuity plan and insurance",
+      "iso27001": [
+        "A.5.29",
+        "A.5.30"
+      ]
+    },
+    {
+      "ref": "CC9.2",
+      "series": "CC9",
+      "title": "Vendor and partner risk",
+      "summary": "Risks from vendors and business partners are assessed and managed.",
+      "evidence_hint": "Vendor inventory, assessments and contracts",
+      "iso27001": [
+        "A.5.19",
+        "A.5.20",
+        "A.5.22"
+      ]
+    }
+  ]
+}

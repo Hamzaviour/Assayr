@@ -1,0 +1,849 @@
+{
+  "code": "ISO42001:2023",
+  "name": "ISO/IEC 42001",
+  "version": "2023",
+  "notice": "Requirement IDs and headings with Assayr's own summaries. Use your licensed copy of ISO/IEC 42001 for the requirement text.",
+  "clauses": [
+    {
+      "ref": "4",
+      "title": "Context of the organization",
+      "parent": null
+    },
+    {
+      "ref": "5",
+      "title": "Leadership",
+      "parent": null
+    },
+    {
+      "ref": "6",
+      "title": "Planning",
+      "parent": null
+    },
+    {
+      "ref": "6.1",
+      "title": "Actions to address risks and opportunities",
+      "parent": "6"
+    },
+    {
+      "ref": "7",
+      "title": "Support",
+      "parent": null
+    },
+    {
+      "ref": "7.5",
+      "title": "Documented information",
+      "parent": "7"
+    },
+    {
+      "ref": "8",
+      "title": "Operation",
+      "parent": null
+    },
+    {
+      "ref": "9",
+      "title": "Performance evaluation",
+      "parent": null
+    },
+    {
+      "ref": "9.2",
+      "title": "Internal audit",
+      "parent": "9"
+    },
+    {
+      "ref": "9.3",
+      "title": "Management review",
+      "parent": "9"
+    },
+    {
+      "ref": "10",
+      "title": "Improvement",
+      "parent": null
+    },
+    {
+      "ref": "4.1",
+      "title": "Understanding the organization and its context",
+      "parent": "4",
+      "summary": "Work out the internal and external issues that affect your AI work, including your role as AI provider, developer or user, and the laws and expectations around AI that apply to you.",
+      "evidence_hint": "Context analysis that covers AI roles, issues and climate considerations",
+      "iso27001": [
+        "4.1"
+      ],
+      "auto": null
+    },
+    {
+      "ref": "4.2",
+      "title": "Understanding the needs and expectations of interested parties",
+      "parent": "4",
+      "summary": "List the people and bodies that care about your AI systems, such as users, affected individuals and regulators, and decide which of their requirements you will meet.",
+      "evidence_hint": "Interested parties register with their AI-related requirements",
+      "iso27001": [
+        "4.2"
+      ],
+      "auto": null
+    },
+    {
+      "ref": "4.3",
+      "title": "Determining the scope of the AI management system",
+      "parent": "4",
+      "summary": "Decide and write down which AI systems, activities, sites and roles the AI management system covers, and why anything is left out.",
+      "evidence_hint": "Approved AI management system scope statement",
+      "iso27001": [
+        "4.3"
+      ],
+      "auto": null
+    },
+    {
+      "ref": "4.4",
+      "title": "AI management system",
+      "parent": "4",
+      "summary": "Set up, run, maintain and keep improving an AI management system with the processes this standard expects.",
+      "evidence_hint": "Description of the AI management system and how its processes connect",
+      "iso27001": [
+        "4.4"
+      ],
+      "auto": null
+    },
+    {
+      "ref": "5.1",
+      "title": "Leadership and commitment",
+      "parent": "5",
+      "summary": "Top management shows it owns the AI management system: it sets direction, provides resources, aligns AI with business goals and supports responsible AI.",
+      "evidence_hint": "Management minutes or statements showing commitment and resourcing",
+      "iso27001": [
+        "5.1"
+      ],
+      "auto": null
+    },
+    {
+      "ref": "5.2",
+      "title": "AI policy",
+      "parent": "5",
+      "summary": "Top management approves an AI policy that fits the organisation, gives a frame for AI objectives and commits to meeting requirements and improving.",
+      "evidence_hint": "Approved, published AI policy",
+      "iso27001": [
+        "5.2"
+      ],
+      "auto": null
+    },
+    {
+      "ref": "5.3",
+      "title": "Roles, responsibilities and authorities",
+      "parent": "5",
+      "summary": "Assign and communicate who is responsible for the AI management system and for reporting on how it performs.",
+      "evidence_hint": "Roles and responsibilities document or RACI for AI",
+      "iso27001": [
+        "5.3"
+      ],
+      "auto": null
+    },
+    {
+      "ref": "6.1.1",
+      "title": "General",
+      "parent": "6.1",
+      "summary": "Plan how to deal with the risks and opportunities that could stop the AI management system achieving its intended results, separating acceptable from unacceptable risk.",
+      "evidence_hint": "Risk and opportunity planning record for the AI management system",
+      "iso27001": [
+        "6.1.1"
+      ],
+      "auto": null
+    },
+    {
+      "ref": "6.1.2",
+      "title": "AI risk assessment",
+      "parent": "6.1",
+      "summary": "Define and use a repeatable way to identify, analyse and evaluate AI risks, considering the AI system impact assessment results.",
+      "evidence_hint": "AI risk assessment method and completed assessment",
+      "iso27001": [
+        "6.1.2"
+      ],
+      "auto": null
+    },
+    {
+      "ref": "6.1.3",
+      "title": "AI risk treatment",
+      "parent": "6.1",
+      "summary": "Choose treatment options for AI risks, pick the needed controls (comparing with Annex A), produce a statement of applicability and get risk owners to approve the plan.",
+      "evidence_hint": "AI risk treatment plan and statement of applicability",
+      "iso27001": [
+        "6.1.3"
+      ],
+      "auto": "ai_risks"
+    },
+    {
+      "ref": "6.1.4",
+      "title": "AI system impact assessment",
+      "parent": "6.1",
+      "summary": "Have a process to assess the possible consequences of AI systems for individuals, groups and society across their life cycle, and use the results in risk assessment.",
+      "evidence_hint": "AI system impact assessment procedure and completed assessments",
+      "iso27001": [],
+      "auto": "aiia_all"
+    },
+    {
+      "ref": "6.2",
+      "title": "AI objectives and planning to achieve them",
+      "parent": "6",
+      "summary": "Set measurable AI objectives at relevant levels and plan what will be done, by whom, with what resources and by when.",
+      "evidence_hint": "AI objectives with owners, measures and plans",
+      "iso27001": [
+        "6.2"
+      ],
+      "auto": null
+    },
+    {
+      "ref": "6.3",
+      "title": "Planning of changes",
+      "parent": "6",
+      "summary": "Make changes to the AI management system in a planned way.",
+      "evidence_hint": "Change records for the AI management system",
+      "iso27001": [
+        "6.3"
+      ],
+      "auto": null
+    },
+    {
+      "ref": "7.1",
+      "title": "Resources",
+      "parent": "7",
+      "summary": "Provide the people, money, tools and infrastructure the AI management system needs.",
+      "evidence_hint": "Budget or resource plan for the AI management system",
+      "iso27001": [
+        "7.1"
+      ],
+      "auto": null
+    },
+    {
+      "ref": "7.2",
+      "title": "Competence",
+      "parent": "7",
+      "summary": "Decide what competence people working on AI need, make sure they have it through education, training or experience, and keep proof.",
+      "evidence_hint": "Competence matrix and training records for AI roles",
+      "iso27001": [
+        "7.2"
+      ],
+      "auto": null
+    },
+    {
+      "ref": "7.3",
+      "title": "Awareness",
+      "parent": "7",
+      "summary": "Make sure people know the AI policy, how they contribute and what happens if they do not follow the AI management system.",
+      "evidence_hint": "Awareness sessions or acknowledgements of the AI policy",
+      "iso27001": [
+        "7.3"
+      ],
+      "auto": null
+    },
+    {
+      "ref": "7.4",
+      "title": "Communication",
+      "parent": "7",
+      "summary": "Decide what to communicate about the AI management system, when, to whom and how.",
+      "evidence_hint": "Communication plan for AI topics",
+      "iso27001": [
+        "7.4"
+      ],
+      "auto": null
+    },
+    {
+      "ref": "7.5.1",
+      "title": "General",
+      "parent": "7.5",
+      "summary": "Keep the documented information the standard requires and that you need for the AI management system to work.",
+      "evidence_hint": "List of AI management system documents and records",
+      "iso27001": [
+        "7.5.1"
+      ],
+      "auto": null
+    },
+    {
+      "ref": "7.5.2",
+      "title": "Creating and updating documented information",
+      "parent": "7.5",
+      "summary": "Give documents proper identification, format and review and approval when you create or change them.",
+      "evidence_hint": "Document template and approval history",
+      "iso27001": [
+        "7.5.2"
+      ],
+      "auto": null
+    },
+    {
+      "ref": "7.5.3",
+      "title": "Control of documented information",
+      "parent": "7.5",
+      "summary": "Keep AI management system documents available, protected, versioned, retained and disposed of in a controlled way.",
+      "evidence_hint": "Document control procedure and register",
+      "iso27001": [
+        "7.5.3"
+      ],
+      "auto": null
+    },
+    {
+      "ref": "8.1",
+      "title": "Operational planning and control",
+      "parent": "8",
+      "summary": "Plan, run and control the processes needed for AI, including outsourced ones, and keep records that they ran as planned.",
+      "evidence_hint": "Operating procedures and records for AI processes",
+      "iso27001": [
+        "8.1"
+      ],
+      "auto": null
+    },
+    {
+      "ref": "8.2",
+      "title": "AI risk assessment",
+      "parent": "8",
+      "summary": "Run AI risk assessments at planned intervals and when significant changes happen, and keep the results.",
+      "evidence_hint": "Dated AI risk assessment results",
+      "iso27001": [
+        "8.2"
+      ],
+      "auto": null
+    },
+    {
+      "ref": "8.3",
+      "title": "AI risk treatment",
+      "parent": "8",
+      "summary": "Carry out the AI risk treatment plan and check that it works.",
+      "evidence_hint": "Treatment progress and verification records",
+      "iso27001": [
+        "8.3"
+      ],
+      "auto": "ai_risks"
+    },
+    {
+      "ref": "8.4",
+      "title": "AI system impact assessment",
+      "parent": "8",
+      "summary": "Run AI system impact assessments at planned intervals and when significant changes happen, and keep the results.",
+      "evidence_hint": "Dated AI system impact assessments",
+      "iso27001": [],
+      "auto": "aiia_all"
+    },
+    {
+      "ref": "9.1",
+      "title": "Monitoring, measurement, analysis and evaluation",
+      "parent": "9",
+      "summary": "Decide what to monitor and measure about AI, how and when, and evaluate the results.",
+      "evidence_hint": "AI performance and effectiveness metrics with analysis",
+      "iso27001": [
+        "9.1"
+      ],
+      "auto": null
+    },
+    {
+      "ref": "9.2.1",
+      "title": "General",
+      "parent": "9.2",
+      "summary": "Audit the AI management system at planned intervals to check it meets requirements and works in practice.",
+      "evidence_hint": "Internal audit reports for the AI management system",
+      "iso27001": [
+        "9.2.1"
+      ],
+      "auto": null
+    },
+    {
+      "ref": "9.2.2",
+      "title": "Internal audit programme",
+      "parent": "9.2",
+      "summary": "Plan an audit programme with frequency, methods, criteria and scope, use objective auditors and report results to management.",
+      "evidence_hint": "Audit programme and auditor assignments",
+      "iso27001": [
+        "9.2.2"
+      ],
+      "auto": null
+    },
+    {
+      "ref": "9.3.1",
+      "title": "General",
+      "parent": "9.3",
+      "summary": "Top management reviews the AI management system at planned intervals to make sure it stays suitable, adequate and effective.",
+      "evidence_hint": "Management review minutes",
+      "iso27001": [
+        "9.3.1"
+      ],
+      "auto": null
+    },
+    {
+      "ref": "9.3.2",
+      "title": "Management review inputs",
+      "parent": "9.3",
+      "summary": "Bring the required inputs to management review, such as audit results, objectives, risks, feedback and changes.",
+      "evidence_hint": "Management review pack with all inputs",
+      "iso27001": [
+        "9.3.2"
+      ],
+      "auto": null
+    },
+    {
+      "ref": "9.3.3",
+      "title": "Management review results",
+      "parent": "9.3",
+      "summary": "Record management review decisions on improvements and changes to the AI management system.",
+      "evidence_hint": "Recorded decisions and actions from management review",
+      "iso27001": [
+        "9.3.3"
+      ],
+      "auto": null
+    },
+    {
+      "ref": "10.1",
+      "title": "Continual improvement",
+      "parent": "10",
+      "summary": "Keep improving how suitable, adequate and effective the AI management system is.",
+      "evidence_hint": "Improvement log or plan",
+      "iso27001": [
+        "10.1"
+      ],
+      "auto": null
+    },
+    {
+      "ref": "10.2",
+      "title": "Nonconformity and corrective action",
+      "parent": "10",
+      "summary": "When something does not conform, react, find the cause, fix it, check the fix worked and keep records.",
+      "evidence_hint": "Nonconformity and corrective action register",
+      "iso27001": [
+        "10.2"
+      ],
+      "auto": null
+    }
+  ],
+  "objectives": [
+    {
+      "ref": "A.2",
+      "title": "Policies related to AI"
+    },
+    {
+      "ref": "A.3",
+      "title": "Internal organization"
+    },
+    {
+      "ref": "A.4",
+      "title": "Resources for AI systems"
+    },
+    {
+      "ref": "A.5",
+      "title": "Assessing impacts of AI systems"
+    },
+    {
+      "ref": "A.6",
+      "title": "AI system life cycle"
+    },
+    {
+      "ref": "A.7",
+      "title": "Data for AI systems"
+    },
+    {
+      "ref": "A.8",
+      "title": "Information for interested parties of AI systems"
+    },
+    {
+      "ref": "A.9",
+      "title": "Use of AI systems"
+    },
+    {
+      "ref": "A.10",
+      "title": "Third-party and customer relationships"
+    }
+  ],
+  "controls": [
+    {
+      "ref": "A.2.2",
+      "title": "AI policy",
+      "objective": "A.2",
+      "summary": "Write down a policy for how the organisation develops or uses AI systems.",
+      "evidence_hint": "Approved AI policy",
+      "iso27001": [
+        "A.5.1"
+      ],
+      "auto": null
+    },
+    {
+      "ref": "A.2.3",
+      "title": "Alignment with other organizational policies",
+      "objective": "A.2",
+      "summary": "Check where other policies such as security, privacy and quality touch AI, and update them or the AI policy so they fit together.",
+      "evidence_hint": "Policy alignment review",
+      "iso27001": [
+        "A.5.1"
+      ],
+      "auto": null
+    },
+    {
+      "ref": "A.2.4",
+      "title": "Review of the AI policy",
+      "objective": "A.2",
+      "summary": "Review the AI policy at planned intervals, or when things change, so it stays suitable and effective.",
+      "evidence_hint": "Dated AI policy review record",
+      "iso27001": [
+        "A.5.1"
+      ],
+      "auto": null
+    },
+    {
+      "ref": "A.3.2",
+      "title": "AI roles and responsibilities",
+      "objective": "A.3",
+      "summary": "Define and assign the roles and responsibilities needed for AI across the organisation.",
+      "evidence_hint": "AI roles and responsibilities with named owners",
+      "iso27001": [
+        "A.5.2"
+      ],
+      "auto": "ai_owner"
+    },
+    {
+      "ref": "A.3.3",
+      "title": "Reporting of concerns",
+      "objective": "A.3",
+      "summary": "Give people a way to raise concerns about the organisation's role with AI systems throughout their life cycle.",
+      "evidence_hint": "Concern-reporting channel and its procedure",
+      "iso27001": [
+        "A.6.8"
+      ],
+      "auto": null
+    },
+    {
+      "ref": "A.4.2",
+      "title": "Resource documentation",
+      "objective": "A.4",
+      "summary": "Identify and document the resources each AI system needs at each stage of its life cycle.",
+      "evidence_hint": "Resource inventory per AI system",
+      "iso27001": [
+        "A.5.9"
+      ],
+      "auto": "ai_register"
+    },
+    {
+      "ref": "A.4.3",
+      "title": "Data resources",
+      "objective": "A.4",
+      "summary": "Document the data used by AI systems: where it comes from, its categories, quality and how it is prepared.",
+      "evidence_hint": "Data resource records for AI systems",
+      "iso27001": [
+        "A.5.9",
+        "A.5.12"
+      ],
+      "auto": null
+    },
+    {
+      "ref": "A.4.4",
+      "title": "Tooling resources",
+      "objective": "A.4",
+      "summary": "Document the tools used to build and run AI systems, such as frameworks, libraries and model platforms.",
+      "evidence_hint": "Tooling list per AI system",
+      "iso27001": [
+        "A.5.9"
+      ],
+      "auto": null
+    },
+    {
+      "ref": "A.4.5",
+      "title": "System and computing resources",
+      "objective": "A.4",
+      "summary": "Document the computing and system resources AI systems rely on, including where they run.",
+      "evidence_hint": "Infrastructure and compute documentation",
+      "iso27001": [
+        "A.8.6"
+      ],
+      "auto": null
+    },
+    {
+      "ref": "A.4.6",
+      "title": "Human resources",
+      "objective": "A.4",
+      "summary": "Document the people and skills needed to develop, run and oversee AI systems.",
+      "evidence_hint": "Staffing and skills plan for AI",
+      "iso27001": [
+        "A.6.3"
+      ],
+      "auto": null
+    },
+    {
+      "ref": "A.5.2",
+      "title": "AI system impact assessment process",
+      "objective": "A.5",
+      "summary": "Have a process for assessing what an AI system could do to individuals, groups and society, and repeat it when needed.",
+      "evidence_hint": "Impact assessment procedure with review schedule",
+      "iso27001": [],
+      "auto": "aiia_fresh"
+    },
+    {
+      "ref": "A.5.3",
+      "title": "Documentation of AI system impact assessments",
+      "objective": "A.5",
+      "summary": "Record the results of AI system impact assessments and keep them for a defined period.",
+      "evidence_hint": "Completed, approved impact assessments",
+      "iso27001": [],
+      "auto": "aiia_all"
+    },
+    {
+      "ref": "A.5.4",
+      "title": "Assessing AI system impact on individuals or groups of individuals",
+      "objective": "A.5",
+      "summary": "Assess and record the possible effects of AI systems on people, such as fairness, privacy and safety.",
+      "evidence_hint": "Individual impact sections of assessments",
+      "iso27001": [],
+      "auto": null
+    },
+    {
+      "ref": "A.5.5",
+      "title": "Assessing societal impacts of AI systems",
+      "objective": "A.5",
+      "summary": "Assess and record the possible effects of AI systems on society, such as the environment, economy and public trust.",
+      "evidence_hint": "Societal impact sections of assessments",
+      "iso27001": [],
+      "auto": null
+    },
+    {
+      "ref": "A.6.1.2",
+      "title": "Objectives for responsible development of AI system",
+      "objective": "A.6",
+      "summary": "Set and document objectives that guide responsible AI development, and build measures for them into the life cycle.",
+      "evidence_hint": "Responsible development objectives",
+      "iso27001": [],
+      "auto": null
+    },
+    {
+      "ref": "A.6.1.3",
+      "title": "Processes for responsible AI system design and development",
+      "objective": "A.6",
+      "summary": "Define and document the processes used to design and develop AI systems responsibly.",
+      "evidence_hint": "AI development life cycle procedure",
+      "iso27001": [
+        "A.8.25"
+      ],
+      "auto": null
+    },
+    {
+      "ref": "A.6.2.2",
+      "title": "AI system requirements and specification",
+      "objective": "A.6",
+      "summary": "Specify and document requirements for new AI systems or major changes.",
+      "evidence_hint": "Requirements specification for each AI system",
+      "iso27001": [
+        "A.8.26"
+      ],
+      "auto": null
+    },
+    {
+      "ref": "A.6.2.3",
+      "title": "Documentation of AI system design and development",
+      "objective": "A.6",
+      "summary": "Document the design and development of each AI system, including its architecture and key choices.",
+      "evidence_hint": "Design documents and decision records",
+      "iso27001": [
+        "A.8.25"
+      ],
+      "auto": null
+    },
+    {
+      "ref": "A.6.2.4",
+      "title": "AI system verification and validation",
+      "objective": "A.6",
+      "summary": "Define and document how AI systems are verified and validated, with criteria for passing.",
+      "evidence_hint": "Test and validation plan with results",
+      "iso27001": [
+        "A.8.29"
+      ],
+      "auto": null
+    },
+    {
+      "ref": "A.6.2.5",
+      "title": "AI system deployment",
+      "objective": "A.6",
+      "summary": "Document a deployment plan and make sure the requirements are met before an AI system goes live.",
+      "evidence_hint": "Deployment plan and go-live sign-off",
+      "iso27001": [
+        "A.8.32"
+      ],
+      "auto": null
+    },
+    {
+      "ref": "A.6.2.6",
+      "title": "AI system operation and monitoring",
+      "objective": "A.6",
+      "summary": "Define what is needed to run and monitor AI systems, including performance, repairs and updates.",
+      "evidence_hint": "Operating and monitoring procedures with records",
+      "iso27001": [
+        "A.8.16"
+      ],
+      "auto": null
+    },
+    {
+      "ref": "A.6.2.7",
+      "title": "AI system technical documentation",
+      "objective": "A.6",
+      "summary": "Decide what technical documentation each audience needs and provide it.",
+      "evidence_hint": "Technical documentation pack per AI system",
+      "iso27001": [
+        "A.5.37"
+      ],
+      "auto": "ai_register"
+    },
+    {
+      "ref": "A.6.2.8",
+      "title": "AI system recording of event logs",
+      "objective": "A.6",
+      "summary": "Decide at which life cycle stages event logging is needed, and turn it on at least while the AI system is in use.",
+      "evidence_hint": "Logging configuration and sample logs",
+      "iso27001": [
+        "A.8.15"
+      ],
+      "auto": null
+    },
+    {
+      "ref": "A.7.2",
+      "title": "Data for development and enhancement of AI system",
+      "objective": "A.7",
+      "summary": "Define and run data management processes for the data used to build and improve AI systems.",
+      "evidence_hint": "Data management procedure for AI",
+      "iso27001": [],
+      "auto": null
+    },
+    {
+      "ref": "A.7.3",
+      "title": "Acquisition of data",
+      "objective": "A.7",
+      "summary": "Decide and document how data for AI systems is obtained, including its source and rights to use it.",
+      "evidence_hint": "Data acquisition records and agreements",
+      "iso27001": [
+        "A.5.19"
+      ],
+      "auto": null
+    },
+    {
+      "ref": "A.7.4",
+      "title": "Quality of data for AI systems",
+      "objective": "A.7",
+      "summary": "Set data quality requirements and make sure data used for AI meets them.",
+      "evidence_hint": "Data quality criteria and checks",
+      "iso27001": [],
+      "auto": null
+    },
+    {
+      "ref": "A.7.5",
+      "title": "Data provenance",
+      "objective": "A.7",
+      "summary": "Record where AI data came from and what happened to it over its life cycle.",
+      "evidence_hint": "Data lineage or provenance records",
+      "iso27001": [
+        "A.5.12"
+      ],
+      "auto": null
+    },
+    {
+      "ref": "A.7.6",
+      "title": "Data preparation",
+      "objective": "A.7",
+      "summary": "Define and document how data is selected, cleaned and prepared for AI systems.",
+      "evidence_hint": "Data preparation method and logs",
+      "iso27001": [],
+      "auto": null
+    },
+    {
+      "ref": "A.8.2",
+      "title": "System documentation and information for users",
+      "objective": "A.8",
+      "summary": "Give users the information they need about an AI system, such as what it does and its limits.",
+      "evidence_hint": "User-facing documentation for each AI system",
+      "iso27001": [
+        "A.5.37"
+      ],
+      "auto": null
+    },
+    {
+      "ref": "A.8.3",
+      "title": "External reporting",
+      "objective": "A.8",
+      "summary": "Let interested parties report problems or adverse effects of an AI system.",
+      "evidence_hint": "External reporting channel and its handling records",
+      "iso27001": [],
+      "auto": null
+    },
+    {
+      "ref": "A.8.4",
+      "title": "Communication of incidents",
+      "objective": "A.8",
+      "summary": "Plan how to tell users and others about incidents involving an AI system.",
+      "evidence_hint": "Incident communication plan for AI",
+      "iso27001": [
+        "A.5.24",
+        "A.5.26"
+      ],
+      "auto": null
+    },
+    {
+      "ref": "A.8.5",
+      "title": "Information for interested parties",
+      "objective": "A.8",
+      "summary": "Decide and document what you must report about AI systems to interested parties, such as regulators.",
+      "evidence_hint": "Register of reporting obligations",
+      "iso27001": [
+        "A.5.14"
+      ],
+      "auto": null
+    },
+    {
+      "ref": "A.9.2",
+      "title": "Processes for responsible use of AI systems",
+      "objective": "A.9",
+      "summary": "Define and document processes for using AI systems responsibly.",
+      "evidence_hint": "Responsible use procedure",
+      "iso27001": [],
+      "auto": null
+    },
+    {
+      "ref": "A.9.3",
+      "title": "Objectives for responsible use of AI system",
+      "objective": "A.9",
+      "summary": "Set and document objectives that guide responsible use of AI systems.",
+      "evidence_hint": "Responsible use objectives",
+      "iso27001": [],
+      "auto": null
+    },
+    {
+      "ref": "A.9.4",
+      "title": "Intended use of the AI system",
+      "objective": "A.9",
+      "summary": "Make sure AI systems are used as intended and in line with their documentation.",
+      "evidence_hint": "Intended use statement and usage checks",
+      "iso27001": [],
+      "auto": null
+    },
+    {
+      "ref": "A.10.2",
+      "title": "Allocating responsibilities",
+      "objective": "A.10",
+      "summary": "Split responsibilities for AI between the organisation, its partners, suppliers and customers.",
+      "evidence_hint": "Responsibility matrix or contract clauses",
+      "iso27001": [
+        "A.5.19",
+        "A.5.20"
+      ],
+      "auto": null
+    },
+    {
+      "ref": "A.10.3",
+      "title": "Suppliers",
+      "objective": "A.10",
+      "summary": "Make sure services, products and materials from suppliers fit your approach to responsible AI.",
+      "evidence_hint": "Supplier due diligence for AI",
+      "iso27001": [
+        "A.5.19",
+        "A.5.21"
+      ],
+      "auto": null
+    },
+    {
+      "ref": "A.10.4",
+      "title": "Customers",
+      "objective": "A.10",
+      "summary": "Take your customers' expectations and needs into account when you provide AI products and services.",
+      "evidence_hint": "Customer requirements and terms for AI",
+      "iso27001": [
+        "A.5.14"
+      ],
+      "auto": null
+    }
+  ]
+}
