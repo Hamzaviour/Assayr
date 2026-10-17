@@ -102,6 +102,7 @@ def seed_nia(db: Session, scope: Scope, path: Path = DATA_PATH) -> NiaSeedResult
             if code not in controls:
                 domain = names[m["ref"].split()[0]]
                 control = Control(
+                    framework="nia",
                     id=uuid.uuid4(),
                     scope_id=scope.id,
                     code=code,

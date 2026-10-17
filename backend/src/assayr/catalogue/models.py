@@ -52,6 +52,7 @@ class Control(IdMixin, TimestampMixin, Base):
     __table_args__ = (
         UniqueConstraint("scope_id", "code", name="uq_control_scope_code"),
         Index("ix_control_scope_sort", "scope_id", "sort_order"),
+        Index("ix_control_scope_framework", "scope_id", "framework"),
     )
 
     scope_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("scope.id", ondelete="CASCADE"))
@@ -71,6 +72,8 @@ class Control(IdMixin, TimestampMixin, Base):
     soa_sources: Mapped[list | None] = mapped_column(JSON)
     soa_justification: Mapped[str | None] = mapped_column(Text)
     exclusion_reason: Mapped[str | None] = mapped_column(Text)
+    framework: Mapped[str] = mapped_column(String(20), default="iso27001", server_default="iso27001")
+    test_procedure: Mapped[str | None] = mapped_column(Text)
 
     owner: Mapped[User | None] = relationship(lazy="joined")
     slots: Mapped[list[EvidenceSlot]] = relationship(
@@ -103,6 +106,9 @@ class EvidenceSlot(IdMixin, Base):
     control: Mapped[Control | None] = relationship(back_populates="slots")
 
 
+FRAMEWORKS = ("iso27001", "nia", "iso42001", "soc2")
+
+
 def iso_controls():
-    """Filter for ISO/IEC 27001 controls: NIA-only controls (coded "NIA <ref>") share the table."""
-    return ~Control.code.startswith("NIA ")
+    """Filter for ISO/IEC 27001 controls: NIA-only, ISO 42001 and SOC 2 controls share the table."""
+    return Control.framework == "iso27001"

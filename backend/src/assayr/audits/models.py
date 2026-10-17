@@ -7,8 +7,9 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from assayr.db import Base, IdMixin, TimestampMixin, UTCDateTime
 from assayr.identity.models import User
 
-FRAMEWORKS = ("iso27001", "nia-2.1")
+FRAMEWORKS = ("iso27001", "nia-2.1", "iso42001", "soc2")
 RESULTS = ("pass", "fail", "partial", "na")
+SOC2_RESULTS = ("no_exception", "exception", "not_tested")
 TEST_TYPES = ("DA", "OEA", "Both")
 
 
@@ -52,7 +53,11 @@ class AuditItem(IdMixin, Base):
     assessment_area: Mapped[str | None] = mapped_column(Text)
     test_type: Mapped[str | None] = mapped_column(String(10))
     requirement: Mapped[str | None] = mapped_column(String(1))
-    result: Mapped[str | None] = mapped_column(String(10))
+    result: Mapped[str | None] = mapped_column(String(20))
     notes: Mapped[str | None] = mapped_column(Text)
+    population: Mapped[str | None] = mapped_column(Text)
+    sample_size: Mapped[int | None] = mapped_column(Integer)
+    samples_tested: Mapped[int | None] = mapped_column(Integer)
+    exception_note: Mapped[str | None] = mapped_column(Text)
 
     audit: Mapped[Audit] = relationship(back_populates="items")
