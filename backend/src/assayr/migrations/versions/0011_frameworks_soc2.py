@@ -20,6 +20,8 @@ def upgrade() -> None:
             sa.Column("framework", sa.String(length=20), nullable=False, server_default="iso27001")
         )
         batch.add_column(sa.Column("test_procedure", sa.Text(), nullable=True))
+        # ISO 42001 objective names are longer than the ISO 27001 themes.
+        batch.alter_column("theme", type_=sa.String(length=80), existing_type=sa.String(length=40))
     op.execute("UPDATE control SET framework = 'nia' WHERE code LIKE 'NIA %'")
     op.create_index("ix_control_scope_framework", "control", ["scope_id", "framework"])
     with op.batch_alter_table("audit_item") as batch:
@@ -37,5 +39,6 @@ def downgrade() -> None:
         batch.alter_column("result", type_=sa.String(length=10), existing_type=sa.String(length=20))
     op.drop_index("ix_control_scope_framework", table_name="control")
     with op.batch_alter_table("control") as batch:
+        batch.alter_column("theme", type_=sa.String(length=40), existing_type=sa.String(length=80))
         batch.drop_column("test_procedure")
         batch.drop_column("framework")

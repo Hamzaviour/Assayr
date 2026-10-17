@@ -37,7 +37,9 @@ def test_soc2_shape():
 @pytest.mark.parametrize("name", ["iso42001_2023.json", "soc2_tsc_security.json"])
 def test_mappings_exist_and_summaries_are_short(name):
     d = load(name)
-    items = d.get("controls", []) + d.get("criteria", []) + [c for c in d.get("clauses", []) if c.get("summary")]
+    items = (
+        d.get("controls", []) + d.get("criteria", []) + [c for c in d.get("clauses", []) if c.get("summary")]
+    )
     for item in items:
         assert 20 <= len(item["summary"]) <= 400, item["ref"]
         assert 10 <= len(item["evidence_hint"]) <= 300, item["ref"]

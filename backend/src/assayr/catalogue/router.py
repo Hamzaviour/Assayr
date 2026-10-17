@@ -84,7 +84,7 @@ def list_controls(
     grant: Grant = Depends(require(Perm.CONTROLS_READ)),
     db: Session = Depends(get_session),
     scope_id: uuid.UUID | None = None,
-    theme: str | None = Query(None, max_length=40),
+    theme: str | None = Query(None, max_length=80),
     status_: str | None = Query(None, alias="status", max_length=30),
     q: str | None = Query(None, max_length=100),
     owner: str | None = Query(None, max_length=40),

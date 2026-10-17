@@ -58,7 +58,7 @@ class Control(IdMixin, TimestampMixin, Base):
     scope_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("scope.id", ondelete="CASCADE"))
     code: Mapped[str] = mapped_column(String(20))
     title: Mapped[str] = mapped_column(String(300))
-    theme: Mapped[str | None] = mapped_column(String(40))
+    theme: Mapped[str | None] = mapped_column(String(80))
     description: Mapped[str | None] = mapped_column(Text)
     owner_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("user_account.id", ondelete="SET NULL"))
     default_owner_role: Mapped[str | None] = mapped_column(String(60))

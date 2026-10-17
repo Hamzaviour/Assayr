@@ -5,6 +5,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 import assayr.job_handlers  # noqa: F401  (registers job handlers)
+from assayr.catalogue.frameworks import seed_iso42001, seed_soc2
 from assayr.catalogue.seed import ensure_default_scope, seed_iso27001
 from assayr.config import Settings
 from assayr.db import Base, utcnow
@@ -70,6 +71,14 @@ def seeded(db, settings):
     ensure_risk_library(db)
     db.commit()
     return scope
+
+
+@pytest.fixture
+def seeded_all(db, seeded):
+    seed_iso42001(db, seeded)
+    seed_soc2(db, seeded)
+    db.commit()
+    return seeded
 
 
 @pytest.fixture
