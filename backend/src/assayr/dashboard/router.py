@@ -10,8 +10,10 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from assayr.catalogue.access import has_perm
+from assayr.catalogue.frameworks import ISO42001_CODE, SOC2_CODE
 from assayr.catalogue.models import Control, EvidenceSlot, Framework
 from assayr.catalogue.router import resolve_scope
+from assayr.catalogue.seed import FRAMEWORK_CODE
 from assayr.db import get_session, utcnow
 from assayr.evidence.models import ArtefactLink
 from assayr.identity.deps import current_user, get_clock, require
@@ -87,20 +89,25 @@ def _in_scope(controls: list[Control]) -> list[Control]:
     return [c for c in controls if c.status != "excluded"]
 
 
-def _framework_row(db: Session, controls: list[Control], has_evidence: bool) -> FrameworkRow:
+def _framework_row(
+    framework: Framework | None,
+    controls: list[Control],
+    has_evidence: bool,
+    fallback: tuple[str, str, str] = ("iso27001", "ISO/IEC 27001", "2022"),
+    catalogue_order: bool = False,
+) -> FrameworkRow:
     counted = _in_scope(controls)
     counts = Counter(c.status for c in counted)
-    framework = db.scalar(select(Framework).order_by(Framework.created_at))
     return FrameworkRow(
-        code=framework.code if framework else "iso27001",
-        name=framework.name if framework else "ISO/IEC 27001",
-        version=framework.version if framework else "2022",
+        code=framework.code if framework else fallback[0],
+        name=framework.name if framework else fallback[1],
+        version=framework.version if framework else fallback[2],
         total=len(counted),
         compliant=counts.get("compliant", 0),
         readiness=weighted_readiness(controls) if has_evidence else None,
         status_counts=dict(counts),
         excluded=len(controls) - len(counted),
-        groups=_groups(counted, has_evidence),
+        groups=_groups(counted, has_evidence, catalogue_order),
     )
 
 
@@ -108,10 +115,11 @@ def _code_key(code: str) -> list[tuple[int, int | str]]:
     return [(0, int(p)) if p.isdigit() else (1, p) for p in code.split(".")]
 
 
-def _groups(controls: list[Control], has_evidence: bool) -> list[GroupRow]:
-    """Per Annex A theme, in catalogue order."""
+def _groups(controls: list[Control], has_evidence: bool, catalogue_order: bool = False) -> list[GroupRow]:
+    """Per Annex A theme (or ISO 42001 objective, SOC 2 series), in catalogue order."""
     by_theme: dict[str, list[Control]] = {}
-    for control in sorted(controls, key=lambda c: _code_key(c.code)):
+    key = (lambda c: c.sort_order) if catalogue_order else (lambda c: _code_key(c.code))
+    for control in sorted(controls, key=key):
         by_theme.setdefault(control.theme or "Other", []).append(control)
     return [
         GroupRow(
@@ -167,10 +175,35 @@ def _risk_card(db: Session, scope_id: uuid.UUID) -> RiskCard:
 
 def _frameworks(db: Session, scope_id: uuid.UUID, controls: list[Control]) -> list[FrameworkRow]:
     has_evidence = scope_has_evidence(db, scope_id)
-    iso = [c for c in controls if c.framework == "iso27001"]  # other frameworks have their own rows
-    rows = [_framework_row(db, iso, has_evidence)]
+    by_framework: dict[str, list[Control]] = {}
+    for c in controls:
+        by_framework.setdefault(c.framework, []).append(c)
+    frameworks = {f.code: f for f in db.scalars(select(Framework))}
+    rows = [_framework_row(frameworks.get(FRAMEWORK_CODE), by_framework.get("iso27001", []), has_evidence)]
     if nia_framework(db) is not None:
         rows.append(FrameworkRow(**nia_framework_row(db, scope_id, has_evidence)))
+    if by_framework.get("iso42001"):
+        rows.append(
+            _framework_row(
+                frameworks.get(ISO42001_CODE),
+                by_framework["iso42001"],
+                has_evidence,
+                (ISO42001_CODE, "ISO/IEC 42001", "2023"),
+                catalogue_order=True,
+            )
+        )
+    if by_framework.get("soc2"):
+        # Control activities roll up into their criterion, so the row counts criteria only.
+        criteria = [c for c in by_framework["soc2"] if c.code.count(".") == 1]
+        rows.append(
+            _framework_row(
+                frameworks.get(SOC2_CODE),
+                criteria,
+                has_evidence,
+                (SOC2_CODE, "SOC 2", "Security"),
+                catalogue_order=True,
+            )
+        )
     rows.append(FrameworkRow(**pdppl_framework_row(db, scope_id, utcnow())))
     return rows
 
