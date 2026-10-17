@@ -10,7 +10,7 @@ import { Icon } from "./icons"
 type NavItem = {
   label: string
   icon: string
-  to?: "/" | "/compliance" | "/controls" | "/evidence" | "/soa" | "/risks" | "/assets" | "/policies" | "/audits" | "/my-training" | "/users" | "/training" | "/privacy" | "/ai"
+  to?: "/" | "/compliance" | "/controls" | "/evidence" | "/soa" | "/risks" | "/assets" | "/policies" | "/audits" | "/my-training" | "/users" | "/training" | "/privacy" | "/ai" | "/findings"
 }
 type NavSection = { group: string | null; items: NavItem[] }
 const MY_TRAINING: NavItem = { label: "My training", icon: "training", to: "/my-training" }
@@ -34,7 +34,13 @@ const NAV: NavSection[] = [
       { label: "AI systems", icon: "ai", to: "/ai" },
     ],
   },
-  { group: "Assure", items: [{ label: "Audits", icon: "audit", to: "/audits" }] },
+  {
+    group: "Assure",
+    items: [
+      { label: "Audits", icon: "audit", to: "/audits" },
+      { label: "Findings", icon: "finding", to: "/findings" },
+    ],
+  },
   { group: "Privacy", items: [{ label: "Data privacy", icon: "privacy", to: "/privacy" }] },
 ]
 

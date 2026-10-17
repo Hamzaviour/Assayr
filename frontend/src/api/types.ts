@@ -6,6 +6,7 @@ export interface Me {
   is_active: boolean
   department?: string | null
   must_change_password?: boolean
+  digest_opt_out?: boolean
   roles: RoleGrant[]
   permissions: string[]
 }

@@ -17,7 +17,10 @@ import {
   useUpdateAudit,
   useUpdateAuditItem,
 } from "../api/audits"
+import { useRaiseAuditFindings, useRaiseFinding } from "../api/findings"
 import { usePeople } from "../api/people"
+import { useMe } from "../auth/session"
+import { Status } from "../components/Status"
 import { Button } from "../components/Button"
 import { formatDate } from "../lib/format"
 import { AuditStatus, ResultBar, resultSummary } from "./Audits"
@@ -43,6 +46,57 @@ const filtersFor = (soc2: boolean): [Filter, string][] => [
 ]
 const isIssue = (item: AuditItem) => item.result === "fail" || item.result === "partial" || item.result === "exception"
 
+/** Under the control reference: the row's finding, or a button to raise one for a failed result. */
+function FindingCell({ item, canRaise }: { item: AuditItem; canRaise: boolean }) {
+  const raise = useRaiseFinding()
+  if (item.finding) {
+    return (
+      <div className="mt-1.5 grid gap-1">
+        <span className="inline-flex items-center gap-1.5">
+          <Link to="/findings/$id" params={{ id: item.finding.id }} className="font-mono text-[12px] font-semibold text-primary hover:underline">
+            {item.finding.code}
+          </Link>
+          <Status area="finding" value={item.finding.status} />
+        </span>
+        {item.result_changed && <span className="text-[11.5px] text-warn">Result changed since the finding was raised</span>}
+      </div>
+    )
+  }
+  if (!canRaise || !isIssue(item)) return null
+  return (
+    <div className="mt-1.5">
+      <button
+        type="button"
+        disabled={raise.isPending}
+        onClick={() => raise.mutate(item.id)}
+        className="rounded-md border border-line px-2 py-0.5 text-[12px] font-semibold text-primary hover:bg-subtle"
+      >
+        Raise finding
+      </button>
+      {raise.isError && <p role="alert" className="mt-1 text-[12px] text-bad">{raise.error.message}</p>}
+    </div>
+  )
+}
+
+function RaiseAll({ audit: a }: { audit: AuditDetail }) {
+  const raise = useRaiseAuditFindings(a.id)
+  const waiting = a.items.filter((i) => isIssue(i) && !i.finding).length
+  if (waiting === 0) return null
+  return (
+    <section aria-label="Findings to raise" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-warn/30 bg-warn-soft px-4 py-3">
+      <p className="text-[13.5px]">
+        {waiting} {waiting === 1 ? "failed result has" : "failed results have"} no finding yet. Raise them to track corrective actions.
+      </p>
+      <div className="flex items-center gap-2">
+        <Button size="sm" disabled={raise.isPending} onClick={() => raise.mutate()}>
+          Raise {waiting} {waiting === 1 ? "finding" : "findings"}
+        </Button>
+        {raise.isError && <p role="alert" className="text-[12.5px] text-bad">{raise.error.message}</p>}
+      </div>
+    </section>
+  )
+}
+
 /** The control page a row opens: NIA has its own pages; ISO 42001 codes carry the "AI " prefix. */
 function ControlRef({ audit: a, item }: { audit: AuditDetail; item: AuditItem }) {
   const className = "font-mono text-[12.5px] font-medium text-fg hover:text-primary"
@@ -56,6 +110,8 @@ function ControlRef({ audit: a, item }: { audit: AuditDetail; item: AuditItem })
 export function AuditDetailPage() {
   const { id } = useParams({ from: "/app/audits/$id" })
   const audit = useAudit(id)
+  const me = useMe()
+  const canRaise = (me.data?.permissions ?? []).includes("findings:manage")
   const [filter, setFilter] = useState<Filter>("all")
   if (audit.isPending) return <p role="status" className="text-fg-3">Loading…</p>
   if (audit.isError) return <p role="alert">{audit.error.message}</p>
@@ -72,6 +128,7 @@ export function AuditDetailPage() {
         <Link to="/audits" className="hover:text-fg">Internal audits</Link> <span aria-hidden="true">›</span> {a.title}
       </nav>
       <Header audit={a} />
+      {canRaise && a.status === "completed" && <RaiseAll audit={a} />}
       {editable && <AddControls audit={a} />}
       <div className="flex flex-wrap items-center gap-2">
         {filtersFor(soc2).map(([key, label]) => (
@@ -127,9 +184,9 @@ export function AuditDetailPage() {
               <tbody>
                 {items.map((item) =>
                   soc2 ? (
-                    <Soc2Row key={item.id} audit={a} item={item} editable={editable} />
+                    <Soc2Row key={item.id} audit={a} item={item} editable={editable} canRaise={canRaise} />
                   ) : (
-                    <ItemRow key={item.id} audit={a} item={item} editable={editable} />
+                    <ItemRow key={item.id} audit={a} item={item} editable={editable} canRaise={canRaise} />
                   ),
                 )}
               </tbody>
@@ -302,7 +359,7 @@ function AddControls({ audit: a }: { audit: AuditDetail }) {
   )
 }
 
-function ItemRow({ audit: a, item, editable }: { audit: AuditDetail; item: AuditItem; editable: boolean }) {
+function ItemRow({ audit: a, item, editable, canRaise }: { audit: AuditDetail; item: AuditItem; editable: boolean; canRaise: boolean }) {
   const update = useUpdateAuditItem(a.id)
   const remove = useRemoveAuditItem(a.id)
   const [area, setArea] = useState(item.assessment_area ?? "")
@@ -319,7 +376,12 @@ function ItemRow({ audit: a, item, editable }: { audit: AuditDetail; item: Audit
         },
       },
     )
-  const link = <ControlRef audit={a} item={item} />
+  const link = (
+    <>
+      <ControlRef audit={a} item={item} />
+      <FindingCell item={item} canRaise={canRaise} />
+    </>
+  )
 
   if (!editable) {
     return (
@@ -418,7 +480,7 @@ function ItemRow({ audit: a, item, editable }: { audit: AuditDetail; item: Audit
 const toCount = (text: string) => (text.trim() === "" ? null : Math.max(0, Math.trunc(Number(text))))
 
 /** A SOC 2 control activity: test procedure, population, sample, result and the exception it found. */
-function Soc2Row({ audit: a, item, editable }: { audit: AuditDetail; item: AuditItem; editable: boolean }) {
+function Soc2Row({ audit: a, item, editable, canRaise }: { audit: AuditDetail; item: AuditItem; editable: boolean; canRaise: boolean }) {
   const update = useUpdateAuditItem(a.id)
   const remove = useRemoveAuditItem(a.id)
   const [procedure, setProcedure] = useState(item.assessment_area ?? "")
@@ -449,7 +511,12 @@ function Soc2Row({ audit: a, item, editable }: { audit: AuditDetail; item: Audit
     if (value === (item[name] ?? null) || Number.isNaN(value)) return
     save({ [name]: value })
   }
-  const link = <ControlRef audit={a} item={item} />
+  const link = (
+    <>
+      <ControlRef audit={a} item={item} />
+      <FindingCell item={item} canRaise={canRaise} />
+    </>
+  )
 
   if (!editable) {
     return (

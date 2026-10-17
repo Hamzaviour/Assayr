@@ -177,6 +177,21 @@ function Body({ d }: { d: Dashboard }) {
             total={iso.total}
             link={<Link to="/controls" search={{ owner: "none" }} aria-label="Control owners — Assign owners" className={LINK}>Assign owners <span aria-hidden="true" className="transition-transform duration-300 group-hover/link:translate-x-1">→</span></Link>}
           />
+          {d.findings && (
+            <Monitor
+              title="Findings"
+              icon="finding"
+              index={7}
+              attention={d.findings.overdue}
+              footLeft={`${d.findings.open} open`}
+              total={d.findings.open}
+              link={<Link to="/findings" search={{ overdue: true }} aria-label="Findings — Open overdue findings" className={LINK}>Open overdue findings <span aria-hidden="true" className="transition-transform duration-300 group-hover/link:translate-x-1">→</span></Link>}
+            >
+              <p className="text-[12.5px] text-fg-2">
+                {d.findings.by_grade.major ?? 0} major · {d.findings.by_grade.minor ?? 0} minor · {(d.findings.by_grade.observation ?? 0) + (d.findings.by_grade.ofi ?? 0)} other
+              </p>
+            </Monitor>
+          )}
           {d.training && (
             <Monitor
               title="Training"

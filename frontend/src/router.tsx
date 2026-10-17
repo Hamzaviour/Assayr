@@ -8,6 +8,8 @@ import { NiaControlPage } from "./pages/NiaControl"
 import { PoliciesPage } from "./pages/Policies"
 import { AuditsPage } from "./pages/Audits"
 import { AuditDetailPage } from "./pages/AuditDetail"
+import { FindingPage } from "./pages/Finding"
+import { FindingsPage } from "./pages/Findings"
 import { MyTrainingPage } from "./pages/MyTraining"
 import { UsersPage } from "./pages/Users"
 import { TrainingPage } from "./pages/Training"
@@ -74,6 +76,15 @@ const controlRoute = createRoute({ getParentRoute: () => appRoute, path: "/contr
 const niaControlRoute = createRoute({ getParentRoute: () => appRoute, path: "/nia/$ref", component: NiaControlPage })
 const auditsRoute = createRoute({ getParentRoute: () => appRoute, path: "/audits", component: AuditsPage })
 const auditRoute = createRoute({ getParentRoute: () => appRoute, path: "/audits/$id", component: AuditDetailPage })
+const findingsRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/findings",
+  validateSearch: (search: Record<string, unknown>): { overdue?: boolean } => ({
+    overdue: search.overdue === true || search.overdue === "true" ? true : undefined,
+  }),
+  component: FindingsPage,
+})
+const findingRoute = createRoute({ getParentRoute: () => appRoute, path: "/findings/$id", component: FindingPage })
 const myTrainingRoute = createRoute({ getParentRoute: () => appRoute, path: "/my-training", component: MyTrainingPage })
 const trainingRoute = createRoute({ getParentRoute: () => appRoute, path: "/training", component: TrainingPage })
 const courseRoute = createRoute({ getParentRoute: () => appRoute, path: "/training/$id", component: CourseEditorPage })
@@ -115,7 +126,7 @@ const styleguideRoute = createRoute({ getParentRoute: () => appRoute, path: "/st
 
 export const routeTree = rootRoute.addChildren([
   loginRoute,
-  appRoute.addChildren([dashboardRoute, complianceRoute, controlsRoute, controlRoute, niaControlRoute, policiesRoute, documentRoute, auditsRoute, auditRoute, myTrainingRoute, usersRoute, trainingRoute, courseRoute, coursePlayerRoute, privacyRoute, activityRoute, requestRoute, breachRoute, evidenceRoute, risksRoute, riskNewRoute, riskSnapshotsRoute, riskRoute, riskAssessRoute, assetsRoute,
+  appRoute.addChildren([dashboardRoute, complianceRoute, controlsRoute, controlRoute, niaControlRoute, policiesRoute, documentRoute, auditsRoute, auditRoute, findingsRoute, findingRoute, myTrainingRoute, usersRoute, trainingRoute, courseRoute, coursePlayerRoute, privacyRoute, activityRoute, requestRoute, breachRoute, evidenceRoute, risksRoute, riskNewRoute, riskSnapshotsRoute, riskRoute, riskAssessRoute, assetsRoute,
     aiRoute,
     aiSystemRoute, soaRoute, styleguideRoute]),
 ])

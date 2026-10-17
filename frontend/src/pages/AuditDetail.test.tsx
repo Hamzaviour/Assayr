@@ -212,3 +212,53 @@ test("ISO 42001 audit rows open the AI control", async () => {
   expect(await screen.findByRole("link", { name: "A.6.2.4" })).toHaveAttribute("href", "/controls/AI%20A.6.2.4")
   expect(screen.getByText(/ISO\/IEC 42001 · internal audit/)).toBeInTheDocument()
 })
+
+const AUDITOR_ME = { ...ME, permissions: [...ME.permissions, "findings:manage"] }
+
+test("failed rows can be raised as findings, and raised rows link to their finding", async () => {
+  const items = [
+    row("i1", "SU 5", "System Usage Security", { result: "fail", finding: { id: "f1", code: "F-001", status: "action_planned" } }),
+    row("i2", "SU 7", "System Usage Security", { result: "partial" }),
+    row("i3", "PS 1", "Personnel Security", { result: "pass" }),
+  ]
+  document.cookie = "assayr_csrf=t; path=/"
+  const calls = mockApi({
+    "GET /auth/me": () => json(200, AUDITOR_ME),
+    "GET /audits/a1": () => json(200, detail({ items })),
+    "POST /findings": () => json(201, { id: "f2", code: "F-002" }),
+  })
+  renderApp("/audits/a1")
+  expect(await screen.findByRole("link", { name: "F-001" })).toHaveAttribute("href", "/findings/f1")
+  const su7 = screen.getByRole("link", { name: "SU 7" }).closest("tr")!
+  await userEvent.click(within(su7).getByRole("button", { name: "Raise finding" }))
+  expect(bodyOf(calls, "POST", "/findings")).toEqual({ audit_item_id: "i2" })
+  const ps1 = screen.getByRole("link", { name: "PS 1" }).closest("tr")!
+  expect(within(ps1).queryByRole("button", { name: "Raise finding" })).not.toBeInTheDocument()
+})
+
+test("a completed audit offers to raise every remaining finding at once", async () => {
+  const items = [
+    row("i1", "SU 5", "System Usage Security", { result: "fail", finding: { id: "f1", code: "F-001", status: "open" }, result_changed: true }),
+    row("i2", "SU 7", "System Usage Security", { result: "partial" }),
+    row("i3", "PS 1", "Personnel Security", { result: "fail" }),
+  ]
+  document.cookie = "assayr_csrf=t; path=/"
+  const calls = mockApi({
+    "GET /auth/me": () => json(200, AUDITOR_ME),
+    "GET /audits/a1": () => json(200, detail({ status: "completed", items })),
+    "POST /audits/a1/findings": () => json(200, { created: [], existing: 0 }),
+  })
+  renderApp("/audits/a1")
+  expect(await screen.findByText(/result changed since the finding was raised/i)).toBeInTheDocument()
+  await userEvent.click(screen.getByRole("button", { name: "Raise 2 findings" }))
+  expect(bodyOf(calls, "POST", "/audits/a1/findings")).toEqual({ all: true })
+})
+
+test("people without findings rights see findings but can not raise them", async () => {
+  const items = [row("i1", "SU 5", "System Usage Security", { result: "fail" })]
+  mockApi({ "GET /auth/me": () => json(200, ME), "GET /audits/a1": () => json(200, detail({ status: "completed", items })) })
+  renderApp("/audits/a1")
+  await screen.findByRole("link", { name: "SU 5" })
+  expect(screen.queryByRole("button", { name: "Raise finding" })).not.toBeInTheDocument()
+  expect(screen.queryByRole("button", { name: /Raise \d+ finding/ })).not.toBeInTheDocument()
+})

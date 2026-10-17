@@ -186,3 +186,11 @@ test("every framework row links to its own controls", async () => {
   expect(href(/SOC 2/)).toBe("/controls?framework=soc2")
   expect(href(/PDPPL/)).toBe("/privacy?tab=pdppl")
 })
+
+test("the findings card shows open findings and links to the overdue ones", async () => {
+  setup(dashboard({ findings: { open: 5, overdue: 2, by_grade: { major: 1, minor: 3, observation: 1, ofi: 0 }, by_status: {} } }))
+  const card = (await screen.findByRole("heading", { name: "Findings" })).closest("section")!
+  expect(card).toHaveTextContent("2")
+  expect(card).toHaveTextContent("1 major · 3 minor")
+  expect(within(card).getByRole("link", { name: /Findings/ })).toHaveAttribute("href", "/findings?overdue=true")
+})

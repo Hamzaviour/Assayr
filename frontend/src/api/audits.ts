@@ -53,6 +53,8 @@ export type AuditItem = {
   sample_size?: number | null
   samples_tested?: number | null
   exception_note?: string | null
+  finding?: { id: string; code: string; status: "open" | "action_planned" | "awaiting_verification" | "closed" } | null
+  result_changed?: boolean
 }
 
 export type AuditDetail = Audit & { items: AuditItem[] }

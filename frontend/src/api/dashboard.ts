@@ -24,6 +24,7 @@ export type Dashboard = {
   unowned_controls: number
   trend: { date: string; readiness: number }[]
   training?: { assigned: number; passed: number; overdue: number } | null
+  findings?: { open: number; overdue: number; by_grade: Record<string, number>; by_status: Record<string, number> } | null
 }
 
 export function useDashboard() {

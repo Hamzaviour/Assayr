@@ -115,6 +115,23 @@ export const STATUSES = {
     in_review: ["review", "In review"],
     approved: ["success", "Approved"],
   },
+  finding: {
+    open: ["danger", "Open"],
+    action_planned: ["progress", "Action planned"],
+    awaiting_verification: ["review", "Awaiting verification"],
+    closed: ["success", "Closed"],
+  },
+  findingGrade: {
+    major: ["danger", "Major NC"],
+    minor: ["warning", "Minor NC"],
+    observation: ["neutral", "Observation"],
+    ofi: ["muted", "OFI"],
+  },
+  action: {
+    open: ["neutral", "Open"],
+    overdue: ["warning", "Overdue"],
+    done: ["success", "Done"],
+  },
   soc2Result: {
     no_exception: ["success", "No exceptions"],
     exception: ["danger", "Exception"],
