@@ -36,6 +36,7 @@ def test_unknown_role_strings_are_ignored():
 
 def test_permissions_are_a_sorted_union():
     assert permissions_for([("platform_admin", None), ("isms_manager", None)]) == [
+        "ai:manage",
         "assets:read",
         "assets:write",
         "audit_log:read",

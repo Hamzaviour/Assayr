@@ -5,6 +5,7 @@ from fastapi import FastAPI, Request
 
 import assayr.models  # noqa: F401
 from assayr import __version__
+from assayr.ai.router import router as ai_router
 from assayr.assets.router import router as assets_router
 from assayr.audit.router import router as audit_router
 from assayr.audits.router import router as audits_router
@@ -74,6 +75,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(audit_router, prefix="/api/v1")
     app.include_router(catalogue_router, prefix="/api/v1")
     app.include_router(soc2_router, prefix="/api/v1")
+    app.include_router(ai_router, prefix="/api/v1")
     app.include_router(evidence_router, prefix="/api/v1")
     app.include_router(scoring_router, prefix="/api/v1")
     app.include_router(dashboard_router, prefix="/api/v1")
