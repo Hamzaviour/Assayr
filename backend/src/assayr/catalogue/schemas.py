@@ -4,6 +4,7 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
+from assayr.catalogue.frameworks import display_ref
 from assayr.catalogue.models import Control
 from assayr.scoring.models import Attestation
 from assayr.scoring.service import SlotView
@@ -20,6 +21,8 @@ class ControlSummaryOut(BaseModel):
     id: uuid.UUID
     scope_id: uuid.UUID
     code: str
+    ref: str
+    framework: str
     title: str
     theme: str | None
     status: str
@@ -75,6 +78,28 @@ class ControlDetailOut(ControlSummaryOut):
     slots: list[SlotOut]
     requirements: list[RequirementRefOut]
     attestation: AttestationOut | None = None
+    test_procedure: str | None = None
+    assayr_check: dict | None = None
+
+
+class RelatedEvidenceOut(BaseModel):
+    version_id: uuid.UUID
+    filename: str
+    state: str
+    linked: bool
+
+
+class RelatedOut(BaseModel):
+    code: str
+    ref: str
+    framework: str
+    title: str
+    status: str
+    evidence: list[RelatedEvidenceOut]
+
+
+class ReuseEvidenceIn(BaseModel):
+    version_id: uuid.UUID
 
 
 class ControlStatsOut(BaseModel):
@@ -103,6 +128,8 @@ def summary_out(control: Control) -> ControlSummaryOut:
         id=control.id,
         scope_id=control.scope_id,
         code=control.code,
+        ref=display_ref(control.code),
+        framework=control.framework,
         title=control.title,
         theme=control.theme,
         status=control.status,
@@ -151,6 +178,7 @@ def detail_out(
         review_frequency=control.review_frequency,
         default_owner_role=control.default_owner_role,
         implementation_text=control.implementation_text,
+        test_procedure=control.test_procedure,
         slots=[slot_out(s) for s in control.slots],
         requirements=[RequirementRefOut(ref=r.ref, title=r.title) for r in control.requirements],
         attestation=AttestationOut(
