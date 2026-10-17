@@ -20,3 +20,10 @@ def decrypt(secret_key: str, token: str) -> str | None:
         return _fernet(secret_key).decrypt(token.encode("ascii")).decode("utf-8")
     except (InvalidToken, ValueError):
         return None
+
+
+def password_of(cfg, secret_key: str | None) -> str | None:
+    """The saved mail server password, or None when none is saved or the key can not read it."""
+    if not cfg.password_encrypted or not secret_key:
+        return None
+    return decrypt(secret_key, cfg.password_encrypted)

@@ -13,7 +13,7 @@ from assayr.db import get_session
 from assayr.identity.deps import actor_for, current_user, get_clock, require_global
 from assayr.identity.models import User
 from assayr.identity.rbac import Perm
-from assayr.mail.crypto import decrypt, encrypt
+from assayr.mail.crypto import encrypt, password_of
 from assayr.mail.models import MailLog, MailSettings
 from assayr.mail.sender import Connection, MailError, Outgoing
 
@@ -92,12 +92,6 @@ def load(db: Session) -> MailSettings:
         db.add(cfg)
         db.flush()
     return cfg
-
-
-def password_of(cfg: MailSettings, secret_key: str | None) -> str | None:
-    if not cfg.password_encrypted or not secret_key:
-        return None
-    return decrypt(secret_key, cfg.password_encrypted)
 
 
 def _out(db: Session, request: Request, cfg: MailSettings) -> MailSettingsOut:

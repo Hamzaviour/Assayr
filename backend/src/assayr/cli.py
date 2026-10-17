@@ -2,7 +2,7 @@
 
 import signal
 import time
-from datetime import timedelta
+from datetime import datetime, timedelta
 from pathlib import Path
 
 import typer
@@ -50,12 +50,14 @@ class StopFlag:
 
 
 def _enqueue_recompute(database: Database) -> None:
+    from assayr.mail.jobs import enqueue_mail_digest
     from assayr.scoring.jobs import enqueue_recompute_all
     from assayr.training.jobs import enqueue_training_sweep
 
     with database.sessionmaker() as session:
         enqueue_recompute_all(session, utcnow())
         enqueue_training_sweep(session, utcnow())
+        enqueue_mail_digest(session, datetime.now().astimezone(), utcnow())
         session.commit()
 
 
