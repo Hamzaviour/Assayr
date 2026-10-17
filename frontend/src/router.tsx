@@ -1,5 +1,7 @@
 import { createRootRoute, createRoute, createRouter, Outlet, type RouterHistory } from "@tanstack/react-router"
 import { AppLayout } from "./layouts/AppLayout"
+import { AiSystemPage } from "./pages/AiSystem"
+import { AiSystemsPage } from "./pages/AiSystems"
 import { AssetsPage } from "./pages/Assets"
 import { ControlDetailPage } from "./pages/ControlDetail"
 import { NiaControlPage } from "./pages/NiaControl"
@@ -106,12 +108,16 @@ const riskRoute = createRoute({ getParentRoute: () => appRoute, path: "/risks/$c
 const riskNewRoute = createRoute({ getParentRoute: () => appRoute, path: "/risks/new", component: RiskNewPage })
 const riskAssessRoute = createRoute({ getParentRoute: () => appRoute, path: "/risks/$code/assess", component: RiskWizardPage })
 const assetsRoute = createRoute({ getParentRoute: () => appRoute, path: "/assets", component: AssetsPage })
+const aiRoute = createRoute({ getParentRoute: () => appRoute, path: "/ai", component: AiSystemsPage })
+const aiSystemRoute = createRoute({ getParentRoute: () => appRoute, path: "/ai/$id", component: AiSystemPage })
 const soaRoute = createRoute({ getParentRoute: () => appRoute, path: "/soa", component: SoaPage })
 const styleguideRoute = createRoute({ getParentRoute: () => appRoute, path: "/styleguide", component: Styleguide })
 
 export const routeTree = rootRoute.addChildren([
   loginRoute,
-  appRoute.addChildren([dashboardRoute, complianceRoute, controlsRoute, controlRoute, niaControlRoute, policiesRoute, documentRoute, auditsRoute, auditRoute, myTrainingRoute, usersRoute, trainingRoute, courseRoute, coursePlayerRoute, privacyRoute, activityRoute, requestRoute, breachRoute, evidenceRoute, risksRoute, riskNewRoute, riskSnapshotsRoute, riskRoute, riskAssessRoute, assetsRoute, soaRoute, styleguideRoute]),
+  appRoute.addChildren([dashboardRoute, complianceRoute, controlsRoute, controlRoute, niaControlRoute, policiesRoute, documentRoute, auditsRoute, auditRoute, myTrainingRoute, usersRoute, trainingRoute, courseRoute, coursePlayerRoute, privacyRoute, activityRoute, requestRoute, breachRoute, evidenceRoute, risksRoute, riskNewRoute, riskSnapshotsRoute, riskRoute, riskAssessRoute, assetsRoute,
+    aiRoute,
+    aiSystemRoute, soaRoute, styleguideRoute]),
 ])
 
 export function createAppRouter(history?: RouterHistory) {

@@ -103,6 +103,23 @@ export const STATUSES = {
     missing: ["danger", "Missing"],
     na: ["muted", "Shown by controls"],
   },
+  aiLifecycle: {
+    planned: ["neutral", "Planned"],
+    development: ["progress", "Development"],
+    validation: ["review", "Validation"],
+    deployed: ["success", "Deployed"],
+    retired: ["muted", "Retired"],
+  },
+  aiia: {
+    draft: ["neutral", "Draft"],
+    in_review: ["review", "In review"],
+    approved: ["success", "Approved"],
+  },
+  soc2Result: {
+    no_exception: ["success", "No exceptions"],
+    exception: ["danger", "Exception"],
+    not_tested: ["neutral", "Not tested"],
+  },
   risk: {
     draft: ["neutral", "Draft"],
     assessed: ["review", "Assessed"],
