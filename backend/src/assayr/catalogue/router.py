@@ -67,12 +67,21 @@ def _get_control(db: Session, scope: Scope, code: str) -> Control:
 def control_detail(db: Session, control: Control, settings: Settings, now: datetime) -> ControlDetailOut:
     attestation = latest_attestation(db, control)
     attested_by = db.get(User, attestation.user_id) if attestation and attestation.user_id else None
-    return detail_out(
+    out = detail_out(
         control,
         slot_views(db, control, now.date(), settings),
         attestation,
         attested_by.full_name if attested_by else None,
     )
+    key = next(
+        (r.attributes.get("auto") for r in control.requirements if (r.attributes or {}).get("auto")), None
+    )
+    if control.framework == "iso42001" and key:
+        from assayr.ai.checks import evaluate
+
+        result = evaluate(db, control.scope_id, now.date())[key]
+        out.assayr_check = {"key": key, "met": result.met, "reason": result.reason}
+    return out
 
 
 @router.get("/frameworks", response_model=list[FrameworkOut])
