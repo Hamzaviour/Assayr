@@ -102,3 +102,38 @@ test("people without manager rights see no import", async () => {
   await screen.findByText("NIA v2.1")
   expect(screen.queryByLabelText("Import official text (PDF)")).not.toBeInTheDocument()
 })
+
+
+test("framework names open their controls, and PDPPL opens the privacy obligations", async () => {
+  const PDPPL = { ...NIA, code: "pdppl-2016", name: "PDPPL", version: "2016", groups: [group("Rights of individuals", 3, 1, 33)] }
+  mockApi({
+    "GET /auth/me": () => json(200, ME),
+    "GET /dashboard": () =>
+      json(200, { frameworks: [ISO, NIA, PDPPL], evidence: { needs_attention: 0, ok: 0, total: 0 }, risks: null, unowned_controls: 0, trend: [] }),
+  })
+  renderApp("/compliance")
+  expect(await screen.findByRole("link", { name: /ISO\/IEC 27001/ })).toHaveAttribute("href", "/controls")
+  expect(screen.getByRole("link", { name: /NIA v2\.1/ })).toHaveAttribute("href", "/controls?framework=nia")
+  expect(screen.getByRole("link", { name: /PDPPL/ })).toHaveAttribute("href", "/privacy?tab=pdppl")
+  await userEvent.click(screen.getByRole("button", { name: /Topics/ }))
+  expect(screen.getByText("Rights of individuals")).toBeInTheDocument()
+})
+
+test("ISO 42001 and SOC 2 cards open their own controls", async () => {
+  const AI = { ...ISO, code: "ISO42001:2023", name: "ISO/IEC 42001", version: "2023", groups: [group("AI system life cycle", 9, 2, 30)] }
+  const SOC2 = { ...ISO, code: "SOC2:2017", name: "SOC 2", version: "Security", groups: [group("Logical and Physical Access Controls", 8, 1, 10)] }
+  mockApi({
+    "GET /auth/me": () => json(200, ME),
+    "GET /dashboard": () =>
+      json(200, { frameworks: [ISO, AI, SOC2], evidence: { needs_attention: 0, ok: 0, total: 0 }, risks: null, unowned_controls: 0, trend: [] }),
+  })
+  renderApp("/compliance")
+  expect(await screen.findByRole("link", { name: /ISO\/IEC 42001/ })).toHaveAttribute("href", "/controls?framework=iso42001")
+  expect(screen.getByRole("link", { name: /SOC 2/ })).toHaveAttribute("href", "/controls?framework=soc2")
+  const themes = screen.getAllByRole("button", { name: /Themes/ })
+  await userEvent.click(themes[1])
+  expect(screen.getByRole("link", { name: /AI system life cycle/ })).toHaveAttribute(
+    "href",
+    "/controls?framework=iso42001&theme=AI+system+life+cycle",
+  )
+})

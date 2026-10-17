@@ -1,5 +1,6 @@
 import uuid
 from datetime import datetime
+from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy import func, or_, select
@@ -7,21 +8,27 @@ from sqlalchemy.orm import Session
 
 from assayr.audit.service import record
 from assayr.catalogue.access import edit_rights
-from assayr.catalogue.models import Control, Framework, Requirement, iso_controls
+from assayr.catalogue.frameworks import display_ref, iso_map
+from assayr.catalogue.models import Control, EvidenceSlot, Framework, Requirement
 from assayr.catalogue.schemas import (
     ControlDetailOut,
     ControlPage,
     ControlStatsOut,
     ControlUpdateIn,
     FrameworkOut,
+    RelatedEvidenceOut,
+    RelatedOut,
+    ReuseEvidenceIn,
     detail_out,
     summary_out,
 )
 from assayr.config import Settings
 from assayr.db import get_session
+from assayr.evidence.models import ArtefactLink, ArtefactVersion
 from assayr.identity.deps import actor_for, current_user, get_clock, require
 from assayr.identity.models import Scope, User
 from assayr.identity.rbac import Grant, Perm
+from assayr.jobs import enqueue
 from assayr.scoring.service import latest_attestation, slot_views
 
 router = APIRouter(tags=["catalogue"])
@@ -42,6 +49,9 @@ def resolve_scope(db: Session, scope_id: uuid.UUID | None, grant: Grant) -> Scop
     return scope
 
 
+FrameworkParam = Literal["iso27001", "iso42001", "soc2"]
+
+
 def _like(term: str) -> str:
     escaped = term.lower().replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
     return f"%{escaped}%"
@@ -57,12 +67,21 @@ def _get_control(db: Session, scope: Scope, code: str) -> Control:
 def control_detail(db: Session, control: Control, settings: Settings, now: datetime) -> ControlDetailOut:
     attestation = latest_attestation(db, control)
     attested_by = db.get(User, attestation.user_id) if attestation and attestation.user_id else None
-    return detail_out(
+    out = detail_out(
         control,
         slot_views(db, control, now.date(), settings),
         attestation,
         attested_by.full_name if attested_by else None,
     )
+    key = next(
+        (r.attributes.get("auto") for r in control.requirements if (r.attributes or {}).get("auto")), None
+    )
+    if control.framework == "iso42001" and key:
+        from assayr.ai.checks import evaluate
+
+        result = evaluate(db, control.scope_id, now.date())[key]
+        out.assayr_check = {"key": key, "met": result.met, "reason": result.reason}
+    return out
 
 
 @router.get("/frameworks", response_model=list[FrameworkOut])
@@ -84,15 +103,16 @@ def list_controls(
     grant: Grant = Depends(require(Perm.CONTROLS_READ)),
     db: Session = Depends(get_session),
     scope_id: uuid.UUID | None = None,
-    theme: str | None = Query(None, max_length=40),
+    theme: str | None = Query(None, max_length=80),
     status_: str | None = Query(None, alias="status", max_length=30),
     q: str | None = Query(None, max_length=100),
     owner: str | None = Query(None, max_length=40),
     limit: int = Query(50, ge=1, le=200),
     cursor: int | None = Query(None, ge=0),
+    framework: FrameworkParam = "iso27001",
 ) -> ControlPage:
     scope = resolve_scope(db, scope_id, grant)
-    stmt = select(Control).where(Control.scope_id == scope.id, iso_controls())
+    stmt = select(Control).where(Control.scope_id == scope.id, Control.framework == framework)
     if theme:
         stmt = stmt.where(Control.theme == theme)
     if status_:
@@ -130,20 +150,22 @@ def controls_summary(
     grant: Grant = Depends(require(Perm.CONTROLS_READ)),
     db: Session = Depends(get_session),
     scope_id: uuid.UUID | None = None,
+    framework: FrameworkParam = "iso27001",
 ) -> ControlStatsOut:
     scope = resolve_scope(db, scope_id, grant)
-    base = select(func.count()).select_from(Control).where(Control.scope_id == scope.id, iso_controls())
+    in_framework = Control.framework == framework
+    base = select(func.count()).select_from(Control).where(Control.scope_id == scope.id, in_framework)
     by_status = dict(
         db.execute(
             select(Control.status, func.count())
-            .where(Control.scope_id == scope.id, iso_controls())
+            .where(Control.scope_id == scope.id, in_framework)
             .group_by(Control.status)
         ).all()
     )
     by_theme = dict(
         db.execute(
             select(Control.theme, func.count())
-            .where(Control.scope_id == scope.id, iso_controls())
+            .where(Control.scope_id == scope.id, in_framework)
             .group_by(Control.theme)
         ).all()
     )
@@ -208,3 +230,135 @@ def update_control(
         db.commit()
         db.refresh(control)
     return control_detail(db, control, request.app.state.settings, get_clock(request)())
+
+
+def _related_codes(control: Control) -> list[str]:
+    """ISO 27001 controls mapped to an ISO 42001/SOC 2 control, or the ISO 42001/SOC 2 controls mapped to an ISO one."""
+    mapping = iso_map()
+    if control.framework == "iso27001":
+        return [code for code, refs in mapping.items() if control.code in refs]
+    # A SOC 2 control activity (CC6.1.12) shares its criterion's (CC6.1) mapping.
+    key = control.code if control.code in mapping else ".".join(control.code.split(".")[:2])
+    return mapping.get(key, [])
+
+
+def _related(db: Session, scope: Scope, control: Control) -> list[Control]:
+    codes = _related_codes(control)
+    if not codes:
+        return []
+    return list(
+        db.scalars(
+            select(Control)
+            .where(Control.scope_id == scope.id, Control.code.in_(codes))
+            .order_by(Control.framework, Control.sort_order)
+        ).unique()
+    )
+
+
+def _reusable_links(db: Session, other: Control) -> list[ArtefactLink]:
+    """Evidence on a related control that a reviewer or the verifier accepted."""
+    return list(
+        db.scalars(
+            select(ArtefactLink)
+            .join(EvidenceSlot, ArtefactLink.slot_id == EvidenceSlot.id)
+            .where(EvidenceSlot.control_id == other.id, ArtefactLink.state == "accepted")
+            .order_by(ArtefactLink.created_at.desc())
+        ).unique()
+    )
+
+
+def _linked_versions(db: Session, control: Control) -> set[uuid.UUID]:
+    slot_ids = [s.id for s in control.slots]
+    if not slot_ids:
+        return set()
+    return set(db.scalars(select(ArtefactLink.version_id).where(ArtefactLink.slot_id.in_(slot_ids))))
+
+
+@router.get("/controls/{code}/related", response_model=list[RelatedOut])
+def related_controls(
+    code: str,
+    grant: Grant = Depends(require(Perm.CONTROLS_READ)),
+    db: Session = Depends(get_session),
+    scope_id: uuid.UUID | None = None,
+) -> list[RelatedOut]:
+    scope = resolve_scope(db, scope_id, grant)
+    control = _get_control(db, scope, code)
+    mine = _linked_versions(db, control)
+    out = []
+    for other in _related(db, scope, control):
+        evidence: dict[uuid.UUID, RelatedEvidenceOut] = {}
+        for link in _reusable_links(db, other):
+            evidence.setdefault(
+                link.version_id,
+                RelatedEvidenceOut(
+                    version_id=link.version_id,
+                    filename=link.version.filename,
+                    state=link.state,
+                    linked=link.version_id in mine,
+                ),
+            )
+        out.append(
+            RelatedOut(
+                code=other.code,
+                ref=display_ref(other.code),
+                framework=other.framework,
+                title=other.title,
+                status=other.status,
+                evidence=list(evidence.values()),
+            )
+        )
+    return out
+
+
+@router.post("/controls/{code}/reuse-evidence", response_model=ControlDetailOut)
+def reuse_evidence(
+    code: str,
+    body: ReuseEvidenceIn,
+    request: Request,
+    user: User = Depends(current_user),
+    grant: Grant = Depends(require(Perm.CONTROLS_READ)),
+    db: Session = Depends(get_session),
+    scope_id: uuid.UUID | None = None,
+) -> ControlDetailOut:
+    """Links evidence already accepted on a related control to this one, without uploading it again."""
+    scope = resolve_scope(db, scope_id, grant)
+    control = _get_control(db, scope, code)
+    if not edit_rights(user, scope.id, control.owner_id).any:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, FORBIDDEN)
+    source = next(
+        (
+            other
+            for other in _related(db, scope, control)
+            if any(link.version_id == body.version_id for link in _reusable_links(db, other))
+        ),
+        None,
+    )
+    if source is None or db.get(ArtefactVersion, body.version_id) is None:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT, "This evidence does not belong to a related control."
+        )
+    slot = next((s for s in control.slots if s.required), control.slots[0] if control.slots else None)
+    if slot is None:
+        raise HTTPException(status.HTTP_409_CONFLICT, "This control has no evidence slot.")
+    now = get_clock(request)()
+    exists = db.scalar(
+        select(ArtefactLink).where(
+            ArtefactLink.version_id == body.version_id, ArtefactLink.slot_id == slot.id
+        )
+    )
+    if exists is None:
+        link = ArtefactLink(version_id=body.version_id, slot_id=slot.id, state="verifying", created_at=now)
+        db.add(link)
+        db.flush()
+        enqueue(db, "verify_link", {"link_id": str(link.id)}, now)
+        record(
+            db,
+            actor_for(request, user),
+            "evidence.reuse",
+            "artefact_link",
+            str(link.id),
+            diff={"control": control.code, "from": source.code},
+        )
+        db.commit()
+        db.refresh(control)
+    return control_detail(db, control, request.app.state.settings, now)

@@ -8,16 +8,10 @@ import {
   useDocuments,
   useLinkControlDocument,
 } from "../api/documents"
-
-const DOC_STATUS: Record<string, [string, string]> = {
-  draft: ["Draft", "bg-warn-soft text-warn border-warn/25"],
-  approved: ["Approved", "bg-ok-soft text-ok border-ok/25"],
-  retired: ["Retired", "bg-transparent text-fg-3 border-line-2 border-dashed"],
-}
+import { Status } from "./Status"
 
 export function DocStatus({ status }: { status: string }) {
-  const [label, tone] = DOC_STATUS[status] ?? [status, "text-fg-2 border-line"]
-  return <span className={`inline-flex whitespace-nowrap rounded-full border px-2 py-0.5 text-[11.5px] font-semibold ${tone}`}>{label}</span>
+  return <Status area="document" value={status} />
 }
 
 export function ReviewDue() {

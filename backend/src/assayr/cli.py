@@ -9,6 +9,7 @@ import typer
 from sqlalchemy import select
 
 from assayr.audit.service import SYSTEM, record, verify_chain
+from assayr.catalogue.frameworks import seed_iso42001, seed_soc2
 from assayr.catalogue.seed import ensure_default_scope, seed_iso27001
 from assayr.certs import CertError, check_pair, generate_self_signed, pfx_to_pem
 from assayr.config import get_settings
@@ -90,6 +91,8 @@ def seed() -> None:
         ensure_methodology(session, utcnow())
         library = ensure_risk_library(session)
         nia = seed_nia(session, scope)
+        ai = seed_iso42001(session, scope)
+        soc2 = seed_soc2(session, scope)
         session.commit()
     typer.echo(
         f"Seed complete: {result.requirements_created} requirements and {result.controls_created} controls created."
@@ -100,6 +103,9 @@ def seed() -> None:
     )
     typer.echo(
         f"NIA: {NIA_CONTROLS} controls, {nia.links_created} new ISO links, {nia.own_controls_created} NIA-only controls added."
+    )
+    typer.echo(
+        f"ISO 42001: {ai.controls_created} controls added. SOC 2: {soc2.controls_created} controls added."
     )
 
 

@@ -1,5 +1,7 @@
 import { createRootRoute, createRoute, createRouter, Outlet, type RouterHistory } from "@tanstack/react-router"
 import { AppLayout } from "./layouts/AppLayout"
+import { AiSystemPage } from "./pages/AiSystem"
+import { AiSystemsPage } from "./pages/AiSystems"
 import { AssetsPage } from "./pages/Assets"
 import { ControlDetailPage } from "./pages/ControlDetail"
 import { NiaControlPage } from "./pages/NiaControl"
@@ -11,6 +13,10 @@ import { UsersPage } from "./pages/Users"
 import { TrainingPage } from "./pages/Training"
 import { CourseEditorPage } from "./pages/CourseEditor"
 import { CoursePlayerPage } from "./pages/CoursePlayer"
+import { PrivacyPage } from "./pages/Privacy"
+import { ProcessingActivityPage } from "./pages/ProcessingActivity"
+import { BreachDetailPage } from "./pages/privacy/BreachDetail"
+import { RequestDetailPage } from "./pages/privacy/RequestDetail"
 import { DocumentDetailPage } from "./pages/DocumentDetail"
 import { ControlsPage } from "./pages/Controls"
 import { DashboardPage } from "./pages/Dashboard"
@@ -44,8 +50,19 @@ const controlsRoute = createRoute({
   path: "/controls",
   validateSearch: (
     search: Record<string, unknown>,
-  ): { framework?: "nia"; domain?: string; theme?: string; q?: string; owner?: string } => ({
-    framework: search.framework === "nia" ? "nia" : undefined,
+  ): {
+    framework?: "nia" | "iso42001" | "soc2"
+    domain?: string
+    theme?: string
+    q?: string
+    owner?: string
+    status?: string
+  } => ({
+    status: typeof search.status === "string" && /^[a-z_]{2,20}$/.test(search.status) ? search.status : undefined,
+    framework:
+      search.framework === "nia" || search.framework === "iso42001" || search.framework === "soc2"
+        ? search.framework
+        : undefined,
     domain: typeof search.domain === "string" && /^[A-Z]{2}$/.test(search.domain) ? search.domain : undefined,
     theme: typeof search.theme === "string" && search.theme ? search.theme : undefined,
     q: typeof search.q === "string" && search.q ? search.q : undefined,
@@ -61,22 +78,46 @@ const myTrainingRoute = createRoute({ getParentRoute: () => appRoute, path: "/my
 const trainingRoute = createRoute({ getParentRoute: () => appRoute, path: "/training", component: TrainingPage })
 const courseRoute = createRoute({ getParentRoute: () => appRoute, path: "/training/$id", component: CourseEditorPage })
 const coursePlayerRoute = createRoute({ getParentRoute: () => appRoute, path: "/my-training/$id", component: CoursePlayerPage })
+const PRIVACY_TABS = ["activities", "inventory", "requests", "breaches", "processors", "pdppl"] as const
+const privacyRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/privacy",
+  validateSearch: (search: Record<string, unknown>): { tab?: (typeof PRIVACY_TABS)[number] } => ({
+    tab: PRIVACY_TABS.includes(search.tab as (typeof PRIVACY_TABS)[number]) ? (search.tab as (typeof PRIVACY_TABS)[number]) : undefined,
+  }),
+  component: PrivacyPage,
+})
+const requestRoute = createRoute({ getParentRoute: () => appRoute, path: "/privacy/requests/$id", component: RequestDetailPage })
+const breachRoute = createRoute({ getParentRoute: () => appRoute, path: "/privacy/breaches/$id", component: BreachDetailPage })
+const activityRoute = createRoute({ getParentRoute: () => appRoute, path: "/privacy/$id", component: ProcessingActivityPage })
 const usersRoute = createRoute({ getParentRoute: () => appRoute, path: "/users", component: UsersPage })
 const policiesRoute = createRoute({ getParentRoute: () => appRoute, path: "/policies", component: PoliciesPage })
 const documentRoute = createRoute({ getParentRoute: () => appRoute, path: "/policies/$id", component: DocumentDetailPage })
 const evidenceRoute = createRoute({ getParentRoute: () => appRoute, path: "/evidence", component: ReviewQueuePage })
-const risksRoute = createRoute({ getParentRoute: () => appRoute, path: "/risks", component: RisksPage })
+const risksRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: "/risks",
+  validateSearch: (search: Record<string, unknown>): { status?: string; level?: string } => ({
+    status: typeof search.status === "string" && /^[a-z_]{2,30}$/.test(search.status) ? search.status : undefined,
+    level: typeof search.level === "string" && /^[a-z_]{2,30}$/.test(search.level) ? search.level : undefined,
+  }),
+  component: RisksPage,
+})
 const riskSnapshotsRoute = createRoute({ getParentRoute: () => appRoute, path: "/risks/snapshots", component: RiskSnapshotsPage })
 const riskRoute = createRoute({ getParentRoute: () => appRoute, path: "/risks/$code", component: RiskDetailPage })
 const riskNewRoute = createRoute({ getParentRoute: () => appRoute, path: "/risks/new", component: RiskNewPage })
 const riskAssessRoute = createRoute({ getParentRoute: () => appRoute, path: "/risks/$code/assess", component: RiskWizardPage })
 const assetsRoute = createRoute({ getParentRoute: () => appRoute, path: "/assets", component: AssetsPage })
+const aiRoute = createRoute({ getParentRoute: () => appRoute, path: "/ai", component: AiSystemsPage })
+const aiSystemRoute = createRoute({ getParentRoute: () => appRoute, path: "/ai/$id", component: AiSystemPage })
 const soaRoute = createRoute({ getParentRoute: () => appRoute, path: "/soa", component: SoaPage })
 const styleguideRoute = createRoute({ getParentRoute: () => appRoute, path: "/styleguide", component: Styleguide })
 
 export const routeTree = rootRoute.addChildren([
   loginRoute,
-  appRoute.addChildren([dashboardRoute, complianceRoute, controlsRoute, controlRoute, niaControlRoute, policiesRoute, documentRoute, auditsRoute, auditRoute, myTrainingRoute, usersRoute, trainingRoute, courseRoute, coursePlayerRoute, evidenceRoute, risksRoute, riskNewRoute, riskSnapshotsRoute, riskRoute, riskAssessRoute, assetsRoute, soaRoute, styleguideRoute]),
+  appRoute.addChildren([dashboardRoute, complianceRoute, controlsRoute, controlRoute, niaControlRoute, policiesRoute, documentRoute, auditsRoute, auditRoute, myTrainingRoute, usersRoute, trainingRoute, courseRoute, coursePlayerRoute, privacyRoute, activityRoute, requestRoute, breachRoute, evidenceRoute, risksRoute, riskNewRoute, riskSnapshotsRoute, riskRoute, riskAssessRoute, assetsRoute,
+    aiRoute,
+    aiSystemRoute, soaRoute, styleguideRoute]),
 ])
 
 export function createAppRouter(history?: RouterHistory) {

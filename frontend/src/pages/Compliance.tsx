@@ -4,6 +4,8 @@ import { type FrameworkRow, type GroupRow, frameworkTitle, isNia, useDashboard }
 import { useImportNiaText } from "../api/nia"
 import { useMe } from "../auth/session"
 import { ProgressBar } from "../components/charts"
+import { FrameworkLink } from "../components/FrameworkLink"
+import { controlsFramework, isPdppl } from "../lib/frameworks"
 
 const percent = (value: number | null) => (value === null ? "—" : `${Math.round(value)}%`)
 const ROW = "grid grid-cols-[minmax(0,180px)_minmax(0,1fr)_minmax(0,130px)] items-center gap-4 rounded-lg px-2 py-2.5"
@@ -59,14 +61,16 @@ function FrameworkCard({ f }: { f: FrameworkRow }) {
   const panelId = useId()
   const title = frameworkTitle(f)
   const nia = isNia(f)
-  const breakdown = nia ? "Domains" : "Themes"
+  const pdppl = isPdppl(f.code)
+  const framework = controlsFramework(f.code)
+  const breakdown = pdppl ? "Topics" : nia ? "Domains" : framework === "soc2" ? "Series" : "Themes"
   return (
     <article className="grid gap-5 rounded-xl border border-line bg-surface p-6">
       <p className="flex items-baseline justify-between gap-3">
-        <span className="text-[19px]">
+        <FrameworkLink code={f.code} className="text-[19px] hover:text-primary hover:underline">
           <strong>{title.name}</strong>
           {title.note && <span className="text-fg-3"> {title.note}</span>}
-        </span>
+        </FrameworkLink>
         <span className="font-display text-[30px] font-extrabold leading-none tabular-nums text-primary">{percent(f.readiness)}</span>
       </p>
       <ProgressBar value={f.compliant} max={f.total} label={`${f.name} controls compliant`} />
@@ -102,12 +106,20 @@ function FrameworkCard({ f }: { f: FrameworkRow }) {
           <ul className="grid gap-1">
             {f.groups.map((g) => (
               <li key={g.name}>
-                {nia ? (
+                {pdppl ? (
+                  <div className={ROW}>
+                    <GroupLine g={g} />
+                  </div>
+                ) : nia ? (
                   <Link to="/controls" search={{ framework: "nia", domain: g.code ?? undefined }} className={`${ROW} hover:bg-subtle`}>
                     <GroupLine g={g} />
                   </Link>
+                ) : framework === "soc2" ? (
+                  <Link to="/controls" search={{ framework }} className={`${ROW} hover:bg-subtle`}>
+                    <GroupLine g={g} />
+                  </Link>
                 ) : (
-                  <Link to="/controls" search={{ theme: g.name }} className={`${ROW} hover:bg-subtle`}>
+                  <Link to="/controls" search={{ framework, theme: g.name }} className={`${ROW} hover:bg-subtle`}>
                     <GroupLine g={g} />
                   </Link>
                 )}

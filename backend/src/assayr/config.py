@@ -20,6 +20,8 @@ class Settings(BaseSettings):
     storage_dir: str = "./data/blobs"
     max_upload_mb: int = 100
     training_upload_mb: int = 500
+    privacy_dsr_days: int = 30
+    privacy_breach_hours: int = 72
     clamav_host: str | None = None
     clamav_port: int = 3310
     expiry_warning_days: int = 30

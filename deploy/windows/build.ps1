@@ -101,7 +101,13 @@ try {
 } finally { Pop-Location }
 Copy-Item -Recurse "$repo\frontend\dist" "$stage\web"
 
-Copy-Item "$PSScriptRoot\assayr-admin.cmd" $stage
+Copy-Item "$PSScriptRoot\assayr-admin.cmd", "$PSScriptRoot\assayr.ico" $stage
+# Assayr Admin as a real program with the Assayr icon, built with the C# compiler that ships with Windows.
+$csc = "$env:WINDIR\Microsoft.NET\Framework64\v4.0.30319\csc.exe"
+if (-not (Test-Path $csc)) { throw "The .NET Framework 4 C# compiler is missing: $csc" }
+& $csc /nologo /target:exe /optimize+ /platform:x64 "/win32icon:$PSScriptRoot\assayr.ico" `
+  "/win32manifest:$PSScriptRoot\launcher\app.manifest" "/out:$stage\assayr-admin.exe" "$PSScriptRoot\launcher\AssayrAdmin.cs" | Out-Host
+if ($LASTEXITCODE) { throw "assayr-admin.exe failed to build" }
 Set-Content "$stage\VERSION" $Version -NoNewline -Encoding ascii
 & "$stage\python\python.exe" -c "import assayr, sys; assert assayr.__version__ == sys.argv[1], assayr.__version__" $Version
 if ($LASTEXITCODE) { throw "The packaged backend is not version $Version" }

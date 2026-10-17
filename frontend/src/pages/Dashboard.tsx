@@ -1,10 +1,11 @@
-import { Link } from "@tanstack/react-router"
+import { Link, useNavigate } from "@tanstack/react-router"
 import type { CSSProperties, ReactNode } from "react"
 import { type Dashboard, type FrameworkRow, type RiskCard, useDashboard, frameworkTitle } from "../api/dashboard"
 import { useMethodology } from "../api/risks"
 import { useMe } from "../auth/session"
 import { BarChart, Donut, LineChart, ProgressBar, type Segment, StackedBar } from "../components/charts"
 import { CountUp } from "../components/CountUp"
+import { FrameworkLink } from "../components/FrameworkLink"
 import { Icon } from "../components/icons"
 
 const STATUS: [string, string, string][] = [
@@ -36,10 +37,10 @@ function FrameworkCard({ f }: { f: FrameworkRow }) {
       <Edge />
       <div className="grid content-start gap-3">
         <p className="flex items-baseline justify-between gap-3">
-          <Link to="/compliance" className="text-[17px] hover:underline">
+          <FrameworkLink code={f.code} className="text-[17px] hover:underline">
             <strong>{frameworkTitle(f).name}</strong>
             {frameworkTitle(f).note && <span className="text-fg-3"> {frameworkTitle(f).note}</span>}
-          </Link>
+          </FrameworkLink>
           <span className="font-display text-[34px] font-extrabold leading-none text-primary">
             {f.readiness === null ? "—" : <CountUp value={Math.round(f.readiness)} suffix="%" />}
           </span>
@@ -81,7 +82,7 @@ function Monitor({
   children?: ReactNode
 }) {
   return (
-    <section className={`${CARD} rise grid content-start gap-3`} style={order(index)}>
+    <section className={`${CARD} rise grid cursor-pointer content-start gap-3 transition-shadow hover:shadow-[var(--shadow-lift)]`} style={order(index)}>
       <Edge />
       <div className="flex items-center gap-2.5">
         <span className="grid size-8 place-items-center rounded-lg bg-primary-soft text-primary">
@@ -105,7 +106,9 @@ function Monitor({
   )
 }
 
-const LINK = "group/link inline-flex items-center gap-1 text-[13px] font-semibold text-primary"
+// The link stretches over its card (the card is position: relative), so the whole card is clickable.
+const LINK =
+  "group/link inline-flex items-center gap-1 text-[13px] font-semibold text-primary after:absolute after:inset-0 after:rounded-2xl after:content-[''] focus-visible:after:ring-2 focus-visible:after:ring-primary"
 
 function riskSegments(r: RiskCard): Segment[] {
   return [
@@ -127,6 +130,7 @@ function levelBars(risks: RiskCard, bands: { key: string; label: string }[]): Se
 }
 
 function Body({ d }: { d: Dashboard }) {
+  const navigate = useNavigate()
   const iso = d.frameworks[0]
   const methodology = useMethodology()
   const bands = methodology.data?.bands ?? []
@@ -149,7 +153,7 @@ function Body({ d }: { d: Dashboard }) {
             attention={d.evidence.needs_attention}
             footLeft={`${d.evidence.ok} accepted`}
             total={d.evidence.total}
-            link={<Link to="/evidence" className={LINK}>Review evidence <span aria-hidden="true" className="transition-transform duration-300 group-hover/link:translate-x-1">→</span></Link>}
+            link={<Link to="/evidence" aria-label="Evidence — Review evidence" className={LINK}>Review evidence <span aria-hidden="true" className="transition-transform duration-300 group-hover/link:translate-x-1">→</span></Link>}
           />
           {d.risks && (
             <Monitor
@@ -159,7 +163,7 @@ function Body({ d }: { d: Dashboard }) {
               attention={d.risks.open}
               footLeft={`${d.risks.closed} closed`}
               total={d.risks.total}
-              link={<Link to="/risks" className={LINK}>Open the risk register <span aria-hidden="true" className="transition-transform duration-300 group-hover/link:translate-x-1">→</span></Link>}
+              link={<Link to="/risks" aria-label="Risks — Open the risk register" className={LINK}>Open the risk register <span aria-hidden="true" className="transition-transform duration-300 group-hover/link:translate-x-1">→</span></Link>}
             >
               <StackedBar segments={riskSegments(d.risks)} label="Risks by status" />
             </Monitor>
@@ -171,7 +175,7 @@ function Body({ d }: { d: Dashboard }) {
             attention={d.unowned_controls}
             footLeft={`${iso.total - d.unowned_controls} assigned`}
             total={iso.total}
-            link={<Link to="/controls" search={{ owner: "none" }} className={LINK}>Assign owners <span aria-hidden="true" className="transition-transform duration-300 group-hover/link:translate-x-1">→</span></Link>}
+            link={<Link to="/controls" search={{ owner: "none" }} aria-label="Control owners — Assign owners" className={LINK}>Assign owners <span aria-hidden="true" className="transition-transform duration-300 group-hover/link:translate-x-1">→</span></Link>}
           />
           {d.training && (
             <Monitor
@@ -181,7 +185,7 @@ function Body({ d }: { d: Dashboard }) {
               attention={d.training.overdue}
               footLeft={`${d.training.assigned ? Math.round((100 * d.training.passed) / d.training.assigned) : 0}% passed`}
               total={d.training.assigned}
-              link={<Link to="/training" className={LINK}>Open training <span aria-hidden="true" className="transition-transform duration-300 group-hover/link:translate-x-1">→</span></Link>}
+              link={<Link to="/training" aria-label="Training — Open training" className={LINK}>Open training <span aria-hidden="true" className="transition-transform duration-300 group-hover/link:translate-x-1">→</span></Link>}
             >
               <ProgressBar value={d.training.passed} max={d.training.assigned} label="Training passed" color="var(--ok)" />
               <p className="text-[12.5px] font-medium text-bad">{d.training.overdue} overdue</p>
@@ -211,12 +215,12 @@ function Body({ d }: { d: Dashboard }) {
           </div>
           <div className={`${CARD} rise`} style={order(7)}>
             <h3 className="mb-3 text-[15px] font-semibold">Controls</h3>
-            <Donut segments={statusSegments(iso.status_counts)} label="Controls by status" centre={percent(iso.readiness)} />
+            <Donut segments={statusSegments(iso.status_counts)} label="Controls by status" centre={percent(iso.readiness)} onSelect={(status) => navigate({ to: "/controls", search: { status } })} />
           </div>
           {d.risks && (
             <div className={`${CARD} rise`} style={order(8)}>
               <h3 className="mb-3 text-[15px] font-semibold">Risk levels</h3>
-              <BarChart label="Risks by level" bars={levelBars(d.risks, bands)} />
+              <BarChart label="Risks by level" bars={levelBars(d.risks, bands)} onSelect={(level) => navigate({ to: "/risks", search: { level } })} />
             </div>
           )}
         </div>

@@ -43,6 +43,8 @@
   --color-bad-soft: var(--bad-soft);
   --color-review: var(--review);
   --color-review-soft: var(--review-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
   --color-idle: var(--idle);
   --color-idle-soft: var(--idle-soft);
   --color-na: var(--na);
@@ -100,3 +102,8 @@ h1, h2, h3 { text-wrap: balance; }
   animation: drift 22s ease-in-out infinite;
 }
 .brand-rail { background: linear-gradient(180deg, var(--brand) 0%, var(--brand-deep) 100%); }
+
+/* Chart marks that open a filtered list: lift on hover and keyboard focus. */
+.chart-mark { cursor: pointer; transition: opacity 200ms var(--ease-out), filter 200ms var(--ease-out); }
+.chart-mark:hover, .chart-mark:focus-visible { filter: brightness(1.12) drop-shadow(0 1px 2px rgb(0 0 0 / 0.25)); }
+@media (prefers-reduced-motion: reduce) { .chart-mark { transition: none; } }

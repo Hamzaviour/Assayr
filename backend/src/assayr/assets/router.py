@@ -13,6 +13,7 @@ from assayr.db import get_session
 from assayr.identity.deps import actor_for, current_user, require
 from assayr.identity.models import User
 from assayr.identity.rbac import Grant, Perm
+from assayr.privacy.categories import normalise_pii
 
 router = APIRouter(tags=["assets"])
 EDITABLE = (
@@ -25,8 +26,35 @@ EDITABLE = (
     "location",
     "description",
     "lifecycle",
+    "holds_pii",
+    "pii_categories",
+    "pii_sensitive",
+    "pii_volume",
 )
-REQUIRED = {"name", "type", "classification", "confidentiality", "integrity", "availability", "lifecycle"}
+REQUIRED = {
+    "name",
+    "type",
+    "classification",
+    "confidentiality",
+    "integrity",
+    "availability",
+    "lifecycle",
+    "holds_pii",
+    "pii_categories",
+    "pii_sensitive",
+}
+
+
+def apply_pii(asset: Asset) -> None:
+    holds, categories, sensitive, volume = normalise_pii(
+        asset.holds_pii, asset.pii_categories, asset.pii_sensitive, asset.pii_volume
+    )
+    asset.holds_pii, asset.pii_categories, asset.pii_sensitive, asset.pii_volume = (
+        holds,
+        categories,
+        sensitive,
+        volume,
+    )
 
 
 @router.get("/assets", response_model=list[AssetOut])
@@ -37,6 +65,8 @@ def list_assets(
     q: str | None = Query(None, max_length=100),
     type_: str | None = Query(None, alias="type", max_length=30),
     include_retired: bool = False,
+    criticality: int | None = Query(None, ge=1, le=5),
+    pii: bool | None = None,
 ) -> list[AssetOut]:
     scope = resolve_scope(db, scope_id, grant)
     stmt = select(Asset).where(Asset.scope_id == scope.id)
@@ -51,7 +81,12 @@ def list_assets(
                 func.lower(Asset.name).like(like, escape="\\"), func.lower(Asset.code).like(like, escape="\\")
             )
         )
-    return [asset_out(a) for a in db.scalars(stmt.order_by(Asset.seq)).unique()]
+    if pii is not None:
+        stmt = stmt.where(Asset.holds_pii.is_(pii))
+    assets = db.scalars(stmt.order_by(Asset.seq)).unique()
+    if criticality is not None:
+        assets = [a for a in assets if max(a.confidentiality, a.integrity, a.availability) >= criticality]
+    return [asset_out(a) for a in assets]
 
 
 @router.post("/assets", response_model=AssetOut, status_code=status.HTTP_201_CREATED)
@@ -69,6 +104,7 @@ def create_asset(
     check_active_user(db, body.owner_id)
     seq = (db.scalar(select(func.max(Asset.seq)).where(Asset.scope_id == scope.id)) or 0) + 1
     asset = Asset(scope_id=scope.id, code=f"AST-{seq:03d}", seq=seq, **body.model_dump())
+    apply_pii(asset)
     db.add(asset)
     db.flush()
     record(
@@ -119,6 +155,11 @@ def update_asset(
         if value != getattr(asset, name):
             diff[name] = [getattr(asset, name), value]
             setattr(asset, name, value)
+    before = (asset.holds_pii, list(asset.pii_categories or []), asset.pii_sensitive, asset.pii_volume)
+    apply_pii(asset)
+    after = (asset.holds_pii, list(asset.pii_categories or []), asset.pii_sensitive, asset.pii_volume)
+    if before != after:
+        diff["personal_data"] = [list(before), list(after)]
     if diff:
         record(db, actor_for(request, user), "asset.update", "asset", asset.code, diff=diff)
         db.commit()

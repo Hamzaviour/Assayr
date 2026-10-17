@@ -24,6 +24,9 @@ export interface ControlSummary {
   owner: Owner | null
   evidence_required: number
   score: number | null
+  /** The reference shown to people: ISO 42001 codes carry an "AI " prefix that `ref` drops. */
+  ref?: string
+  framework?: "iso27001" | "nia" | "iso42001" | "soc2"
 }
 export interface ControlPage { items: ControlSummary[]; next_cursor: number | null }
 export interface EvidenceSlot {
@@ -44,6 +47,16 @@ export interface ControlDetail extends ControlSummary {
   slots: EvidenceSlot[]
   requirements: { ref: string; title: string }[]
   attestation: Attestation | null
+  test_procedure?: string | null
+  assayr_check?: { key: string; met: boolean; reason: string } | null
+}
+export interface RelatedControl {
+  code: string
+  ref: string
+  framework: string
+  title: string
+  status: string
+  evidence: { version_id: string; filename: string; state: string; linked: boolean }[]
 }
 export interface ControlStats {
   scope_id: string
@@ -241,9 +254,17 @@ export interface Asset {
   integrity: number
   availability: number
   criticality: number
+  confidentiality_label?: string
+  integrity_label?: string
+  availability_label?: string
+  criticality_label?: string
   location: string | null
   description: string | null
   lifecycle: string
+  holds_pii?: boolean
+  pii_categories?: string[]
+  pii_sensitive?: boolean
+  pii_volume?: string | null
 }
 export interface Person { id: string; full_name: string; email: string; roles: string[] }
 

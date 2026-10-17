@@ -20,7 +20,7 @@ import {
 import { usePeople } from "../api/people"
 import { Button } from "../components/Button"
 import { formatDate } from "../lib/format"
-import { AuditStatus, ResultBar } from "./Audits"
+import { AuditStatus, ResultBar, resultSummary } from "./Audits"
 
 const CARD = "rounded-xl border border-line bg-surface p-5"
 const FIELD = "rounded-lg border border-line-2 bg-surface px-2 py-1 text-[13px] text-fg"
@@ -29,14 +29,29 @@ const RESULT_TONE: Record<AuditResult, string> = {
   partial: "text-warn",
   fail: "text-bad",
   na: "text-fg-3",
+  no_exception: "text-ok",
+  exception: "text-bad",
+  not_tested: "text-fg-3",
 }
+const NUMBER = `${FIELD} w-20 tabular-nums`
 
 type Filter = "all" | "untested" | "issues"
-const FILTERS: [Filter, string][] = [
+const filtersFor = (soc2: boolean): [Filter, string][] => [
   ["all", "All"],
   ["untested", "Untested"],
-  ["issues", "Fail & partial"],
+  ["issues", soc2 ? "Exceptions" : "Fail & partial"],
 ]
+const isIssue = (item: AuditItem) => item.result === "fail" || item.result === "partial" || item.result === "exception"
+
+/** The control page a row opens: NIA has its own pages; ISO 42001 codes carry the "AI " prefix. */
+function ControlRef({ audit: a, item }: { audit: AuditDetail; item: AuditItem }) {
+  const className = "font-mono text-[12.5px] font-medium text-fg hover:text-primary"
+  if (a.framework === "nia-2.1") {
+    return <Link to="/nia/$ref" params={{ ref: item.ref }} className={className}>{item.ref}</Link>
+  }
+  const code = a.framework === "iso42001" ? `AI ${item.ref}` : item.ref
+  return <Link to="/controls/$code" params={{ code }} className={className}>{item.ref}</Link>
+}
 
 export function AuditDetailPage() {
   const { id } = useParams({ from: "/app/audits/$id" })
@@ -46,9 +61,8 @@ export function AuditDetailPage() {
   if (audit.isError) return <p role="alert">{audit.error.message}</p>
   const a = audit.data
   const editable = a.can_write && a.status !== "completed"
-  const shown = a.items.filter((i) =>
-    filter === "untested" ? !i.result : filter === "issues" ? i.result === "fail" || i.result === "partial" : true,
-  )
+  const soc2 = a.framework === "soc2"
+  const shown = a.items.filter((i) => (filter === "untested" ? !i.result : filter === "issues" ? isIssue(i) : true))
   const groups = new Map<string, AuditItem[]>()
   for (const item of shown) groups.set(item.domain, [...(groups.get(item.domain) ?? []), item])
 
@@ -60,7 +74,7 @@ export function AuditDetailPage() {
       <Header audit={a} />
       {editable && <AddControls audit={a} />}
       <div className="flex flex-wrap items-center gap-2">
-        {FILTERS.map(([key, label]) => (
+        {filtersFor(soc2).map(([key, label]) => (
           <button
             key={key}
             type="button"
@@ -87,20 +101,37 @@ export function AuditDetailPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-[13px]">
               <thead>
-                <tr className="text-left text-[11px] uppercase tracking-[0.06em] text-fg-3">
-                  <th className="px-4 py-2 font-medium">Control</th>
-                  <th className="px-4 py-2 font-medium">Assessment area</th>
-                  <th className="px-4 py-2 font-medium">Test</th>
-                  <th className="px-4 py-2 font-medium">M/A</th>
-                  <th className="px-4 py-2 font-medium">Result</th>
-                  <th className="px-4 py-2 font-medium">Notes</th>
-                  {editable && <th className="px-2 py-2" aria-label="Remove" />}
-                </tr>
+                {soc2 ? (
+                  <tr className="text-left text-[11px] uppercase tracking-[0.06em] text-fg-3">
+                    <th className="px-4 py-2 font-medium">Activity</th>
+                    <th className="px-4 py-2 font-medium">Test procedure</th>
+                    <th className="px-4 py-2 font-medium">Population</th>
+                    <th className="px-4 py-2 font-medium">Sample</th>
+                    <th className="px-4 py-2 font-medium">Tested</th>
+                    <th className="px-4 py-2 font-medium">Result</th>
+                    <th className="px-4 py-2 font-medium">Exception note</th>
+                    {editable && <th className="px-2 py-2" aria-label="Remove" />}
+                  </tr>
+                ) : (
+                  <tr className="text-left text-[11px] uppercase tracking-[0.06em] text-fg-3">
+                    <th className="px-4 py-2 font-medium">Control</th>
+                    <th className="px-4 py-2 font-medium">Assessment area</th>
+                    <th className="px-4 py-2 font-medium">Test</th>
+                    <th className="px-4 py-2 font-medium">M/A</th>
+                    <th className="px-4 py-2 font-medium">Result</th>
+                    <th className="px-4 py-2 font-medium">Notes</th>
+                    {editable && <th className="px-2 py-2" aria-label="Remove" />}
+                  </tr>
+                )}
               </thead>
               <tbody>
-                {items.map((item) => (
-                  <ItemRow key={item.id} audit={a} item={item} editable={editable} />
-                ))}
+                {items.map((item) =>
+                  soc2 ? (
+                    <Soc2Row key={item.id} audit={a} item={item} editable={editable} />
+                  ) : (
+                    <ItemRow key={item.id} audit={a} item={item} editable={editable} />
+                  ),
+                )}
               </tbody>
             </table>
           </div>
@@ -123,9 +154,15 @@ function Header({ audit: a }: { audit: AuditDetail }) {
       <span aria-hidden="true" className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-brand via-brand-bright to-brand-deep" />
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="mb-1 text-[12.5px] font-semibold text-primary">{FRAMEWORK_LABEL[a.framework]} · internal audit</p>
+          <p className="mb-1 text-[12.5px] font-semibold text-primary">
+            {FRAMEWORK_LABEL[a.framework]} · {a.framework === "soc2" ? "Type 2 audit" : "internal audit"}
+          </p>
           <h1 className="font-display text-[28px] font-extrabold tracking-tight">{a.title}</h1>
           <p className="mt-1 text-[13px] text-fg-2">
+            {a.framework === "soc2" &&
+              (a.period_start && a.period_end
+                ? `Observation period ${formatDate(a.period_start)} – ${formatDate(a.period_end)} · `
+                : "Observation period not set · ")}
             {a.auditor ? `Auditor: ${a.auditor.full_name}` : "No auditor"}
             {a.completed_at && a.completed_by && ` · Completed ${formatDate(a.completed_at)} by ${a.completed_by.full_name}`}
           </p>
@@ -151,10 +188,9 @@ function Header({ audit: a }: { audit: AuditDetail }) {
         </div>
       </div>
       <div className="grid gap-1.5">
-        <ResultBar counts={a.counts} />
+        <ResultBar counts={a.counts} framework={a.framework} />
         <p className="text-[12.5px] tabular-nums text-fg-2">
-          <span>{tested} of {a.items.length} tested</span> · {a.counts.pass} pass · {a.counts.partial} partial · {a.counts.fail} fail ·{" "}
-          {a.counts.na} NA
+          <span>{tested} of {a.items.length} tested</span> · {resultSummary(a.framework, a.counts, true)}
         </p>
         {a.can_write && a.status !== "completed" && untested > 0 && (
           <p className="text-[12.5px] text-fg-3">
@@ -204,11 +240,18 @@ function Header({ audit: a }: { audit: AuditDetail }) {
   )
 }
 
+const PLACEHOLDERS: Record<AuditDetail["framework"], { domain: string; refs: string }> = {
+  "nia-2.1": { domain: "Domain code, e.g. PS", refs: "SU 5, SU 7" },
+  iso27001: { domain: "Theme, e.g. People", refs: "A.5.1, A.8.13" },
+  iso42001: { domain: "Objective, e.g. Policies related to AI", refs: "A.2.2, A.6.2.4" },
+  soc2: { domain: "Series, e.g. CC6", refs: "CC6.1.2, CC7.2" },
+}
+
 function AddControls({ audit: a }: { audit: AuditDetail }) {
   const add = useAddAuditItems(a.id)
   const [domain, setDomain] = useState("")
   const [refs, setRefs] = useState("")
-  const nia = a.framework === "nia-2.1"
+  const hint = PLACEHOLDERS[a.framework]
 
   function onDomain(event: FormEvent) {
     event.preventDefault()
@@ -235,7 +278,7 @@ function AddControls({ audit: a }: { audit: AuditDetail }) {
             <input
               value={domain}
               onChange={(e) => setDomain(e.target.value)}
-              placeholder={nia ? "Domain code, e.g. PS" : "Theme, e.g. People"}
+              placeholder={hint.domain}
               className={FIELD}
             />
           </label>
@@ -247,7 +290,7 @@ function AddControls({ audit: a }: { audit: AuditDetail }) {
             <input
               value={refs}
               onChange={(e) => setRefs(e.target.value)}
-              placeholder={nia ? "SU 5, SU 7" : "A.5.1, A.8.13"}
+              placeholder={hint.refs}
               className={FIELD}
             />
           </label>
@@ -276,16 +319,7 @@ function ItemRow({ audit: a, item, editable }: { audit: AuditDetail; item: Audit
         },
       },
     )
-  const link =
-    a.framework === "nia-2.1" ? (
-      <Link to="/nia/$ref" params={{ ref: item.ref }} className="font-mono text-[12.5px] font-medium text-fg hover:text-primary">
-        {item.ref}
-      </Link>
-    ) : (
-      <Link to="/controls/$code" params={{ code: item.ref }} className="font-mono text-[12.5px] font-medium text-fg hover:text-primary">
-        {item.ref}
-      </Link>
-    )
+  const link = <ControlRef audit={a} item={item} />
 
   if (!editable) {
     return (
@@ -362,6 +396,146 @@ function ItemRow({ audit: a, item, editable }: { audit: AuditDetail; item: Audit
           maxLength={5000}
           onChange={(e) => setNotes(e.target.value)}
           onBlur={() => notes.trim() !== (item.notes ?? "") && save({ notes: notes.trim() || null })}
+          className={`${FIELD} w-full`}
+        />
+        {update.isError && <p role="alert" className="mt-1 text-[12px] font-medium text-bad">{update.error.message}</p>}
+      </td>
+      <td className="px-2 py-2">
+        <button
+          type="button"
+          aria-label={`Remove ${item.ref}`}
+          disabled={remove.isPending}
+          onClick={() => remove.mutate(item.id)}
+          className="rounded px-1.5 text-fg-3 hover:bg-subtle hover:text-bad"
+        >
+          ×
+        </button>
+      </td>
+    </tr>
+  )
+}
+
+const toCount = (text: string) => (text.trim() === "" ? null : Math.max(0, Math.trunc(Number(text))))
+
+/** A SOC 2 control activity: test procedure, population, sample, result and the exception it found. */
+function Soc2Row({ audit: a, item, editable }: { audit: AuditDetail; item: AuditItem; editable: boolean }) {
+  const update = useUpdateAuditItem(a.id)
+  const remove = useRemoveAuditItem(a.id)
+  const [procedure, setProcedure] = useState(item.assessment_area ?? "")
+  const [population, setPopulation] = useState(item.population ?? "")
+  const [size, setSize] = useState(item.sample_size?.toString() ?? "")
+  const [tested, setTested] = useState(item.samples_tested?.toString() ?? "")
+  const [note, setNote] = useState(item.exception_note ?? "")
+  useEffect(() => setProcedure(item.assessment_area ?? ""), [item.assessment_area])
+  useEffect(() => setPopulation(item.population ?? ""), [item.population])
+  useEffect(() => setSize(item.sample_size?.toString() ?? ""), [item.sample_size])
+  useEffect(() => setTested(item.samples_tested?.toString() ?? ""), [item.samples_tested])
+  useEffect(() => setNote(item.exception_note ?? ""), [item.exception_note])
+  const save = (changes: Parameters<typeof update.mutate>[0]["changes"]) =>
+    update.mutate(
+      { itemId: item.id, changes },
+      {
+        onError: () => {
+          setProcedure(item.assessment_area ?? "")
+          setPopulation(item.population ?? "")
+          setSize(item.sample_size?.toString() ?? "")
+          setTested(item.samples_tested?.toString() ?? "")
+          setNote(item.exception_note ?? "")
+        },
+      },
+    )
+  const saveCount = (name: "sample_size" | "samples_tested", text: string) => {
+    const value = toCount(text)
+    if (value === (item[name] ?? null) || Number.isNaN(value)) return
+    save({ [name]: value })
+  }
+  const link = <ControlRef audit={a} item={item} />
+
+  if (!editable) {
+    return (
+      <tr className="border-t border-line align-top">
+        <td className="whitespace-nowrap px-4 py-2.5">{link}</td>
+        <td className="min-w-64 px-4 py-2.5 text-fg-2">{item.assessment_area || "—"}</td>
+        <td className="min-w-40 px-4 py-2.5 text-fg-2">{item.population || "—"}</td>
+        <td className="px-4 py-2.5 tabular-nums">{item.sample_size ?? "—"}</td>
+        <td className="px-4 py-2.5 tabular-nums">{item.samples_tested ?? "—"}</td>
+        <td className={`whitespace-nowrap px-4 py-2.5 font-semibold ${item.result ? RESULT_TONE[item.result] : "text-fg-3"}`}>
+          {item.result ? RESULT_LABEL[item.result] : "Not recorded"}
+        </td>
+        <td className="min-w-48 px-4 py-2.5 text-fg-2">{item.exception_note || "—"}</td>
+      </tr>
+    )
+  }
+
+  return (
+    <tr className="border-t border-line align-top">
+      <td className="whitespace-nowrap px-4 py-2.5">{link}</td>
+      <td className="min-w-64 px-4 py-2">
+        <textarea
+          aria-label={`Test procedure for ${item.ref}`}
+          value={procedure}
+          rows={2}
+          maxLength={5000}
+          onChange={(e) => setProcedure(e.target.value)}
+          onBlur={() => procedure.trim() !== (item.assessment_area ?? "") && save({ assessment_area: procedure.trim() || null })}
+          className={`${FIELD} w-full`}
+        />
+      </td>
+      <td className="min-w-40 px-4 py-2">
+        <input
+          aria-label={`Population for ${item.ref}`}
+          value={population}
+          maxLength={2000}
+          onChange={(e) => setPopulation(e.target.value)}
+          onBlur={() => population.trim() !== (item.population ?? "") && save({ population: population.trim() || null })}
+          className={`${FIELD} w-full`}
+        />
+      </td>
+      <td className="px-4 py-2">
+        <input
+          aria-label={`Sample size for ${item.ref}`}
+          type="number"
+          min={0}
+          inputMode="numeric"
+          value={size}
+          onChange={(e) => setSize(e.target.value)}
+          onBlur={() => saveCount("sample_size", size)}
+          className={NUMBER}
+        />
+      </td>
+      <td className="px-4 py-2">
+        <input
+          aria-label={`Samples tested for ${item.ref}`}
+          type="number"
+          min={0}
+          inputMode="numeric"
+          value={tested}
+          onChange={(e) => setTested(e.target.value)}
+          onBlur={() => saveCount("samples_tested", tested)}
+          className={NUMBER}
+        />
+      </td>
+      <td className="px-4 py-2">
+        <select
+          aria-label={`Result for ${item.ref}`}
+          value={item.result ?? ""}
+          onChange={(e) => save({ result: (e.target.value || null) as AuditResult | null })}
+          className={`${FIELD} font-semibold ${item.result ? RESULT_TONE[item.result] : ""}`}
+        >
+          <option value="">Not recorded</option>
+          <option value="no_exception">No exceptions</option>
+          <option value="exception">Exception</option>
+          <option value="not_tested">Not tested</option>
+        </select>
+      </td>
+      <td className="min-w-48 px-4 py-2">
+        <input
+          aria-label={`Exception note for ${item.ref}`}
+          value={note}
+          maxLength={5000}
+          placeholder={item.result === "exception" ? "" : "Only when an exception is found"}
+          onChange={(e) => setNote(e.target.value)}
+          onBlur={() => note.trim() !== (item.exception_note ?? "") && save({ exception_note: note.trim() || null })}
           className={`${FIELD} w-full`}
         />
         {update.isError && <p role="alert" className="mt-1 text-[12px] font-medium text-bad">{update.error.message}</p>}

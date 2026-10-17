@@ -21,12 +21,17 @@ from assayr.audits.schemas import (
     ItemOut,
     ItemUpdateIn,
     ReopenIn,
+    period_problem,
 )
-from assayr.audits.service import add_items, catalogue_rows, counts, normalise_ref
+from assayr.audits.service import add_items, catalogue_rows, counts, normalise_ref, results_for
+from assayr.audits.tracker import export_tracker, read_tracker
 from assayr.audits.workbook import WorkbookError, export_workbook, read_workbook
 from assayr.catalogue.access import check_active_user, has_perm
+from assayr.catalogue.frameworks import load_soc2
+from assayr.catalogue.models import Control
 from assayr.catalogue.router import FORBIDDEN, resolve_scope
 from assayr.catalogue.schemas import OwnerOut
+from assayr.catalogue.soc2 import ActivityError, criterion_of, refresh_criterion, upsert_activity
 from assayr.db import get_session
 from assayr.exports import xlsx_response
 from assayr.identity.deps import actor_for, current_user, get_clock, require
@@ -153,6 +158,11 @@ def update_audit(
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "The title can not be empty.")
     if "auditor_id" in fields:
         check_active_user(db, body.auditor_id, "Auditor")
+    start = body.period_start if "period_start" in fields else audit.period_start
+    end = body.period_end if "period_end" in fields else audit.period_end
+    problem = period_problem(audit.framework, start, end)
+    if problem:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, problem)
     diff: dict[str, list] = {}
     for name in ("title", "period_start", "period_end", "auditor_id", "scope_note", "conclusion"):
         old, new = getattr(audit, name), getattr(body, name)
@@ -204,6 +214,47 @@ def add_audit_items(
     return audit_out(user, audit)
 
 
+ITEM_FIELDS = (
+    "domain",
+    "sub_domain",
+    "assessment_area",
+    "test_type",
+    "requirement",
+    "result",
+    "notes",
+    "population",
+    "sample_size",
+    "samples_tested",
+    "exception_note",
+)
+RESULT_HELP = {
+    "soc2": "Use one of: no exceptions, exception, not tested.",
+    "other": "Use one of: pass, partial, fail, not applicable.",
+}
+
+
+def _check_item(audit: Audit, item: AuditItem, body: ItemUpdateIn) -> None:
+    """The result must belong to the audit's framework; an exception needs a note; samples fit the sample size."""
+    fields = body.model_fields_set
+
+    def after(name):
+        return getattr(body, name) if name in fields else getattr(item, name)
+
+    result = after("result")
+    if "result" in fields and result is not None and result not in results_for(audit.framework):
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
+            RESULT_HELP["soc2" if audit.framework == "soc2" else "other"],
+        )
+    if result == "exception" and not (after("exception_note") or "").strip():
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "Describe the exception.")
+    size, tested = after("sample_size"), after("samples_tested")
+    if size is not None and tested is not None and tested > size:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT, "Samples tested can not be more than the sample size."
+        )
+
+
 def _item(audit: Audit, item_id: uuid.UUID) -> AuditItem:
     found = next((i for i in audit.items if i.id == item_id), None)
     if found is None:
@@ -228,8 +279,9 @@ def update_audit_item(
     for required in ("domain", "sub_domain"):
         if required in fields and getattr(body, required) is None:
             raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "Domain names can not be empty.")
+    _check_item(audit, item, body)
     diff: dict[str, list] = {}
-    for name in ("domain", "sub_domain", "assessment_area", "test_type", "requirement", "result", "notes"):
+    for name in ITEM_FIELDS:
         if name in fields and getattr(body, name) != getattr(item, name):
             diff[name] = [getattr(item, name), getattr(body, name)]
             setattr(item, name, getattr(body, name))
@@ -287,6 +339,10 @@ def complete_audit(
     _writable(user, audit)
     if not audit.items:
         raise HTTPException(status.HTTP_409_CONFLICT, "Add controls before completing this audit.")
+    if audit.framework == "soc2" and not (audit.period_start and audit.period_end):
+        raise HTTPException(
+            status.HTTP_409_CONFLICT, "Set the observation period before completing this audit."
+        )
     untested = sum(1 for i in audit.items if not i.result)
     if untested:
         noun = "control still has" if untested == 1 else "controls still have"
@@ -342,13 +398,22 @@ def export_audit(
 ) -> Response:
     audit = get_audit_or_404(db, grant, audit_id)
     name = re.sub(r"[^A-Za-z0-9._ -]", "", audit.title).strip() or "internal-audit"
+    if audit.framework == "soc2":
+        refs = [i.ref for i in audit.items]
+        controls = {
+            c.code: c
+            for c in db.scalars(
+                select(Control).where(Control.scope_id == audit.scope_id, Control.code.in_(refs))
+            ).unique()
+        }
+        return xlsx_response(export_tracker(audit, controls), f"{name}.xlsx")
     return xlsx_response(export_workbook(audit), f"{name}.xlsx")
 
 
 @router.post("/audits/import", response_model=ImportOut, status_code=status.HTTP_201_CREATED)
 def import_audit(
     request: Request,
-    framework: Literal["iso27001", "nia-2.1"] = Form(...),
+    framework: Literal["iso27001", "nia-2.1", "iso42001", "soc2"] = Form(...),
     file: UploadFile = File(...),
     user: User = Depends(current_user),
     grant: Grant = Depends(require(Perm.CONTROLS_READ)),
@@ -362,13 +427,15 @@ def import_audit(
     data = file.file.read(MAX_IMPORT_BYTES + 1)
     if len(data) > MAX_IMPORT_BYTES:
         raise HTTPException(status.HTTP_413_CONTENT_TOO_LARGE, "The workbook is larger than 5 MB.")
+    if framework == "soc2":
+        return _import_tracker(db, request, user, scope.id, data, file.filename)
     try:
         rows, skipped = read_workbook(data)
     except WorkbookError as exc:
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(exc)) from exc
     catalogue = {r.ref: r for r in catalogue_rows(db, scope.id, framework)}
     if rows and not any(normalise_ref(row.ref) in catalogue for row in rows):
-        label = "NIA v2.1" if framework == "nia-2.1" else "ISO/IEC 27001"
+        label = {"nia-2.1": "NIA v2.1", "iso42001": "ISO/IEC 42001"}.get(framework, "ISO/IEC 27001")
         raise HTTPException(
             status.HTTP_422_UNPROCESSABLE_CONTENT,
             f"None of the {len(rows)} controls in this workbook are in {label}. Check the framework you chose.",
@@ -415,4 +482,68 @@ def import_audit(
     db.refresh(audit)
     return ImportOut(
         audit=audit_out(user, audit), imported=len(seen), unknown_refs=unknown, skipped_rows=skipped
+    )
+
+
+def _import_tracker(
+    db: Session, request: Request, user: User, scope_id: uuid.UUID, data: bytes, filename: str | None
+) -> ImportOut:
+    """A SOC 2 tracker: creates or refreshes the control activities, then a draft audit with their results."""
+    try:
+        rows, skipped = read_tracker(data)
+    except WorkbookError as exc:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(exc)) from exc
+    criteria = set(
+        db.scalars(
+            select(Control.code).where(
+                Control.scope_id == scope_id, Control.framework == "soc2", Control.code.not_like("%.%.%")
+            )
+        )
+    )
+    known = [r for r in rows if criterion_of(r.code) in criteria]
+    unknown = [r.code for r in rows if criterion_of(r.code) not in criteria]
+    if not known:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
+            "None of the rows in this workbook are SOC 2 control numbers (like CC6.1.2).",
+        )
+    series = {s["ref"]: s["title"] for s in load_soc2()["series"]}
+    title = (filename or "tracker").rsplit(".", 1)[0][:150]
+    audit = Audit(scope_id=scope_id, framework="soc2", title=f"Imported: {title}", auditor_id=user.id)
+    db.add(audit)
+    now = get_clock(request)()
+    for order, row in enumerate(known, start=1):
+        try:
+            upsert_activity(db, scope_id, row.code, row.description, row.test_procedure)
+        except ActivityError as exc:
+            skipped.append(str(exc))
+            continue
+        audit.items.append(
+            AuditItem(
+                ref=row.code,
+                sort_order=order,
+                domain=series.get(row.code.split(".")[0], row.code.split(".")[0]),
+                sub_domain=criterion_of(row.code),
+                assessment_area=row.test_procedure or None,
+                result=row.result,
+                exception_note=row.note,
+            )
+        )
+    db.flush()
+    for criterion in {criterion_of(r.code) for r in known}:
+        refresh_criterion(db, scope_id, criterion, now)
+    if any(i.result for i in audit.items):
+        audit.status = "in_progress"
+    record(
+        db,
+        actor_for(request, user),
+        "audit.import",
+        "audit",
+        str(audit.id),
+        diff={"imported": [None, len(audit.items)], "unknown": [None, len(unknown)]},
+    )
+    db.commit()
+    db.refresh(audit)
+    return ImportOut(
+        audit=audit_out(user, audit), imported=len(audit.items), unknown_refs=unknown, skipped_rows=skipped
     )

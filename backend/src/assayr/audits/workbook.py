@@ -38,7 +38,7 @@ def headers(framework: str) -> list[str]:
         "Sr. No.",
         "Domain Name",
         "Sub Domain Name",
-        "NIA Control" if framework == "nia-2.1" else "ISO Control",
+        {"nia-2.1": "NIA Control", "iso42001": "ISO 42001 Control"}.get(framework, "ISO Control"),
         "Control Description/Assessment Area",
         "Design Assessment (DA) / Operating Effectiveness Assessment (OEA) / Both",
         "Mandatory (M) / Additional (A)",
@@ -47,7 +47,9 @@ def headers(framework: str) -> list[str]:
 
 
 def sheet_title(framework: str) -> str:
-    return "NIA - IA report" if framework == "nia-2.1" else "ISO - IA report"
+    return {"nia-2.1": "NIA - IA report", "iso42001": "ISO 42001 - IA report"}.get(
+        framework, "ISO - IA report"
+    )
 
 
 def export_workbook(audit: Audit) -> Workbook:

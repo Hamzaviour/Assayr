@@ -1,12 +1,13 @@
 import { Link, useParams } from "@tanstack/react-router"
 import { useQueryClient } from "@tanstack/react-query"
 import { type DragEvent, type FormEvent, useCallback, useEffect, useState } from "react"
-import { IMPLEMENTATION_LABEL, useControl, useUpdateControl } from "../api/controls"
+import { IMPLEMENTATION_LABEL, useControl, useRelated, useReuseEvidence, useUpdateActivity, useUpdateControl } from "../api/controls"
 import { useAttest, useUploadEvidence } from "../api/evidence"
 import type { ControlDetail as Detail, EvidenceSlot as Slot } from "../api/types"
 import { useMe } from "../auth/session"
 import { Button } from "../components/Button"
 import { ControlId } from "../components/ControlId"
+import { FrameworkChip } from "../components/FrameworkChip"
 import { DocumentSections } from "../components/DocumentSections"
 import { Icon } from "../components/icons"
 import { SlotStatePill } from "../components/SlotStatePill"
@@ -30,11 +31,14 @@ export function ControlDetailPage() {
     <div className="mx-auto grid max-w-5xl gap-4">
       <nav aria-label="Breadcrumb" className="text-[13px] text-fg-3">
         <Link to="/controls" className="hover:text-fg">Controls</Link> <span aria-hidden="true">›</span>{" "}
-        <ControlId code={c.code} />
+        <ControlId code={c.ref ?? c.code} />
       </nav>
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="mb-2 font-mono text-[13px] text-fg-3">{c.code} · {c.theme} controls</p>
+          <p className="mb-2 flex flex-wrap items-center gap-2 font-mono text-[13px] text-fg-3">
+            <span>{c.ref ?? c.code} · {c.framework && c.framework !== "iso27001" ? c.theme : `${c.theme} controls`}</span>
+            {c.framework && c.framework !== "iso27001" && <FrameworkChip framework={c.framework} />}
+          </p>
           <h1 className="font-display text-[28px] font-extrabold tracking-tight">{c.title}</h1>
           <p className="mt-2 text-[13px] text-fg-2">
             Owner: {c.owner?.full_name ?? `Unassigned (suggested: ${c.default_owner_role ?? "ISMS manager"})`} · Review:{" "}
@@ -49,11 +53,15 @@ export function ControlDetailPage() {
       </header>
       <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_300px]">
         <div className="grid content-start gap-4">
+          {c.framework === "soc2" && c.code.split(".").length === 3 && (
+            <TestProcedure control={c} canEdit={perms.includes("controls:write")} />
+          )}
           <EvidenceSlots control={c} canEdit={canEdit} />
           <ImplementationSection control={c} canEdit={canEdit} />
           <DocumentSections codes={[c.code]} linkTo={c.code} canLink={canEdit} />
         </div>
         <aside className="grid content-start gap-4">
+          {c.assayr_check && <AssayrCheck check={c.assayr_check} />}
           <section className="rounded-xl border border-line bg-surface p-5">
             <h3 className="mb-2.5 text-[11px] font-medium uppercase tracking-[0.08em] text-fg-3">What auditors look for</h3>
             <p className="text-[13px] text-fg-2">{c.description}</p>
@@ -66,6 +74,7 @@ export function ControlDetailPage() {
               ))}
             </ul>
           </section>
+          <RelatedControls code={c.code} canEdit={canEdit} />
         </aside>
       </div>
     </div>
@@ -264,3 +273,93 @@ function AttestationLine({ control, canEdit }: { control: Detail; canEdit: boole
     </div>
   )
 }
+
+function AssayrCheck({ check }: { check: { met: boolean; reason: string } }) {
+  return (
+    <section className={`rounded-xl border p-5 ${check.met ? "border-ok/25 bg-ok-soft" : "border-warn/25 bg-warn-soft"}`}>
+      <h3 className="mb-2 flex items-center justify-between gap-2 text-[11px] font-medium uppercase tracking-[0.08em] text-fg-3">
+        Assayr check
+        <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold normal-case tracking-normal ${check.met ? "bg-ok text-white" : "bg-warn text-white"}`}>
+          {check.met ? "Met" : "Not met"}
+        </span>
+      </h3>
+      <p className="text-[13px] text-fg">{check.reason}</p>
+      <p className="mt-2 text-[12px] text-fg-3">Checked from the AI systems register each time you open this page.</p>
+    </section>
+  )
+}
+
+function TestProcedure({ control, canEdit }: { control: Detail; canEdit: boolean }) {
+  const update = useUpdateActivity(control.code)
+  const [editing, setEditing] = useState(false)
+  const [text, setText] = useState(control.test_procedure ?? "")
+  function onSave(event: FormEvent) {
+    event.preventDefault()
+    update.mutate({ test_procedure: text.trim() || null }, { onSuccess: () => setEditing(false) })
+  }
+  return (
+    <section className="rounded-xl border border-line bg-surface p-5">
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <h2 className="text-[15px] font-semibold">Detailed test of controls</h2>
+        {canEdit && !editing && (
+          <Button size="sm" variant="secondary" onClick={() => setEditing(true)}>Edit</Button>
+        )}
+      </div>
+      {editing ? (
+        <form onSubmit={onSave} className="grid gap-2">
+          <label htmlFor="test-procedure" className="sr-only">Detailed test of controls</label>
+          <textarea id="test-procedure" value={text} onChange={(e) => setText(e.target.value)} rows={5} maxLength={5000}
+            className="w-full rounded-lg border border-line-2 bg-surface px-2.5 py-1.5 text-[13.5px]" />
+          <div className="flex items-center gap-2">
+            <Button type="submit" size="sm" disabled={update.isPending}>Save</Button>
+            <Button type="button" size="sm" variant="secondary" onClick={() => setEditing(false)}>Cancel</Button>
+            {update.isError && <p role="alert" className="text-[13px] text-bad">{update.error.message}</p>}
+          </div>
+        </form>
+      ) : (
+        <p className="whitespace-pre-line text-[13.5px] text-fg-2">{control.test_procedure || "No test procedure recorded yet."}</p>
+      )}
+    </section>
+  )
+}
+
+function RelatedControls({ code, canEdit }: { code: string; canEdit: boolean }) {
+  const related = useRelated(code)
+  const reuse = useReuseEvidence(code)
+  if (!related.data || related.data.length === 0) return null
+  return (
+    <section className="rounded-xl border border-line bg-surface p-5">
+      <h3 className="mb-1 text-[11px] font-medium uppercase tracking-[0.08em] text-fg-3">Related controls</h3>
+      <p className="mb-3 text-[12px] text-fg-3">Evidence accepted there can be reused here without uploading it again.</p>
+      <ul className="grid gap-3">
+        {related.data.map((r) => (
+          <li key={r.code} className="grid gap-1.5">
+            <div className="flex flex-wrap items-center gap-1.5">
+              <ControlId code={r.ref} />
+              <FrameworkChip framework={r.framework} />
+              <StatusPill status={r.status} />
+            </div>
+            <Link to="/controls/$code" params={{ code: r.code }} className="text-[13px] text-fg hover:text-primary">{r.title}</Link>
+            {r.evidence.length > 0 && (
+              <ul className="grid gap-1">
+                {r.evidence.map((e) => (
+                  <li key={e.version_id} className="flex items-center justify-between gap-2 rounded-lg bg-subtle px-2.5 py-1.5 text-[12.5px]">
+                    <span className="truncate text-fg-2">{e.filename}</span>
+                    {e.linked ? (
+                      <span className="whitespace-nowrap text-[11.5px] font-semibold text-ok">Reused</span>
+                    ) : canEdit ? (
+                      <Button size="sm" variant="secondary" aria-label={`Reuse ${e.filename}`} disabled={reuse.isPending}
+                        onClick={() => reuse.mutate(e.version_id)}>Reuse</Button>
+                    ) : null}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </li>
+        ))}
+      </ul>
+      {reuse.isError && <p role="alert" className="mt-2 text-[13px] text-bad">{reuse.error.message}</p>}
+    </section>
+  )
+}
+

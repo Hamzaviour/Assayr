@@ -135,6 +135,13 @@ def recompute_control(
         result = ControlScore(status="excluded", score=0.0, views=views, attested=attested)
     else:
         result = evaluate(control.implementation_status, views, attested, has_any_link)
+    if control.framework == "soc2" and control.applicable:
+        from assayr.catalogue.soc2 import criterion_status, is_activity
+
+        # A SOC 2 criterion with control activities takes its status from them, not from its own evidence.
+        rolled = None if is_activity(control) else criterion_status(db, control)
+        if rolled is not None:
+            result = ControlScore(status=rolled[0], score=rolled[1] or 0.0, views=views, attested=attested)
     if result.status != control.status:
         db.add(
             StatusTransition(
@@ -147,6 +154,12 @@ def recompute_control(
         )
         control.status = result.status
     control.score = None if result.status == "excluded" else result.score
+    if control.framework == "soc2":
+        from assayr.catalogue.soc2 import criterion_of, is_activity, refresh_criterion
+
+        if is_activity(control):
+            db.flush()
+            refresh_criterion(db, control.scope_id, criterion_of(control.code), now)
     return result
 
 

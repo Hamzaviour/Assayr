@@ -5,10 +5,13 @@ from fastapi import FastAPI, Request
 
 import assayr.models  # noqa: F401
 from assayr import __version__
+from assayr.ai.impact_router import router as ai_impact_router
+from assayr.ai.router import router as ai_router
 from assayr.assets.router import router as assets_router
 from assayr.audit.router import router as audit_router
 from assayr.audits.router import router as audits_router
 from assayr.catalogue.router import router as catalogue_router
+from assayr.catalogue.soc2_router import router as soc2_router
 from assayr.config import Settings, get_settings
 from assayr.dashboard.router import router as dashboard_router
 from assayr.db import Database, utcnow
@@ -20,6 +23,12 @@ from assayr.identity.people_router import router as people_router
 from assayr.identity.users_router import router as users_router
 from assayr.nia.router import frameworks_router as nia_frameworks_router
 from assayr.nia.router import router as nia_router
+from assayr.privacy.breaches_router import router as privacy_breaches_router
+from assayr.privacy.dpia_router import router as privacy_dpia_router
+from assayr.privacy.pdppl_router import router as privacy_pdppl_router
+from assayr.privacy.processors_router import router as privacy_processors_router
+from assayr.privacy.requests_router import router as privacy_requests_router
+from assayr.privacy.router import router as privacy_router
 from assayr.risk.library_router import router as risk_library_router
 from assayr.risk.router import router as risk_router
 from assayr.scoring.router import router as scoring_router
@@ -66,6 +75,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(soa_router, prefix="/api/v1")
     app.include_router(audit_router, prefix="/api/v1")
     app.include_router(catalogue_router, prefix="/api/v1")
+    app.include_router(soc2_router, prefix="/api/v1")
+    app.include_router(ai_router, prefix="/api/v1")
+    app.include_router(ai_impact_router, prefix="/api/v1")
     app.include_router(evidence_router, prefix="/api/v1")
     app.include_router(scoring_router, prefix="/api/v1")
     app.include_router(dashboard_router, prefix="/api/v1")
@@ -76,4 +88,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(training_courses_router, prefix="/api/v1")
     app.include_router(training_my_router, prefix="/api/v1")
     app.include_router(training_report_router, prefix="/api/v1")
+    app.include_router(privacy_router, prefix="/api/v1")
+    app.include_router(privacy_processors_router, prefix="/api/v1")
+    app.include_router(privacy_dpia_router, prefix="/api/v1")
+    app.include_router(privacy_requests_router, prefix="/api/v1")
+    app.include_router(privacy_breaches_router, prefix="/api/v1")
+    app.include_router(privacy_pdppl_router, prefix="/api/v1")
     return app

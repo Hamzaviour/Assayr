@@ -23,13 +23,15 @@ import {
 import { Button } from "../components/Button"
 import { formatDate } from "../lib/format"
 import { CompletionRing, CourseStatus } from "./Training"
+import { StatusBar } from "../components/StatusBar"
+import { countBy, statusSegments } from "../lib/statusBars"
 
 const CARD = "rounded-2xl border border-line bg-surface p-5"
 const FIELD = "rounded-lg border border-line-2 bg-surface px-2.5 py-1.5 text-[13px] text-fg"
 const LABEL = "grid gap-1 text-[12.5px] text-fg-2"
 export const ASSIGNMENT_TONE: Record<AssignmentRow["status"], string> = {
-  assigned: "text-fg-2",
-  in_progress: "text-primary",
+  assigned: "text-idle",
+  in_progress: "text-info",
   passed: "text-ok",
   failed: "text-bad",
 }
@@ -403,7 +405,10 @@ function People({ course: c }: { course: CourseDetail }) {
   const [filter, setFilter] = useState<PeopleFilter>("all")
   const [granting, setGranting] = useState<string | null>(null)
   const [reason, setReason] = useState("")
-  const shown = (rows.data ?? []).filter((r) => (filter === "overdue" ? r.overdue : filter === "failed" ? r.status === "failed" : true))
+  const [status, setStatus] = useState<string | null>(null)
+  const shown = (rows.data ?? []).filter(
+    (r) => (filter === "overdue" ? r.overdue : filter === "failed" ? r.status === "failed" : true) && (!status || r.status === status),
+  )
 
   return (
     <section aria-label="People" className={`${CARD} grid gap-3`}>
@@ -424,6 +429,14 @@ function People({ course: c }: { course: CourseDetail }) {
         </div>
       </div>
       {rows.isSuccess && rows.data.length === 0 && <p className="text-[13px] text-fg-3">Not assigned to anyone yet.</p>}
+      {rows.isSuccess && rows.data.length > 0 && (
+        <StatusBar
+          label="People by status"
+          selected={status}
+          onSelect={setStatus}
+          segments={statusSegments("assignment", countBy(rows.data, (r) => r.status))}
+        />
+      )}
       <div className="overflow-x-auto">
         <table className="w-full text-[13px]">
           <thead>

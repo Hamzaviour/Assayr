@@ -22,6 +22,7 @@ DisableDirPage=auto
 DisableProgramGroupPage=yes
 OutputDir={#OutDir}
 OutputBaseFilename=Assayr-Setup-{#Version}
+SetupIconFile=assayr.ico
 Compression=lzma2/ultra64
 SolidCompression=yes
 LZMAUseSeparateProcess=yes
@@ -32,7 +33,7 @@ PrivilegesRequired=admin
 WizardStyle=modern
 SetupLogging=yes
 UninstallDisplayName=Assayr
-UninstallDisplayIcon={app}\caddy\caddy.exe
+UninstallDisplayIcon={app}\assayr.ico
 CloseApplications=no
 #ifdef SignTool
 SignTool={#SignTool}
@@ -47,9 +48,13 @@ Source: "{#Stage}\*"; DestDir: "{app}"; Flags: recursesubdirs createallsubdirs i
 Type: filesandordirs; Name: "{app}"
 
 [Icons]
-Name: "{autoprograms}\Assayr\Open Assayr"; Filename: "{code:SiteUrl}"
-Name: "{autoprograms}\Assayr\Assayr Admin"; Filename: "{cmd}"; Parameters: "/k ""{app}\assayr-admin.cmd"" status"; WorkingDir: "{app}"
-Name: "{autoprograms}\Assayr\Back up now"; Filename: "{cmd}"; Parameters: "/k ""{app}\assayr-admin.cmd"" backup"; WorkingDir: "{app}"
+Name: "{autoprograms}\Assayr\Open Assayr"; Filename: "{code:SiteUrl}"; IconFilename: "{app}\assayr.ico"
+Name: "{autoprograms}\Assayr\Assayr Admin"; Filename: "{app}\assayr-admin.exe"; WorkingDir: "{app}"; Comment: "Status, start and stop, logs, backup and restore"
+Name: "{autoprograms}\Assayr\Back up now"; Filename: "{app}\assayr-admin.exe"; Parameters: "backup"; WorkingDir: "{app}"; Comment: "Back up the database, evidence files and settings"
+Name: "{autodesktop}\Open Assayr"; Filename: "{code:SiteUrl}"; IconFilename: "{app}\assayr.ico"; Tasks: desktopicon
+
+[Tasks]
+Name: "desktopicon"; Description: "Put an Open Assayr shortcut on the desktop"
 
 [Code]
 const

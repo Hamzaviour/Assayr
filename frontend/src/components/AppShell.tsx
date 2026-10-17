@@ -10,7 +10,7 @@ import { Icon } from "./icons"
 type NavItem = {
   label: string
   icon: string
-  to?: "/" | "/compliance" | "/controls" | "/evidence" | "/soa" | "/risks" | "/assets" | "/policies" | "/audits" | "/my-training" | "/users" | "/training"
+  to?: "/" | "/compliance" | "/controls" | "/evidence" | "/soa" | "/risks" | "/assets" | "/policies" | "/audits" | "/my-training" | "/users" | "/training" | "/privacy" | "/ai"
 }
 type NavSection = { group: string | null; items: NavItem[] }
 const MY_TRAINING: NavItem = { label: "My training", icon: "training", to: "/my-training" }
@@ -26,8 +26,16 @@ const NAV: NavSection[] = [
       { label: "Policies", icon: "policy", to: "/policies" },
     ],
   },
-  { group: "Risk", items: [{ label: "Risks", icon: "risk", to: "/risks" }, { label: "Assets", icon: "asset", to: "/assets" }] },
+  {
+    group: "Risk",
+    items: [
+      { label: "Risks", icon: "risk", to: "/risks" },
+      { label: "Assets", icon: "asset", to: "/assets" },
+      { label: "AI systems", icon: "ai", to: "/ai" },
+    ],
+  },
   { group: "Assure", items: [{ label: "Audits", icon: "audit", to: "/audits" }] },
+  { group: "Privacy", items: [{ label: "Data privacy", icon: "privacy", to: "/privacy" }] },
 ]
 
 const itemClass =

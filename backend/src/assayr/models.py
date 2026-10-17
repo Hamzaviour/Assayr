@@ -1,5 +1,6 @@
 """Import every model module so Base.metadata is complete (used by create_all and Alembic)."""
 
+from assayr.ai.models import AiImpact, AiImpactAssessment, AiSystem  # noqa: F401
 from assayr.assets.models import Asset  # noqa: F401
 from assayr.audit.models import AuditLog  # noqa: F401
 from assayr.audits.models import Audit, AuditItem  # noqa: F401
@@ -20,6 +21,16 @@ from assayr.evidence.models import (  # noqa: F401
 )
 from assayr.identity.models import Organization, RoleAssignment, Scope, User, UserSession  # noqa: F401
 from assayr.jobs import Job  # noqa: F401
+from assayr.privacy.models import (  # noqa: F401, E402
+    ActivityProcessor,
+    Breach,
+    Dpia,
+    DpiaRisk,
+    ProcessingActivity,
+    ProcessingAsset,
+    Processor,
+    SubjectRequest,
+)
 from assayr.risk.models import (  # noqa: F401
     MethodologyVersion,
     Risk,

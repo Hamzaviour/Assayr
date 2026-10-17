@@ -17,6 +17,7 @@ class Role(StrEnum):
     EXECUTIVE = "executive"
     EMPLOYEE = "employee"
     VIEWER = "viewer"
+    PRIVACY_OFFICER = "privacy_officer"
 
 
 class Perm(StrEnum):
@@ -42,6 +43,9 @@ class Perm(StrEnum):
     DOCUMENTS_CREATE = "documents:create"
     AUDITS_WRITE = "audits:write"
     TRAINING_MANAGE = "training:manage"
+    PRIVACY_MANAGE = "privacy:manage"
+    PRIVACY_SENSITIVE = "privacy:sensitive"
+    AI_MANAGE = "ai:manage"
 
 
 _READ_ALL = frozenset({Perm.CONTROLS_READ, Perm.RISKS_READ, Perm.ASSETS_READ, Perm.SOA_READ})
@@ -60,6 +64,9 @@ ROLE_PERMISSIONS: dict[Role, frozenset[Perm]] = {
         Perm.DOCUMENTS_CREATE,
         Perm.AUDITS_WRITE,
         Perm.TRAINING_MANAGE,
+        Perm.PRIVACY_MANAGE,
+        Perm.PRIVACY_SENSITIVE,
+        Perm.AI_MANAGE,
     },
     Role.CONTROL_OWNER: _READ_ALL | {Perm.CONTROLS_WRITE_OWN, Perm.ASSETS_WRITE_OWN, Perm.DOCUMENTS_CREATE},
     Role.RISK_OWNER: _READ_ALL | {Perm.RISKS_WRITE_OWN, Perm.RISKS_ACCEPT_MEDIUM_OWN},
@@ -69,6 +76,7 @@ ROLE_PERMISSIONS: dict[Role, frozenset[Perm]] = {
     Role.EXECUTIVE: _READ_ALL | {Perm.RISKS_ACCEPT_CRITICAL, Perm.SOA_APPROVE},
     Role.EMPLOYEE: frozenset(),
     Role.VIEWER: _READ_ALL,
+    Role.PRIVACY_OFFICER: _READ_ALL | {Perm.PRIVACY_MANAGE, Perm.PRIVACY_SENSITIVE, Perm.TRAINING_MANAGE},
 }
 
 

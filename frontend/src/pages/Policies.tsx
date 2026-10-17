@@ -5,6 +5,8 @@ import { useMe } from "../auth/session"
 import { Button } from "../components/Button"
 import { Disclosure, DocStatus, ReviewDue } from "../components/DocumentSections"
 import { formatDate } from "../lib/format"
+import { StatusBar } from "../components/StatusBar"
+import { countBy, statusSegments } from "../lib/statusBars"
 
 const order = (i: number) => ({ "--i": i }) as CSSProperties
 
@@ -120,7 +122,9 @@ export function PoliciesPage() {
   const canCreate = (me.data?.permissions ?? []).includes("documents:create")
   const all = documents.data ?? []
   const term = filter.trim().toLowerCase()
-  const shown = all.filter((d) => !term || d.title.toLowerCase().includes(term) || d.code.toLowerCase().includes(term))
+  const [status, setStatus] = useState<string | null>(null)
+  const matching = all.filter((d) => !term || d.title.toLowerCase().includes(term) || d.code.toLowerCase().includes(term))
+  const shown = status ? matching.filter((d) => d.status === status) : matching
   const overdue = all.filter((d) => d.review_overdue).length
 
   return (
@@ -147,6 +151,16 @@ export function PoliciesPage() {
         </div>
       </header>
       {creating && <NewDocument docs={all} onClose={() => setCreating(false)} />}
+      {all.length > 0 && (
+        <div className="rounded-xl border border-line bg-surface px-4 py-3">
+          <StatusBar
+            label="Documents by status"
+            selected={status}
+            onSelect={setStatus}
+            segments={statusSegments("document", countBy(matching, (d) => d.status))}
+          />
+        </div>
+      )}
       {documents.isError && <p role="alert">{documents.error.message}</p>}
       {documents.isPending && <div className="h-40 animate-pulse rounded-xl bg-subtle" aria-label="Loading" />}
       {documents.isSuccess &&

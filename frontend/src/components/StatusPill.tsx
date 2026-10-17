@@ -1,4 +1,5 @@
 import { Icon } from "./icons"
+import { STATUSES, TONE_CLASS } from "./Status"
 
 export type ControlStatus =
   | "not_started" | "in_progress" | "in_review" | "at_risk" | "non_compliant" | "compliant" | "excluded"
@@ -13,15 +14,9 @@ export const STATUS_LABEL: Record<ControlStatus, string> = {
   excluded: "Excluded",
 }
 
-const STYLE: Record<ControlStatus, string> = {
-  compliant: "bg-ok-soft text-ok border-ok/25",
-  at_risk: "bg-warn-soft text-warn border-warn/25",
-  non_compliant: "bg-bad-soft text-bad border-bad/25",
-  in_review: "bg-review-soft text-review border-review/25",
-  in_progress: "bg-primary-soft text-primary border-primary/25",
-  not_started: "bg-idle-soft text-idle border-idle/25",
-  excluded: "bg-transparent text-na border-line-2 border-dashed",
-}
+const STYLE = Object.fromEntries(
+  Object.entries(STATUSES.control).map(([status, [tone]]) => [status, TONE_CLASS[tone]]),
+) as Record<ControlStatus, string>
 
 function humanize(value: string): string {
   const text = value.replace(/[_-]+/g, " ").trim()

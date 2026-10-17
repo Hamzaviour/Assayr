@@ -1,8 +1,9 @@
 import { Link } from "@tanstack/react-router"
 import type { CSSProperties } from "react"
-import { ASSIGNMENT_STATUS, type MyAssignment, useMyAssignments } from "../api/training"
+import { type MyAssignment, useMyAssignments } from "../api/training"
 import { ProgressBar } from "../components/charts"
 import { formatDate } from "../lib/format"
+import { Status } from "../components/Status"
 
 const order = (i: number) => ({ "--i": i }) as CSSProperties
 
@@ -16,9 +17,7 @@ export const MY_STATUS_TONE: Record<MyAssignment["status"], string> = {
 export function MyStatus({ a }: { a: Pick<MyAssignment, "status" | "overdue"> }) {
   return (
     <span className="flex flex-wrap gap-1.5">
-      <span className={`inline-flex rounded-full border px-2 py-0.5 text-[11.5px] font-semibold ${MY_STATUS_TONE[a.status]}`}>
-        {ASSIGNMENT_STATUS[a.status]}
-      </span>
+      <Status area="assignment" value={a.status} />
       {a.overdue && <span className="inline-flex rounded-full bg-bad px-2 py-0.5 text-[11.5px] font-semibold text-white">Overdue</span>}
     </span>
   )
