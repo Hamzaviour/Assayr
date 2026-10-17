@@ -10,6 +10,7 @@ import { AuditsPage } from "./pages/Audits"
 import { AuditDetailPage } from "./pages/AuditDetail"
 import { FindingPage } from "./pages/Finding"
 import { FindingsPage } from "./pages/Findings"
+import { MailSettingsPage } from "./pages/MailSettings"
 import { MyTrainingPage } from "./pages/MyTraining"
 import { UsersPage } from "./pages/Users"
 import { TrainingPage } from "./pages/Training"
@@ -101,6 +102,7 @@ const privacyRoute = createRoute({
 const requestRoute = createRoute({ getParentRoute: () => appRoute, path: "/privacy/requests/$id", component: RequestDetailPage })
 const breachRoute = createRoute({ getParentRoute: () => appRoute, path: "/privacy/breaches/$id", component: BreachDetailPage })
 const activityRoute = createRoute({ getParentRoute: () => appRoute, path: "/privacy/$id", component: ProcessingActivityPage })
+const mailSettingsRoute = createRoute({ getParentRoute: () => appRoute, path: "/settings/email", component: MailSettingsPage })
 const usersRoute = createRoute({ getParentRoute: () => appRoute, path: "/users", component: UsersPage })
 const policiesRoute = createRoute({ getParentRoute: () => appRoute, path: "/policies", component: PoliciesPage })
 const documentRoute = createRoute({ getParentRoute: () => appRoute, path: "/policies/$id", component: DocumentDetailPage })
@@ -126,7 +128,7 @@ const styleguideRoute = createRoute({ getParentRoute: () => appRoute, path: "/st
 
 export const routeTree = rootRoute.addChildren([
   loginRoute,
-  appRoute.addChildren([dashboardRoute, complianceRoute, controlsRoute, controlRoute, niaControlRoute, policiesRoute, documentRoute, auditsRoute, auditRoute, findingsRoute, findingRoute, myTrainingRoute, usersRoute, trainingRoute, courseRoute, coursePlayerRoute, privacyRoute, activityRoute, requestRoute, breachRoute, evidenceRoute, risksRoute, riskNewRoute, riskSnapshotsRoute, riskRoute, riskAssessRoute, assetsRoute,
+  appRoute.addChildren([dashboardRoute, complianceRoute, controlsRoute, controlRoute, niaControlRoute, policiesRoute, documentRoute, auditsRoute, auditRoute, findingsRoute, findingRoute, myTrainingRoute, usersRoute, mailSettingsRoute, trainingRoute, courseRoute, coursePlayerRoute, privacyRoute, activityRoute, requestRoute, breachRoute, evidenceRoute, risksRoute, riskNewRoute, riskSnapshotsRoute, riskRoute, riskAssessRoute, assetsRoute,
     aiRoute,
     aiSystemRoute, soaRoute, styleguideRoute]),
 ])

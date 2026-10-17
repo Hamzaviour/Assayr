@@ -6,11 +6,12 @@ import { useLogout } from "../auth/session"
 import { toggleTheme } from "../lib/theme"
 import { Button } from "./Button"
 import { Icon } from "./icons"
+import { UserMenu } from "./UserMenu"
 
 type NavItem = {
   label: string
   icon: string
-  to?: "/" | "/compliance" | "/controls" | "/evidence" | "/soa" | "/risks" | "/assets" | "/policies" | "/audits" | "/my-training" | "/users" | "/training" | "/privacy" | "/ai" | "/findings"
+  to?: "/" | "/compliance" | "/controls" | "/evidence" | "/soa" | "/risks" | "/assets" | "/policies" | "/audits" | "/my-training" | "/users" | "/training" | "/privacy" | "/ai" | "/findings" | "/settings/email"
 }
 type NavSection = { group: string | null; items: NavItem[] }
 const MY_TRAINING: NavItem = { label: "My training", icon: "training", to: "/my-training" }
@@ -54,8 +55,11 @@ function navFor(me: Me): NavSection[] {
         s.group === "Assure" ? { ...s, items: [...s.items, { label: "Training", icon: "training", to: "/training" as const }] } : s,
       )
     : NAV
-  if (!me.permissions.includes("users:manage")) return sections
-  return [...sections, { group: "Admin", items: [{ label: "Users", icon: "users", to: "/users" }] }]
+  const admin: NavItem[] = [
+    ...(me.permissions.includes("users:manage") ? [{ label: "Users", icon: "users", to: "/users" as const }] : []),
+    ...(me.permissions.includes("settings:manage") ? [{ label: "Email", icon: "mail", to: "/settings/email" as const }] : []),
+  ]
+  return admin.length ? [...sections, { group: "Admin", items: admin }] : sections
 }
 
 export function AppShell({ me, children }: { me: Me; children: ReactNode }) {
@@ -123,7 +127,7 @@ export function AppShell({ me, children }: { me: Me; children: ReactNode }) {
             <Button variant="ghost" size="sm" onClick={() => toggleTheme()} aria-label="Toggle light or dark theme">
               <Icon name="theme" />
             </Button>
-            <span className="hidden text-[13px] text-fg-2 sm:inline">{me.full_name}</span>
+            <UserMenu me={me} />
             <Button variant="secondary" size="sm" onClick={signOut} disabled={logout.isPending}>
               <Icon name="logout" />
               Sign out
