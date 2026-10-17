@@ -65,7 +65,7 @@ Assayr Web) that start automatically with Windows.
 
 A backup runs every night at 02:00 (Task Scheduler, "Assayr nightly backup"); the newest 14 are
 kept in `<data folder>\backups`. Copy them to another machine regularly. A backup contains the
-database password and the HTTPS private key: keep backups where only administrators can read them.
+database password, the secret key that protects the mail password, and the HTTPS private key: keep backups where only administrators can read them.
 
 Backups are the same format on Windows and Linux, so you can move between them: install Assayr on
 the new server, copy a backup across and run `assayr-admin restore FILE`.

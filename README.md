@@ -6,7 +6,8 @@ Assayr is a governance, risk and compliance platform that organisations install 
 It holds every ISO/IEC 27001:2022 requirement and all 93 Annex A controls, checks each piece of uploaded
 evidence automatically, keeps compliance status current as evidence arrives or expires, and runs the full
 risk assessment and treatment cycle through to a Statement of Applicability. Nothing is sent to the cloud:
-no telemetry, no outbound calls, and it installs on servers with no internet access.
+no telemetry, no outbound calls (except email through your own mail server, if you turn it on), and it installs on servers with
+no internet access.
 
 ## What it does
 
@@ -26,6 +27,8 @@ no telemetry, no outbound calls, and it installs on servers with no internet acc
 | **Statement of Applicability** | Generated from controls and risks, with traceability checks and executive approval |
 | **Internal audits** | ISO 27001 (clause 9.2), NIA and ISO 42001 internal audits and SOC 2 Type 2 testing: pick controls, record the test type (DA / OEA / Both) and result per control, sign off, and export the report as Excel in the familiar "NIA - IA report" layout; existing audit workbooks can be imported |
 | **Training and awareness** | Courses with Google Drive videos or uploaded videos and documents, an auto-marked assessment (pass mark, attempts), assignment to everyone, a department, a role or named people, yearly refresh, automatic assignment for new joiners, completion tracking and an Excel report as A.6.3 evidence. Staff are imported from CSV and choose their own password at first sign-in |
+| **Findings and corrective actions** | Every fail, partial or SOC 2 exception in an audit becomes a finding in one click (or all at once when the audit is completed): graded Major / Minor nonconformity, Observation or Opportunity for improvement, with an owner and a due date. Nonconformities need a root cause and corrective actions with evidence files (malware-scanned), then a verification of effectiveness by someone who did not own the work before they close; a finding can be raised to the risk register; Excel register |
+| **Email reminders** | A daily summary for each person of what is overdue or due soon (findings, corrective actions, verifications, expiring evidence, policy reviews, training, risk reviews, data subject requests, breach deadlines, AI reviews), sent through your own mail server and never twice a day; set up by an administrator with a test email, off until turned on; anyone can switch their own summary off |
 | **Audit trail** | Tamper-evident (hash-chained) record of every change |
 
 ## Download and install
@@ -47,16 +50,17 @@ not start. Backups are the same format on Windows and Linux, so you can move bet
 
 ## Security and privacy
 
-- Runs entirely on your infrastructure; works air-gapped. No telemetry and no outbound connections.
+- Runs entirely on your infrastructure; works air-gapped. No telemetry, and no outbound connections except email to your
+  own mail server when an administrator turns it on. The mail password is stored encrypted with a key kept in `assayr.env`.
 - Only the HTTPS and HTTP ports are reachable from the network; the database, API and scanner listen on
   localhost only.
 - Every upload is scanned with ClamAV; uploaded files are stored content-addressed and checksummed.
 - Passwords are hashed with Argon2id; sessions expire on idle and absolute timeouts; roles limit who can do what.
-- Backups contain the database password and the HTTPS key, so keep them where only administrators can read them.
+- Backups contain the database password, the secret key and the HTTPS key, so keep them where only administrators can read them.
 
 ## Roadmap
 
-- **Next:** audit findings with corrective actions tracked to closure, and email reminders through your own mail server.
+- **Next:** findings from external and certification audits, and reminders by email for individual items as they fall due.
 
 ---
 

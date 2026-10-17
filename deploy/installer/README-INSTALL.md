@@ -124,8 +124,8 @@ after it) in `certs/tls.crt` and its key in `certs/tls.key` inside the install f
 ## Backups
 
 Back up regularly, for example every night with cron (`0 2 * * * /opt/assayr/assayr backup`), and
-copy the files in `backups/` to another machine. A backup contains the database password and the
-HTTPS private key: keep backups where only administrators can read them.
+copy the files in `backups/` to another machine. A backup contains the database password, the
+secret key that protects the mail password, and the HTTPS private key: keep backups where only administrators can read them.
 
 To move Assayr to a new server: install the same version there, copy a backup across, and run
 `./assayr restore FILE`.
