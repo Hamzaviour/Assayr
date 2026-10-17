@@ -25,6 +25,8 @@ from assayr.findings.schemas import (
     FindingOut,
     FindingUpdateIn,
     Link,
+    RaiseIn,
+    RaiseOut,
     ReasonIn,
     RiskLink,
     SummaryOut,
@@ -33,6 +35,7 @@ from assayr.findings.schemas import (
 )
 from assayr.findings.service import (
     NOT_RAISABLE,
+    RAISABLE,
     can_edit_capa,
     can_manage,
     is_overdue,
@@ -47,6 +50,7 @@ from assayr.risk.models import Risk
 from assayr.risk.service import next_risk_code
 
 router = APIRouter(prefix="/findings", tags=["findings"])
+audits_router = APIRouter(prefix="/audits", tags=["findings"])
 NOT_FOUND = "Finding not found."
 CLOSED = "This finding is closed. Reopen it to make changes."
 CAPA_FIELDS = {"root_cause", "correction", "response"}
@@ -526,3 +530,54 @@ def raise_risk(
     db.flush()
     f.risk_id = risk.id
     return _done(db, request, user, f, "finding.raise_risk", diff={"risk": risk.code})
+
+
+@audits_router.post("/{audit_id}/findings", response_model=RaiseOut)
+def raise_for_audit(
+    audit_id: uuid.UUID,
+    body: RaiseIn,
+    request: Request,
+    user: User = Depends(current_user),
+    grant: Grant = Depends(require(Perm.CONTROLS_READ)),
+    db: Session = Depends(get_session),
+) -> RaiseOut:
+    """Raises findings for the chosen rows, or every fail / partial / exception row; rows already raised are kept."""
+    audit = db.get(Audit, audit_id)
+    if audit is None or not grant.allows(audit.scope_id):
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Audit not found.")
+    if not can_manage(user, audit.scope_id):
+        raise HTTPException(status.HTTP_403_FORBIDDEN, FORBIDDEN)
+    if body.all == (body.item_ids is not None):
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT, "Choose rows, or all rows with a failed result."
+        )
+    if body.all:
+        items = [i for i in audit.items if i.result in RAISABLE]
+    else:
+        by_id = {i.id: i for i in audit.items}
+        wanted = list(dict.fromkeys(body.item_ids or []))
+        if any(i not in by_id for i in wanted):
+            raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "Some rows are not in this audit.")
+        items = [by_id[i] for i in wanted]
+        if any(i.result not in RAISABLE for i in items):
+            raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, NOT_RAISABLE)
+    now = get_clock(request)()
+    created, existing = [], 0
+    for item in items:
+        f, new = raise_from_item(db, audit, item, user, now)
+        if new:
+            created.append(f)
+        else:
+            existing += 1
+    if created:
+        record(
+            db,
+            actor_for(request, user),
+            "finding.raise_bulk",
+            "audit",
+            str(audit.id),
+            diff={"findings": [f.code for f in created]},
+        )
+        db.commit()
+    today = _today(request)
+    return RaiseOut(created=[finding_out(db, f, today) for f in created], existing=existing)

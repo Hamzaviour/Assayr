@@ -7,7 +7,7 @@ from typing import Literal
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile, status
 from fastapi.responses import Response
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, object_session
 
 from assayr.audit.service import record
 from assayr.audits.models import Audit, AuditItem
@@ -17,6 +17,7 @@ from assayr.audits.schemas import (
     AuditIn,
     AuditOut,
     AuditUpdateIn,
+    FindingChip,
     ImportOut,
     ItemOut,
     ItemUpdateIn,
@@ -34,6 +35,8 @@ from assayr.catalogue.schemas import OwnerOut
 from assayr.catalogue.soc2 import ActivityError, criterion_of, refresh_criterion, upsert_activity
 from assayr.db import get_session
 from assayr.exports import xlsx_response
+from assayr.findings.models import Finding
+from assayr.findings.service import RAISABLE
 from assayr.identity.deps import actor_for, current_user, get_clock, require
 from assayr.identity.models import User
 from assayr.identity.rbac import Grant, Perm
@@ -67,10 +70,28 @@ def audit_out(user: User, audit: Audit) -> AuditOut:
     )
 
 
+def item_out(item: AuditItem, finding: Finding | None) -> ItemOut:
+    out = ItemOut.model_validate(item)
+    if finding is not None:
+        out.finding = FindingChip(id=finding.id, code=finding.code, status=finding.status)
+        out.result_changed = item.result not in RAISABLE
+    return out
+
+
+def _findings_by_item(db: Session, items: list[AuditItem]) -> dict[uuid.UUID, Finding]:
+    ids = [i.id for i in items]
+    if not ids:
+        return {}
+    return {
+        f.audit_item_id: f for f in db.scalars(select(Finding).where(Finding.audit_item_id.in_(ids))).unique()
+    }
+
+
 def _detail(user: User, audit: Audit) -> AuditDetailOut:
+    findings = _findings_by_item(object_session(audit), audit.items)
     return AuditDetailOut(
         **audit_out(user, audit).model_dump(),
-        items=[ItemOut.model_validate(i) for i in audit.items],
+        items=[item_out(i, findings.get(i.id)) for i in audit.items],
     )
 
 
@@ -298,7 +319,7 @@ def update_audit_item(
         )
         db.commit()
         db.refresh(item)
-    return ItemOut.model_validate(item)
+    return item_out(item, _findings_by_item(db, [item]).get(item.id))
 
 
 @router.delete("/audits/{audit_id}/items/{item_id}", response_model=AuditOut)

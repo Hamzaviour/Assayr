@@ -78,6 +78,12 @@ class ReopenIn(BaseModel):
     reason: str = Field(min_length=1, max_length=2000)
 
 
+class FindingChip(BaseModel):
+    id: uuid.UUID
+    code: str
+    status: str
+
+
 class ItemOut(BaseModel):
     id: uuid.UUID
     ref: str
@@ -93,6 +99,8 @@ class ItemOut(BaseModel):
     sample_size: int | None = None
     samples_tested: int | None = None
     exception_note: str | None = None
+    finding: FindingChip | None = None
+    result_changed: bool = False
 
     model_config = {"from_attributes": True}
 
