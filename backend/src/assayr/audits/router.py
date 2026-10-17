@@ -21,8 +21,9 @@ from assayr.audits.schemas import (
     ItemOut,
     ItemUpdateIn,
     ReopenIn,
+    period_problem,
 )
-from assayr.audits.service import add_items, catalogue_rows, counts, normalise_ref
+from assayr.audits.service import add_items, catalogue_rows, counts, normalise_ref, results_for
 from assayr.audits.workbook import WorkbookError, export_workbook, read_workbook
 from assayr.catalogue.access import check_active_user, has_perm
 from assayr.catalogue.router import FORBIDDEN, resolve_scope
@@ -153,6 +154,11 @@ def update_audit(
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "The title can not be empty.")
     if "auditor_id" in fields:
         check_active_user(db, body.auditor_id, "Auditor")
+    start = body.period_start if "period_start" in fields else audit.period_start
+    end = body.period_end if "period_end" in fields else audit.period_end
+    problem = period_problem(audit.framework, start, end)
+    if problem:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, problem)
     diff: dict[str, list] = {}
     for name in ("title", "period_start", "period_end", "auditor_id", "scope_note", "conclusion"):
         old, new = getattr(audit, name), getattr(body, name)
@@ -204,6 +210,47 @@ def add_audit_items(
     return audit_out(user, audit)
 
 
+ITEM_FIELDS = (
+    "domain",
+    "sub_domain",
+    "assessment_area",
+    "test_type",
+    "requirement",
+    "result",
+    "notes",
+    "population",
+    "sample_size",
+    "samples_tested",
+    "exception_note",
+)
+RESULT_HELP = {
+    "soc2": "Use one of: no exceptions, exception, not tested.",
+    "other": "Use one of: pass, partial, fail, not applicable.",
+}
+
+
+def _check_item(audit: Audit, item: AuditItem, body: ItemUpdateIn) -> None:
+    """The result must belong to the audit's framework; an exception needs a note; samples fit the sample size."""
+    fields = body.model_fields_set
+
+    def after(name):
+        return getattr(body, name) if name in fields else getattr(item, name)
+
+    result = after("result")
+    if "result" in fields and result is not None and result not in results_for(audit.framework):
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
+            RESULT_HELP["soc2" if audit.framework == "soc2" else "other"],
+        )
+    if result == "exception" and not (after("exception_note") or "").strip():
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "Describe the exception.")
+    size, tested = after("sample_size"), after("samples_tested")
+    if size is not None and tested is not None and tested > size:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT, "Samples tested can not be more than the sample size."
+        )
+
+
 def _item(audit: Audit, item_id: uuid.UUID) -> AuditItem:
     found = next((i for i in audit.items if i.id == item_id), None)
     if found is None:
@@ -228,8 +275,9 @@ def update_audit_item(
     for required in ("domain", "sub_domain"):
         if required in fields and getattr(body, required) is None:
             raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "Domain names can not be empty.")
+    _check_item(audit, item, body)
     diff: dict[str, list] = {}
-    for name in ("domain", "sub_domain", "assessment_area", "test_type", "requirement", "result", "notes"):
+    for name in ITEM_FIELDS:
         if name in fields and getattr(body, name) != getattr(item, name):
             diff[name] = [getattr(item, name), getattr(body, name)]
             setattr(item, name, getattr(body, name))

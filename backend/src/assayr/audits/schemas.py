@@ -6,8 +6,20 @@ from pydantic import BaseModel, Field, model_validator
 
 from assayr.catalogue.schemas import OwnerOut
 
-Framework = Literal["iso27001", "nia-2.1"]
-Result = Literal["pass", "fail", "partial", "na"]
+Framework = Literal["iso27001", "nia-2.1", "iso42001", "soc2"]
+Result = Literal["pass", "fail", "partial", "na", "no_exception", "exception", "not_tested"]
+PERIOD_ORDER = "The period ends before it starts."
+PERIOD_NEEDED = "A SOC 2 Type 2 audit needs an observation period (from and to)."
+
+
+def period_problem(framework: str, start: date | None, end: date | None) -> str | None:
+    if start and end and end < start:
+        return PERIOD_ORDER
+    if framework == "soc2" and (start is None or end is None):
+        return PERIOD_NEEDED
+    return None
+
+
 TestType = Literal["DA", "OEA", "Both"]
 
 
@@ -18,6 +30,13 @@ class AuditIn(BaseModel):
     period_end: date | None = None
     auditor_id: uuid.UUID | None = None
     scope_note: str | None = Field(None, max_length=5000)
+
+    @model_validator(mode="after")
+    def _period(self):
+        problem = period_problem(self.framework, self.period_start, self.period_end)
+        if problem:
+            raise ValueError(problem)
+        return self
 
 
 class AuditUpdateIn(BaseModel):
@@ -49,6 +68,10 @@ class ItemUpdateIn(BaseModel):
     requirement: Literal["M", "A"] | None = None
     result: Result | None = None
     notes: str | None = Field(None, max_length=5000)
+    population: str | None = Field(None, max_length=2000)
+    sample_size: int | None = Field(None, ge=0, le=100000)
+    samples_tested: int | None = Field(None, ge=0, le=100000)
+    exception_note: str | None = Field(None, max_length=5000)
 
 
 class ReopenIn(BaseModel):
@@ -66,6 +89,10 @@ class ItemOut(BaseModel):
     requirement: str | None
     result: str | None
     notes: str | None
+    population: str | None = None
+    sample_size: int | None = None
+    samples_tested: int | None = None
+    exception_note: str | None = None
 
     model_config = {"from_attributes": True}
 
