@@ -92,3 +92,19 @@ def test_failure_handler_runs_once_when_a_job_finally_fails(app, db, clock, monk
         run_jobs(app)
         clock.advance(minutes=5)
     assert failures == ["RuntimeError: disk full"]
+
+
+def test_the_worker_imports_every_table_it_may_touch():
+    """`assayr worker` imports only the job handlers; a missing model module breaks every flush there."""
+    import subprocess
+    import sys
+
+    code = (
+        "import assayr.job_handlers\n"
+        "from sqlalchemy.orm import configure_mappers\n"
+        "from assayr.db import Base\n"
+        "configure_mappers()\n"
+        "assert Base.metadata.sorted_tables\n"
+    )
+    result = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True)
+    assert result.returncode == 0, result.stderr[-2000:]

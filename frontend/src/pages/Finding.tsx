@@ -72,7 +72,7 @@ function Header({ f }: { f: FindingDetail }) {
       <span aria-hidden="true" className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-brand via-brand-bright to-brand-deep" />
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="mb-1 font-mono text-[12.5px] font-semibold text-primary">{f.code} · {GRADE_LABEL[f.grade]}</p>
+          <p className="mb-1 text-[12.5px] font-semibold text-primary"><span className="font-mono">{f.code}</span> · {GRADE_LABEL[f.grade]}</p>
           <h1 className="font-display text-[26px] font-extrabold tracking-tight">{f.title}</h1>
         </div>
         <div className="flex flex-wrap items-center gap-2">

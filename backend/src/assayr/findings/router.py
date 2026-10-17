@@ -140,7 +140,7 @@ def detail_out(db: Session, user: User, f: Finding, today: date) -> FindingDetai
         can_verify=verify_problem(user, f) is None,
         can_close=is_open and not f.is_nonconformity and (manage or f.owner_id == user.id),
         can_reopen=not is_open and has_perm(user, f.scope_id, Perm.CONTROLS_WRITE),
-        can_raise_risk=manage and f.risk_id is None,
+        can_raise_risk=manage and is_open and f.risk_id is None,
     )
 
 
