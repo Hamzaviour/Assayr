@@ -59,6 +59,9 @@ cmd_upgrade() {
   env_set ASSAYR_VERSION "$new" "$ASSAYR_DIR/assayr.env"
   added="$(env_merge_defaults "$ASSAYR_DIR/assayr.env.example" "$ASSAYR_DIR/assayr.env")"
   if [ -n "$added" ]; then info "New settings added with their defaults: $added"; fi
+  if [ -z "$(env_get ASSAYR_SECRET_KEY "$ASSAYR_DIR/assayr.env")" ]; then
+    env_set ASSAYR_SECRET_KEY "$(random_password)" "$ASSAYR_DIR/assayr.env"
+  fi
 
   info "Starting Assayr $new (the database is migrated on start)"
   if start_stack && api_ready && audit_ok; then

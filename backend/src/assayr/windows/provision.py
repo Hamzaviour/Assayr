@@ -37,10 +37,14 @@ class CertChoice:
     key: Path | None = None
 
 
-def _env_password(cfg: InstallConfig) -> str | None:
+def _env_get(cfg: InstallConfig, name: str) -> str | None:
     if not cfg.env_file.exists():
         return None
-    return dotenv_values(cfg.env_file).get("POSTGRES_PASSWORD") or None
+    return dotenv_values(cfg.env_file).get(name) or None
+
+
+def _env_password(cfg: InstallConfig) -> str | None:
+    return _env_get(cfg, "POSTGRES_PASSWORD")
 
 
 def _child_env(cfg: InstallConfig, **extra: str) -> dict[str, str]:
@@ -73,7 +77,9 @@ def _check_folders(cfg: InstallConfig) -> None:
 
 
 def _write_files(cfg: InstallConfig, db_password: str) -> None:
-    cfg.env_file.write_text(render_env(cfg, db_password), encoding="utf-8")
+    # The secret key encrypts stored secrets (the mail password): keep it across upgrades, add it if missing.
+    secret_key = _env_get(cfg, "ASSAYR_SECRET_KEY") or secrets.token_urlsafe(32)
+    cfg.env_file.write_text(render_env(cfg, db_password, secret_key), encoding="utf-8")
     cfg.caddyfile.write_text(render_caddyfile(cfg), encoding="utf-8")
     cfg.clamd_conf.write_text(render_clamd_conf(cfg), encoding="utf-8")
     cfg.save()

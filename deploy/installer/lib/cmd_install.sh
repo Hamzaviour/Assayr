@@ -153,6 +153,7 @@ write_install_env() {
   (umask 077 && cp "$ASSAYR_DIR/assayr.env.example" "$env")
   env_set ASSAYR_VERSION "$(bundle_value "$BUNDLE_DIR" VERSION)" "$env"
   env_set POSTGRES_PASSWORD "$(random_password)" "$env"
+  env_set ASSAYR_SECRET_KEY "$(random_password)" "$env"
   env_set ASSAYR_HOSTNAME "$ASSAYR_HOSTNAME" "$env"
   env_set ASSAYR_ORG_NAME "$ASSAYR_ORG_NAME" "$env"
   env_set ASSAYR_WEB_MODE "$web_mode" "$env"

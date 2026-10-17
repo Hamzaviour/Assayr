@@ -33,7 +33,7 @@ def parse_env(text):
 
 def test_env_round_trips_awkward_values(tmp_path):
     c = cfg(tmp_path)
-    values = parse_env(render_env(c, PW))
+    values = parse_env(render_env(c, PW, "invented-key"))
     assert values["ASSAYR_ORG_NAME"] == 'Acme "Bank" & Co'
     assert values["POSTGRES_PASSWORD"] == PW
     url = urlsplit(values["ASSAYR_DATABASE_URL"].replace("postgresql+pg8000", "postgresql"))
@@ -41,22 +41,23 @@ def test_env_round_trips_awkward_values(tmp_path):
     assert values["ASSAYR_STORAGE_DIR"] == str(c.blobs_dir)
     assert values["ASSAYR_CLAMAV_HOST"] == "127.0.0.1"
     assert values["ASSAYR_SECURE_COOKIES"] == "true"
+    assert values["ASSAYR_SECRET_KEY"] == "invented-key"
 
 
 def test_env_without_scan_has_no_clamav(tmp_path):
-    assert parse_env(render_env(cfg(tmp_path, malware_scan=False), "x"))["ASSAYR_CLAMAV_HOST"] == ""
+    assert parse_env(render_env(cfg(tmp_path, malware_scan=False), "x", "k"))["ASSAYR_CLAMAV_HOST"] == ""
 
 
 def test_http_mode_cookies(tmp_path):
-    assert parse_env(render_env(cfg(tmp_path, web_mode="http"), "x"))["ASSAYR_SECURE_COOKIES"] == "false"
+    assert parse_env(render_env(cfg(tmp_path, web_mode="http"), "x", "k"))["ASSAYR_SECURE_COOKIES"] == "false"
     behind = cfg(tmp_path, web_mode="http", behind_tls_proxy=True)
-    assert parse_env(render_env(behind, "x"))["ASSAYR_SECURE_COOKIES"] == "true"
+    assert parse_env(render_env(behind, "x", "k"))["ASSAYR_SECURE_COOKIES"] == "true"
 
 
 def test_rendered_env_loads_into_settings(tmp_path, monkeypatch):
     c = cfg(tmp_path)
     c.data_dir.mkdir(parents=True)
-    c.env_file.write_text(render_env(c, PW), encoding="utf-8")
+    c.env_file.write_text(render_env(c, PW, "invented-key"), encoding="utf-8")
     monkeypatch.setenv("ASSAYR_ENV_FILE", str(c.env_file))
     for k in ("ASSAYR_DATABASE_URL", "ASSAYR_ORG_NAME", "ASSAYR_STORAGE_DIR"):
         monkeypatch.delenv(k, raising=False)

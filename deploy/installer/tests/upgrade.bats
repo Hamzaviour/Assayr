@@ -33,6 +33,21 @@ setup() {
   [ "$(env_get ASSAYR_WAIT_TIMEOUT "$DIR/assayr.env")" = 600 ]
 }
 
+@test "upgrade keeps the secret key, or adds one to an older installation" {
+  local key
+  key="$(env_get ASSAYR_SECRET_KEY "$DIR/assayr.env")"
+  [[ "$key" =~ ^[A-Za-z0-9]{32}$ ]]
+  grep -v '^ASSAYR_SECRET_KEY=' "$DIR/assayr.env" >"$DIR/assayr.env.tmp"
+  mv "$DIR/assayr.env.tmp" "$DIR/assayr.env"
+  run "$NEW/assayr" upgrade --dir "$DIR"
+  [ "$status" -eq 0 ]
+  local added
+  added="$(env_get ASSAYR_SECRET_KEY "$DIR/assayr.env")"
+  [[ "$added" =~ ^[A-Za-z0-9]{32}$ ]]
+  [ "$added" != "$key" ]
+  [ "$(grep -c '^ASSAYR_SECRET_KEY=' "$DIR/assayr.env")" -eq 1 ]
+}
+
 @test "the same or an older version is refused" {
   run "$OLD/assayr" upgrade --dir "$DIR"
   [ "$status" -eq 1 ]

@@ -42,7 +42,7 @@ def database_url(cfg: InstallConfig, db_password: str) -> str:
     return f"postgresql+pg8000://assayr:{quote(db_password, safe='')}@127.0.0.1:{cfg.pg_port}/assayr"
 
 
-def render_env(cfg: InstallConfig, db_password: str) -> str:
+def render_env(cfg: InstallConfig, db_password: str, secret_key: str) -> str:
     secure = cfg.web_mode == "https" or cfg.behind_tls_proxy
     values = {
         "ASSAYR_VERSION": cfg.version,
@@ -58,6 +58,7 @@ def render_env(cfg: InstallConfig, db_password: str) -> str:
         "ASSAYR_CLAMAV_HOST": "127.0.0.1" if cfg.malware_scan else "",
         "ASSAYR_CLAMAV_PORT": str(cfg.clamav_port),
         "ASSAYR_STORAGE_DIR": str(cfg.blobs_dir),
+        "ASSAYR_SECRET_KEY": secret_key,
     }
     lines = ["# Assayr settings. Restart Assayr after changing this file."]
     lines += [f"{k}={_env_value(v)}" for k, v in values.items()]

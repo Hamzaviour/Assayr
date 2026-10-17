@@ -1,6 +1,7 @@
 import subprocess
 
 import pytest
+from dotenv import dotenv_values
 
 from assayr.windows import provision
 from assayr.windows.layout import InstallConfig
@@ -158,6 +159,25 @@ def test_existing_cluster_is_not_reinitialised(tmp_path):
     )
     assert not any(cmd[0].endswith("initdb.exe") for cmd in r.calls)
     assert 'POSTGRES_PASSWORD="old"' in c.env_file.read_text()
+
+
+def test_install_creates_a_secret_key(tmp_path):
+    c, _ = run_install(tmp_path)
+    key = dotenv_values(c.env_file).get("ASSAYR_SECRET_KEY")
+    assert key and len(key) >= 32
+
+
+def test_upgrade_keeps_the_secret_key_or_adds_one(tmp_path):
+    c, _ = run_install(tmp_path)
+    key = dotenv_values(c.env_file)["ASSAYR_SECRET_KEY"]
+    c.version = "0.4.0"
+    provision.finish_upgrade(c, FakeRunner(), wait=lambda *a, **k: "0.4.0")
+    assert dotenv_values(c.env_file)["ASSAYR_SECRET_KEY"] == key
+    old = "\n".join(line for line in c.env_file.read_text().splitlines() if "SECRET_KEY" not in line)
+    c.env_file.write_text(old + "\n")
+    provision.finish_upgrade(c, FakeRunner(), wait=lambda *a, **k: "0.4.0")
+    added = dotenv_values(c.env_file).get("ASSAYR_SECRET_KEY")
+    assert added and added != key and dotenv_values(c.env_file)["POSTGRES_PASSWORD"]
 
 
 def test_uninstall_keeps_data_by_default(tmp_path):

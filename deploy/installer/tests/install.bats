@@ -19,6 +19,7 @@ setup() {
   [ "$(env_get ASSAYR_ORG_NAME "$env")" = "Test Org" ]
   [ "$(env_get ASSAYR_CLAMAV_HOST "$env")" = clamav ]
   [[ "$(env_get POSTGRES_PASSWORD "$env")" =~ ^[A-Za-z0-9]{32}$ ]]
+  [[ "$(env_get ASSAYR_SECRET_KEY "$env")" =~ ^[A-Za-z0-9]{32}$ ]]
   [ -f "$DIR/certs/tls.crt" ] && [ -f "$DIR/certs/tls.key" ]
   [ "$(cat "$DIR/VERSION")" = 1.2.3 ]
   [ -x "$DIR/assayr" ] || on_windows

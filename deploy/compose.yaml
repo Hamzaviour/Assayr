@@ -9,6 +9,7 @@ x-assayr-env: &assayr-env
   ASSAYR_STORAGE_DIR: /data/blobs
   ASSAYR_MAX_UPLOAD_MB: ${ASSAYR_MAX_UPLOAD_MB:-100}
   ASSAYR_CLAMAV_HOST: ${ASSAYR_CLAMAV_HOST:-}
+  ASSAYR_SECRET_KEY: ${ASSAYR_SECRET_KEY:-}
   ASSAYR_LICENSE_FILE: /etc/assayr/license/assayr.lic
 
 services:
