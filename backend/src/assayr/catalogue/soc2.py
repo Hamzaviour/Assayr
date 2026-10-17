@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 
 from assayr.catalogue.models import Control, ControlRequirement, EvidenceSlot
 
-_ACTIVITY = re.compile(r"CC(\d)\.(\d{1,2})\.(\d{1,3})")
+_ACTIVITY = re.compile(r"CC(\d{1,2})\.(\d{1,2})\.(\d{1,3})")
 # How far along a control is; worst-of roll-up, as NIA uses for its mapped controls.
 _RANK = {"not_started": 0, "in_progress": 1, "in_review": 2, "at_risk": 3, "compliant": 4}
 
@@ -18,7 +18,7 @@ def normalise_activity(text: str | None) -> str | None:
     """ " cc 6.1.12 " -> "CC6.1.12"; anything that is not an activity number -> None."""
     compact = "".join(str(text or "").split()).upper()
     match = _ACTIVITY.fullmatch(compact)
-    return f"CC{match[1]}.{int(match[2])}.{int(match[3])}" if match else None
+    return f"CC{int(match[1])}.{int(match[2])}.{int(match[3])}" if match else None
 
 
 def criterion_of(code: str) -> str:
@@ -85,6 +85,23 @@ def refresh_criterion(db: Session, scope_id: uuid.UUID, criterion_code: str, now
 
 class ActivityError(ValueError):
     pass
+
+
+def upsert_activity(
+    db: Session, scope_id: uuid.UUID, code: str, description: str, test_procedure: str
+) -> tuple[Control, bool]:
+    """Creates the activity, or refreshes its text from an imported tracker. Returns (control, created)."""
+    title = (description.split(". ")[0] if description else code)[:300] or code
+    existing = db.scalar(select(Control).where(Control.scope_id == scope_id, Control.code == code))
+    if existing is not None:
+        if existing.framework != "soc2":
+            raise ActivityError(f"{code} is already used by another control.")
+        existing.description = description or existing.description
+        existing.test_procedure = test_procedure or existing.test_procedure
+        if description:
+            existing.title = title
+        return existing, False
+    return create_activity(db, scope_id, code, title, description or None, test_procedure or None), True
 
 
 def create_activity(
