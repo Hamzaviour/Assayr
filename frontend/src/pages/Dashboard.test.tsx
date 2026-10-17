@@ -164,3 +164,25 @@ test("each monitoring card opens its page", async () => {
   expect(within(monitoring).getByRole("link", { name: /^Control owners/ })).toHaveAttribute("href", "/controls?owner=none")
   expect(within(monitoring).getByRole("link", { name: /^Training/ })).toHaveAttribute("href", "/training")
 })
+
+test("every framework row links to its own controls", async () => {
+  const iso = dashboard().frameworks[0]
+  setup(
+    dashboard({
+      frameworks: [
+        { ...iso, code: "ISO27001:2022" },
+        { ...iso, code: "nia-2.1", name: "NIA", version: "2.1" },
+        { ...iso, code: "ISO42001:2023", name: "ISO/IEC 42001", version: "2023" },
+        { ...iso, code: "SOC2:2017", name: "SOC 2", version: "Security" },
+        { ...iso, code: "pdppl-2016", name: "PDPPL", version: "2016" },
+      ],
+    }),
+  )
+  const section = (await screen.findByRole("heading", { name: "Compliance" })).closest("section")!
+  const href = (name: RegExp) => within(section).getByRole("link", { name }).getAttribute("href")
+  expect(href(/ISO\/IEC 27001/)).toBe("/controls")
+  expect(href(/NIA v2\.1/)).toBe("/controls?framework=nia")
+  expect(href(/ISO\/IEC 42001/)).toBe("/controls?framework=iso42001")
+  expect(href(/SOC 2/)).toBe("/controls?framework=soc2")
+  expect(href(/PDPPL/)).toBe("/privacy?tab=pdppl")
+})

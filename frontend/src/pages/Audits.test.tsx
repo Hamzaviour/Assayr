@@ -60,3 +60,59 @@ test("people without audit rights only read", async () => {
   expect(screen.queryByRole("button", { name: "New audit" })).not.toBeInTheDocument()
   expect(screen.queryByRole("button", { name: "Import workbook" })).not.toBeInTheDocument()
 })
+
+test("the framework list has all four frameworks, and SOC 2 asks for the observation period", async () => {
+  const calls = setup()
+  renderApp("/audits")
+  await userEvent.click(await screen.findByRole("button", { name: "New audit" }))
+  const form = screen.getByRole("dialog", { name: "New audit" })
+  const select = within(form).getByLabelText("Framework")
+  expect(within(select).getAllByRole("option").map((o) => o.textContent)).toEqual(["NIA v2.1", "ISO/IEC 27001", "ISO/IEC 42001", "SOC 2"])
+  expect(within(form).queryByLabelText("Observation period from")).not.toBeInTheDocument()
+  await userEvent.selectOptions(select, "soc2")
+  const from = within(form).getByLabelText("Observation period from")
+  const to = within(form).getByLabelText("Observation period to")
+  expect(from).toBeRequired()
+  expect(to).toBeRequired()
+  await userEvent.type(within(form).getByLabelText("Title"), "SOC 2 Type 2 2026")
+  await userEvent.type(from, "2026-01-01")
+  await userEvent.type(to, "2026-06-30")
+  await userEvent.click(within(form).getByRole("button", { name: "Create audit" }))
+  const post = calls.find((c) => c.method === "POST")!
+  expect(JSON.parse(String(post.init.body))).toEqual({
+    framework: "soc2", title: "SOC 2 Type 2 2026", period_start: "2026-01-01", period_end: "2026-06-30",
+  })
+})
+
+test("a SOC 2 audit in the list shows its exceptions", async () => {
+  mockApi({
+    "GET /auth/me": () => json(200, ME),
+    "GET /audits": () => json(200, [audit({
+      framework: "soc2", title: "SOC 2 Type 2 2026", period_start: "2026-01-01", period_end: "2026-06-30",
+      counts: { total: 40, tested: 30, pass: 0, partial: 0, fail: 0, na: 0, no_exception: 26, exception: 3, not_tested: 1 },
+    })]),
+  })
+  renderApp("/audits")
+  const row = (await screen.findByRole("link", { name: "SOC 2 Type 2 2026" })).closest("li")!
+  expect(row).toHaveTextContent("SOC 2")
+  expect(row).toHaveTextContent("30 of 40 tested · 26 no exceptions · 3 exceptions · 1 not tested")
+  expect(within(row).getByRole("img", { name: /26 no exceptions, 3 exceptions, 1 not tested, 10 untested/ })).toBeInTheDocument()
+})
+
+test("importing a SOC 2 tracker sends the framework and lists unknown numbers", async () => {
+  const calls = mockApi({
+    "GET /auth/me": () => json(200, ME),
+    "GET /audits": () => json(200, []),
+    "POST /audits/import": () => json(201, { audit: audit({ id: "a6", framework: "soc2" }), imported: 61, unknown_refs: ["CC10.1.1"], skipped_rows: [] }),
+  })
+  renderApp("/audits")
+  await userEvent.click(await screen.findByRole("button", { name: "Import workbook" }))
+  const form = screen.getByRole("dialog", { name: "Import workbook" })
+  await userEvent.selectOptions(within(form).getByLabelText("Framework"), "soc2")
+  expect(form).toHaveTextContent(/SOC 2 tracker/)
+  const file = new File(["xlsx"], "tracker.xlsx", { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" })
+  await userEvent.upload(within(form).getByLabelText("Workbook (.xlsx)"), file)
+  expect(await screen.findByText("Imported 61 controls · 1 not found (CC10.1.1)")).toBeInTheDocument()
+  const post = calls.find((c) => c.method === "POST" && c.url.pathname.endsWith("/import"))!
+  expect((post.init.body as FormData).get("framework")).toBe("soc2")
+})

@@ -1,9 +1,11 @@
 import { Link } from "@tanstack/react-router"
-import { type ReactNode, useId, useState } from "react"
+import { useId, useState } from "react"
 import { type FrameworkRow, type GroupRow, frameworkTitle, isNia, useDashboard } from "../api/dashboard"
 import { useImportNiaText } from "../api/nia"
 import { useMe } from "../auth/session"
 import { ProgressBar } from "../components/charts"
+import { FrameworkLink } from "../components/FrameworkLink"
+import { controlsFramework, isPdppl } from "../lib/frameworks"
 
 const percent = (value: number | null) => (value === null ? "—" : `${Math.round(value)}%`)
 const ROW = "grid grid-cols-[minmax(0,180px)_minmax(0,1fr)_minmax(0,130px)] items-center gap-4 rounded-lg px-2 py-2.5"
@@ -52,17 +54,6 @@ function NiaImport() {
   )
 }
 
-/** ISO opens its controls, NIA the NIA controls, PDPPL the privacy obligations. */
-function FrameworkLink({ f, className, children }: { f: FrameworkRow; className: string; children: ReactNode }) {
-  if (f.code.startsWith("pdppl")) {
-    return <Link to="/privacy" search={{ tab: "pdppl" }} className={className}>{children}</Link>
-  }
-  if (isNia(f)) {
-    return <Link to="/controls" search={{ framework: "nia" }} className={className}>{children}</Link>
-  }
-  return <Link to="/controls" className={className}>{children}</Link>
-}
-
 function FrameworkCard({ f }: { f: FrameworkRow }) {
   const me = useMe()
   const canImport = (me.data?.permissions ?? []).includes("controls:write")
@@ -70,12 +61,13 @@ function FrameworkCard({ f }: { f: FrameworkRow }) {
   const panelId = useId()
   const title = frameworkTitle(f)
   const nia = isNia(f)
-  const pdppl = f.code.startsWith("pdppl")
-  const breakdown = pdppl ? "Topics" : nia ? "Domains" : "Themes"
+  const pdppl = isPdppl(f.code)
+  const framework = controlsFramework(f.code)
+  const breakdown = pdppl ? "Topics" : nia ? "Domains" : framework === "soc2" ? "Series" : "Themes"
   return (
     <article className="grid gap-5 rounded-xl border border-line bg-surface p-6">
       <p className="flex items-baseline justify-between gap-3">
-        <FrameworkLink f={f} className="text-[19px] hover:text-primary hover:underline">
+        <FrameworkLink code={f.code} className="text-[19px] hover:text-primary hover:underline">
           <strong>{title.name}</strong>
           {title.note && <span className="text-fg-3"> {title.note}</span>}
         </FrameworkLink>
@@ -122,8 +114,12 @@ function FrameworkCard({ f }: { f: FrameworkRow }) {
                   <Link to="/controls" search={{ framework: "nia", domain: g.code ?? undefined }} className={`${ROW} hover:bg-subtle`}>
                     <GroupLine g={g} />
                   </Link>
+                ) : framework === "soc2" ? (
+                  <Link to="/controls" search={{ framework }} className={`${ROW} hover:bg-subtle`}>
+                    <GroupLine g={g} />
+                  </Link>
                 ) : (
-                  <Link to="/controls" search={{ theme: g.name }} className={`${ROW} hover:bg-subtle`}>
+                  <Link to="/controls" search={{ framework, theme: g.name }} className={`${ROW} hover:bg-subtle`}>
                     <GroupLine g={g} />
                   </Link>
                 )}

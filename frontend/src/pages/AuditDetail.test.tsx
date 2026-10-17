@@ -137,3 +137,78 @@ test("the audit details (period, scope, conclusion) can be edited", async () => 
   const patch = calls.find((c) => c.method === "PATCH")!
   expect(JSON.parse(String(patch.init.body))).toMatchObject({ period_start: "2026-10-01", conclusion: "Invented conclusion" })
 })
+
+const SOC2_ITEMS = [
+  row("s1", "CC6.1.1", "Logical and Physical Access Controls", {
+    sub_domain: "CC6.1", requirement: null, assessment_area: "Invented procedure", result: "no_exception",
+    population: "Invented population", sample_size: 25, samples_tested: 25, exception_note: null,
+  }),
+  row("s2", "CC6.1.2", "Logical and Physical Access Controls", {
+    sub_domain: "CC6.1", requirement: null, population: null, sample_size: null, samples_tested: null, exception_note: null,
+  }),
+]
+
+const soc2Detail = () =>
+  detail({
+    framework: "soc2",
+    title: "SOC 2 Type 2 2026",
+    period_start: "2026-01-01",
+    period_end: "2026-06-30",
+    counts: { total: 2, tested: 1, pass: 0, partial: 0, fail: 0, na: 0, no_exception: 1, exception: 0, not_tested: 0 },
+    items: SOC2_ITEMS,
+  })
+
+function setupSoc2(patch: (body: Record<string, unknown>) => Response) {
+  document.cookie = "assayr_csrf=t; path=/"
+  const calls = mockApi({
+    "GET /auth/me": () => json(200, ME),
+    "GET /audits/a1": () => json(200, soc2Detail()),
+    "PATCH /audits/a1/items/s2": (_url, init) => patch(JSON.parse(String(init.body))),
+  })
+  renderApp("/audits/a1")
+  return calls
+}
+
+test("a SOC 2 audit shows the period, sample fields and SOC 2 results", async () => {
+  const calls = setupSoc2((body) => json(200, { ...SOC2_ITEMS[1], ...body }))
+  const header = (await screen.findByRole("heading", { name: "SOC 2 Type 2 2026", level: 1 })).closest("header")!
+  expect(header).toHaveTextContent("SOC 2 · Type 2 audit")
+  expect(header).toHaveTextContent(/Observation period/)
+  expect(header).toHaveTextContent("1 of 2 tested · 1 no exceptions · 0 exceptions · 0 not tested")
+  expect(within(header).getByRole("img", { name: /1 no exceptions, 0 exceptions, 0 not tested, 1 untested/ })).toBeInTheDocument()
+  expect(screen.getByRole("link", { name: "CC6.1.2" })).toHaveAttribute("href", "/controls/CC6.1.2")
+  expect(screen.queryByLabelText("Test type for CC6.1.2")).not.toBeInTheDocument()
+  const result = screen.getByLabelText("Result for CC6.1.2")
+  expect(within(result).getAllByRole("option").map((o) => o.textContent)).toEqual(["Not recorded", "No exceptions", "Exception", "Not tested"])
+  await userEvent.type(screen.getByLabelText("Population for CC6.1.2"), "Invented joiners list")
+  await userEvent.tab()
+  expect(bodyOf(calls, "PATCH", "/items/s2")).toEqual({ population: "Invented joiners list" })
+  await userEvent.type(screen.getByLabelText("Sample size for CC6.1.2"), "25")
+  await userEvent.tab()
+  expect(bodyOf(calls, "PATCH", "/items/s2")).toEqual({ sample_size: 25 })
+  await userEvent.type(screen.getByLabelText("Samples tested for CC6.1.2"), "20")
+  await userEvent.tab()
+  expect(bodyOf(calls, "PATCH", "/items/s2")).toEqual({ samples_tested: 20 })
+  await userEvent.selectOptions(result, "no_exception")
+  expect(bodyOf(calls, "PATCH", "/items/s2")).toEqual({ result: "no_exception" })
+})
+
+test("choosing Exception without a note shows the server's message on the row", async () => {
+  setupSoc2((body) =>
+    body.result === "exception" && !body.exception_note ? json(422, { detail: "Describe the exception." }) : json(200, { ...SOC2_ITEMS[1], ...body }),
+  )
+  await userEvent.selectOptions(await screen.findByLabelText("Result for CC6.1.2"), "exception")
+  expect(await screen.findByText("Describe the exception.")).toBeInTheDocument()
+  expect(screen.getByLabelText("Exception note for CC6.1.2")).toBeInTheDocument()
+})
+
+test("ISO 42001 audit rows open the AI control", async () => {
+  mockApi({
+    "GET /auth/me": () => json(200, ME),
+    "GET /audits/a1": () =>
+      json(200, detail({ framework: "iso42001", title: "AI audit", items: [row("k1", "A.6.2.4", "AI system life cycle", { requirement: null })] })),
+  })
+  renderApp("/audits/a1")
+  expect(await screen.findByRole("link", { name: "A.6.2.4" })).toHaveAttribute("href", "/controls/AI%20A.6.2.4")
+  expect(screen.getByText(/ISO\/IEC 42001 · internal audit/)).toBeInTheDocument()
+})

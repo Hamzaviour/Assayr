@@ -1,13 +1,24 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { api } from "./client"
 
-export type AuditFramework = "iso27001" | "nia-2.1"
-export type AuditResult = "pass" | "fail" | "partial" | "na"
+export type AuditFramework = "iso27001" | "nia-2.1" | "iso42001" | "soc2"
+export type Soc2Result = "no_exception" | "exception" | "not_tested"
+export type AuditResult = "pass" | "fail" | "partial" | "na" | Soc2Result
 export type TestType = "DA" | "OEA" | "Both"
 
 type Person = { id: string; full_name: string }
 
-export type AuditCounts = { total: number; tested: number; pass: number; partial: number; fail: number; na: number }
+export type AuditCounts = {
+  total: number
+  tested: number
+  pass: number
+  partial: number
+  fail: number
+  na: number
+  no_exception?: number
+  exception?: number
+  not_tested?: number
+}
 
 export type Audit = {
   id: string
@@ -38,17 +49,34 @@ export type AuditItem = {
   requirement: "M" | "A" | null
   result: AuditResult | null
   notes: string | null
+  population?: string | null
+  sample_size?: number | null
+  samples_tested?: number | null
+  exception_note?: string | null
 }
 
 export type AuditDetail = Audit & { items: AuditItem[] }
 
-export const FRAMEWORK_LABEL: Record<AuditFramework, string> = { iso27001: "ISO/IEC 27001", "nia-2.1": "NIA v2.1" }
+export const FRAMEWORK_LABEL: Record<AuditFramework, string> = {
+  "nia-2.1": "NIA v2.1",
+  iso27001: "ISO/IEC 27001",
+  iso42001: "ISO/IEC 42001",
+  soc2: "SOC 2",
+}
 export const AUDIT_STATUS_LABEL: Record<Audit["status"], string> = {
   draft: "Draft",
   in_progress: "In progress",
   completed: "Completed",
 }
-export const RESULT_LABEL: Record<AuditResult, string> = { pass: "Pass", partial: "Partial", fail: "Fail", na: "NA" }
+export const RESULT_LABEL: Record<AuditResult, string> = {
+  pass: "Pass",
+  partial: "Partial",
+  fail: "Fail",
+  na: "NA",
+  no_exception: "No exceptions",
+  exception: "Exception",
+  not_tested: "Not tested",
+}
 
 export const auditExportUrl = (id: string) => `/api/v1/audits/${id}/export.xlsx`
 
@@ -71,7 +99,7 @@ function useRefresh() {
 export function useCreateAudit() {
   const refresh = useRefresh()
   return useMutation({
-    mutationFn: (body: { framework: AuditFramework; title: string }) =>
+    mutationFn: (body: { framework: AuditFramework; title: string; period_start?: string; period_end?: string }) =>
       api<Audit>("/audits", { method: "POST", body: JSON.stringify(body) }),
     onSuccess: refresh,
   })

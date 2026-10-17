@@ -12,7 +12,7 @@ import {
 import { useMe } from "../auth/session"
 import { Button } from "../components/Button"
 import { formatDate } from "../lib/format"
-import { Status } from "../components/Status"
+import { Status, TONE_COLOR } from "../components/Status"
 import { StatusBar } from "../components/StatusBar"
 import { countBy, statusSegments } from "../lib/statusBars"
 
@@ -25,17 +25,35 @@ const RESULT_SEGMENTS: [keyof AuditCounts, string, string][] = [
   ["fail", "fail", "var(--bad)"],
   ["na", "NA", "var(--idle)"],
 ]
+/** SOC 2 results, in the shared soc2Result tones. */
+const SOC2_SEGMENTS: [keyof AuditCounts, string, string][] = [
+  ["no_exception", "no exceptions", TONE_COLOR.success],
+  ["exception", "exceptions", TONE_COLOR.danger],
+  ["not_tested", "not tested", TONE_COLOR.neutral],
+]
+const segmentsFor = (framework: AuditFramework) => (framework === "soc2" ? SOC2_SEGMENTS : RESULT_SEGMENTS)
+/** "3 exceptions" but "1 exception". */
+const counted = (n: number, name: string) => `${n} ${n === 1 && name === "exceptions" ? "exception" : name}`
 
-/** A compact Pass / Partial / Fail / NA bar; untested controls show as the empty track. */
-export function ResultBar({ counts }: { counts: AuditCounts }) {
+/** "26 no exceptions · 3 exceptions · 1 not tested" for SOC 2; "110 pass · 6 partial · 3 fail" (and NA) otherwise. */
+export function resultSummary(framework: AuditFramework, counts: AuditCounts, withNa = false) {
+  return segmentsFor(framework)
+    .filter(([key]) => withNa || key !== "na")
+    .map(([key, name]) => counted(counts[key] ?? 0, name))
+    .join(" · ")
+}
+
+/** A compact results bar (Pass / Partial / Fail / NA, or the SOC 2 results); untested controls show as the empty track. */
+export function ResultBar({ counts, framework }: { counts: AuditCounts; framework: AuditFramework }) {
+  const segments = segmentsFor(framework)
   const untested = counts.total - counts.tested
-  const label = [...RESULT_SEGMENTS.map(([key, name]) => `${counts[key]} ${name}`), `${untested} untested`].join(", ")
+  const label = [...segments.map(([key, name]) => counted(counts[key] ?? 0, name)), `${untested} untested`].join(", ")
   return (
     <div role="img" aria-label={label} className="flex h-2.5 w-full overflow-hidden rounded-full bg-subtle">
       <div className="grow-x flex h-full w-full">
         {counts.total > 0 &&
-          RESULT_SEGMENTS.filter(([key]) => counts[key] > 0).map(([key, name, color]) => (
-            <div key={key} title={`${counts[key]} ${name}`} style={{ width: `${(counts[key] / counts.total) * 100}%`, background: color }} />
+          segments.filter(([key]) => (counts[key] ?? 0) > 0).map(([key, name, color]) => (
+            <div key={key} title={counted(counts[key] ?? 0, name)} style={{ width: `${((counts[key] ?? 0) / counts.total) * 100}%`, background: color }} />
           ))}
       </div>
     </div>
@@ -61,8 +79,9 @@ function FrameworkSelect({ value, onChange }: { value: AuditFramework; onChange:
     <label className="grid gap-1 text-[12.5px] text-fg-2">
       Framework
       <select value={value} onChange={(e) => onChange(e.target.value as AuditFramework)} className={FIELD}>
-        <option value="nia-2.1">NIA v2.1</option>
-        <option value="iso27001">ISO/IEC 27001</option>
+        {(Object.keys(FRAMEWORK_LABEL) as AuditFramework[]).map((key) => (
+          <option key={key} value={key}>{FRAMEWORK_LABEL[key]}</option>
+        ))}
       </select>
     </label>
   )
@@ -73,11 +92,14 @@ function NewAudit({ onClose }: { onClose: () => void }) {
   const create = useCreateAudit()
   const [framework, setFramework] = useState<AuditFramework>("nia-2.1")
   const [title, setTitle] = useState("")
+  const [start, setStart] = useState("")
+  const [end, setEnd] = useState("")
+  const soc2 = framework === "soc2"
 
   function onSubmit(event: FormEvent) {
     event.preventDefault()
     create.mutate(
-      { framework, title: title.trim() },
+      soc2 ? { framework, title: title.trim(), period_start: start, period_end: end } : { framework, title: title.trim() },
       { onSuccess: (a) => navigate({ to: "/audits/$id", params: { id: a.id } }) },
     )
   }
@@ -91,14 +113,26 @@ function NewAudit({ onClose }: { onClose: () => void }) {
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="NIA internal audit 2026"
+            placeholder={`${FRAMEWORK_LABEL[framework]} ${soc2 ? "Type 2" : "internal audit"} 2026`}
             required
             maxLength={200}
             className={FIELD}
           />
         </label>
+        {soc2 && (
+          <div className="grid gap-3 sm:grid-cols-2 md:col-span-2">
+            <label className="grid gap-1 text-[12.5px] text-fg-2">
+              Observation period from
+              <input type="date" value={start} onChange={(e) => setStart(e.target.value)} required className={FIELD} />
+            </label>
+            <label className="grid gap-1 text-[12.5px] text-fg-2">
+              Observation period to
+              <input type="date" value={end} min={start || undefined} onChange={(e) => setEnd(e.target.value)} required className={FIELD} />
+            </label>
+          </div>
+        )}
         <div className="flex items-center gap-2 md:col-span-2">
-          <Button type="submit" size="sm" disabled={create.isPending || !title.trim()}>
+          <Button type="submit" size="sm" disabled={create.isPending || !title.trim() || (soc2 && (!start || !end))}>
             {create.isPending ? "Creating…" : "Create audit"}
           </Button>
           <Button type="button" variant="secondary" size="sm" onClick={onClose}>Cancel</Button>
@@ -133,7 +167,9 @@ function ImportWorkbook({ onClose }: { onClose: () => void }) {
         </label>
       </div>
       <p className="mt-2 text-[12.5px] text-fg-3">
-        One row per control, with the columns of the internal audit report (Sr. No., Domain Name, NIA Control … Control status).
+        {framework === "soc2"
+          ? "The SOC 2 tracker: one row per control activity (CC6.1.2 …) with its test procedure, sample and result. Activities are created or refreshed."
+          : "One row per control, with the columns of the internal audit report (Sr. No., Domain Name, NIA Control … Control status)."}
       </p>
       {importAudit.isPending && <p role="status" className="mt-2 text-[13px] text-fg-3">Reading the workbook…</p>}
       {result && (
@@ -169,7 +205,7 @@ export function AuditsPage() {
         <div>
           <p className="mb-2 text-[11px] font-medium uppercase tracking-[0.08em] text-fg-3">Assure</p>
           <h1 className="font-display text-[26px] font-extrabold tracking-tight">Internal audits</h1>
-          <p className="mt-1 text-[13px] text-fg-2">ISO/IEC 27001 clause 9.2 and NIA internal audits, exported in your report layout.</p>
+          <p className="mt-1 text-[13px] text-fg-2">ISO/IEC 27001, NIA and ISO/IEC 42001 internal audits and SOC 2 Type 2 testing, exported in your report layout.</p>
         </div>
         {canWrite && (
           <div className="flex gap-2">
@@ -211,9 +247,9 @@ export function AuditsPage() {
               <AuditStatus status={a.status} />
             </div>
             <div className="mt-4 grid gap-1.5">
-              <ResultBar counts={a.counts} />
+              <ResultBar counts={a.counts} framework={a.framework} />
               <p className="text-[12.5px] tabular-nums text-fg-2">
-                {a.counts.tested} of {a.counts.total} tested · {a.counts.pass} pass · {a.counts.partial} partial · {a.counts.fail} fail
+                {a.counts.tested} of {a.counts.total} tested · {resultSummary(a.framework, a.counts)}
               </p>
             </div>
           </li>
