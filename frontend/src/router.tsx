@@ -48,9 +48,19 @@ const controlsRoute = createRoute({
   path: "/controls",
   validateSearch: (
     search: Record<string, unknown>,
-  ): { framework?: "nia"; domain?: string; theme?: string; q?: string; owner?: string; status?: string } => ({
+  ): {
+    framework?: "nia" | "iso42001" | "soc2"
+    domain?: string
+    theme?: string
+    q?: string
+    owner?: string
+    status?: string
+  } => ({
     status: typeof search.status === "string" && /^[a-z_]{2,20}$/.test(search.status) ? search.status : undefined,
-    framework: search.framework === "nia" ? "nia" : undefined,
+    framework:
+      search.framework === "nia" || search.framework === "iso42001" || search.framework === "soc2"
+        ? search.framework
+        : undefined,
     domain: typeof search.domain === "string" && /^[A-Z]{2}$/.test(search.domain) ? search.domain : undefined,
     theme: typeof search.theme === "string" && search.theme ? search.theme : undefined,
     q: typeof search.q === "string" && search.q ? search.q : undefined,

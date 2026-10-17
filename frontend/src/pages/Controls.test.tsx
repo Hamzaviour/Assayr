@@ -83,3 +83,63 @@ test("the NIA switch lists NIA controls and filters by domain", async () => {
   expect(screen.queryByText("Screening before employment")).not.toBeInTheDocument()
   expect(router.state.location.search).toEqual({ framework: "nia", domain: "AC" })
 })
+
+
+const ctrl = (n: number, code: string, ref: string, title: string, theme: string, framework: ControlSummary["framework"]) => ({
+  ...row(n, code, title, theme), ref, framework,
+})
+
+test("switches to ISO 42001 and lists AI controls with their own themes", async () => {
+  const calls = mockApi({
+    "GET /auth/me": () => json(200, ME),
+    "GET /controls": () =>
+      json(200, { items: [ctrl(1, "AI A.6.2.4", "A.6.2.4", "AI system verification and validation", "AI system life cycle", "iso42001")], next_cursor: null }),
+    "GET /controls/summary": () =>
+      json(200, { scope_id: "s", total: 1, by_status: { not_started: 1 }, by_theme: { "AI system life cycle": 1 } }),
+  })
+  renderApp("/controls?framework=iso42001")
+  expect(await screen.findByText("A.6.2.4")).toBeInTheDocument()
+  expect(screen.getByRole("radio", { name: "ISO/IEC 42001" })).toHaveAttribute("aria-checked", "true")
+  expect(screen.getByRole("link", { name: "AI system verification and validation" })).toHaveAttribute(
+    "href",
+    "/controls/AI%20A.6.2.4",
+  )
+  expect(screen.getByRole("option", { name: "AI system life cycle" })).toBeInTheDocument()
+  expect(calls.some((c) => c.url.pathname.endsWith("/controls") && c.url.searchParams.get("framework") === "iso42001")).toBe(true)
+})
+
+test("groups SOC 2 activities under their criterion and adds an activity", async () => {
+  document.cookie = "assayr_csrf=token-xyz; path=/"
+  const theme = "Logical and physical access controls"
+  const calls = mockApi({
+    "GET /auth/me": () => json(200, ME),
+    "GET /controls": () =>
+      json(200, {
+        items: [
+          ctrl(1, "CC6.1", "CC6.1", "Logical access security", theme, "soc2"),
+          ctrl(2, "CC6.1.1", "CC6.1.1", "Invented MFA control", theme, "soc2"),
+          ctrl(3, "CC6.2", "CC6.2", "User registration and credentials", theme, "soc2"),
+        ],
+        next_cursor: null,
+      }),
+    "GET /controls/summary": () => json(200, { scope_id: "s", total: 3, by_status: { not_started: 3 }, by_theme: { [theme]: 3 } }),
+    "POST /soc2/activities": (_url, init) => json(201, { ...ctrl(4, "CC6.1.2", "CC6.1.2", "x", theme, "soc2"), ...JSON.parse(String(init.body)) }),
+  })
+  renderApp("/controls?framework=soc2")
+  expect(await screen.findByText("1 activity")).toBeInTheDocument()
+  expect(screen.queryByText("Invented MFA control")).not.toBeInTheDocument()
+  await userEvent.click(screen.getByRole("button", { name: "Show activities for CC6.1" }))
+  expect(screen.getByRole("link", { name: "Invented MFA control" })).toHaveAttribute("href", "/controls/CC6.1.1")
+  await userEvent.click(screen.getByRole("button", { name: "Add activity" }))
+  await userEvent.type(screen.getByLabelText("Control number"), "CC6.1.2")
+  await userEvent.type(screen.getByLabelText("Control"), "Invented review")
+  await userEvent.type(screen.getByLabelText("Detailed test of controls"), "Inspected invented tickets.")
+  await userEvent.click(screen.getByRole("button", { name: "Add" }))
+  await screen.findByRole("button", { name: "Add activity" })
+  const post = calls.find((c) => c.method === "POST")!
+  expect(JSON.parse(String(post.init.body))).toEqual({
+    code: "CC6.1.2",
+    title: "Invented review",
+    test_procedure: "Inspected invented tickets.",
+  })
+})

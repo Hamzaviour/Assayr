@@ -135,3 +135,41 @@ test("the uploader can give the evidence date when the document doesn't show one
   const body = calls.find((c) => c.method === "POST")!.init.body as FormData
   expect(body.get("evidence_date")).toBe("2026-09-07")
 })
+
+
+test("shows related ISO controls and reuses their evidence", async () => {
+  document.cookie = "assayr_csrf=token-xyz; path=/"
+  const ai = { ...DETAIL, code: "AI A.2.2", ref: "A.2.2", framework: "iso42001" as const, title: "AI policy", theme: "Policies related to AI",
+    requirements: [{ ref: "A.2.2", title: "AI policy" }], assayr_check: null }
+  const related = [{ code: "A.5.1", ref: "A.5.1", framework: "iso27001", title: "Policies for information security", status: "compliant",
+    evidence: [{ version_id: "v1", filename: "policy.pdf", state: "accepted", linked: false }] }]
+  const calls = mockApi({
+    "GET /auth/me": () => json(200, ME),
+    "GET /controls/AI%20A.2.2": () => json(200, ai),
+    "GET /controls/AI%20A.2.2/related": () => json(200, related),
+    "POST /controls/AI%20A.2.2/reuse-evidence": () => json(200, ai),
+  })
+  renderApp("/controls/AI%20A.2.2")
+  expect(await screen.findByRole("heading", { name: "AI policy" })).toBeInTheDocument()
+  expect(screen.getAllByText("ISO/IEC 42001").length).toBeGreaterThan(0)
+  expect(await screen.findByRole("link", { name: "Policies for information security" })).toHaveAttribute("href", "/controls/A.5.1")
+  await userEvent.click(screen.getByRole("button", { name: "Reuse policy.pdf" }))
+  const post = calls.find((c) => c.method === "POST")!
+  expect(JSON.parse(String(post.init.body))).toEqual({ version_id: "v1" })
+})
+
+test("shows the Assayr check and the SOC 2 test procedure", async () => {
+  mockApi({
+    "GET /auth/me": () => json(200, ME),
+    "GET /controls/AI%20A.5.3": () => json(200, { ...DETAIL, code: "AI A.5.3", ref: "A.5.3", framework: "iso42001",
+      title: "Documentation of AI system impact assessments",
+      assayr_check: { key: "aiia_all", met: false, reason: "No approved impact assessment: AIS-001." } }),
+    "GET /controls/CC6.1.1": () => json(200, { ...DETAIL, code: "CC6.1.1", ref: "CC6.1.1", framework: "soc2", title: "Invented MFA",
+      test_procedure: "Inspected invented settings." }),
+  })
+  renderApp("/controls/AI%20A.5.3")
+  expect(await screen.findByText("No approved impact assessment: AIS-001.")).toBeInTheDocument()
+  expect(screen.getByText("Not met")).toBeInTheDocument()
+  renderApp("/controls/CC6.1.1")
+  expect(await screen.findByText("Inspected invented settings.")).toBeInTheDocument()
+})
