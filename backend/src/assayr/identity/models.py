@@ -36,6 +36,7 @@ class User(IdMixin, TimestampMixin, Base):
     last_login_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
     department: Mapped[str | None] = mapped_column(String(100))
     must_change_password: Mapped[bool] = mapped_column(default=False, server_default=false())
+    digest_opt_out: Mapped[bool] = mapped_column(default=False, server_default=false())
 
     role_assignments: Mapped[list[RoleAssignment]] = relationship(
         back_populates="user", cascade="all, delete-orphan", lazy="selectin"

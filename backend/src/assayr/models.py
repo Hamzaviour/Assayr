@@ -19,8 +19,15 @@ from assayr.evidence.models import (  # noqa: F401
     RuleResult,
     VerificationRun,
 )
+from assayr.findings.models import (  # noqa: F401
+    CorrectiveAction,
+    CorrectiveActionFile,
+    Finding,
+    FindingVerification,
+)
 from assayr.identity.models import Organization, RoleAssignment, Scope, User, UserSession  # noqa: F401
 from assayr.jobs import Job  # noqa: F401
+from assayr.mail.models import MailLog, MailSettings  # noqa: F401
 from assayr.privacy.models import (  # noqa: F401, E402
     ActivityProcessor,
     Breach,

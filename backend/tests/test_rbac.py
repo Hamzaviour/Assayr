@@ -45,6 +45,8 @@ def test_permissions_are_a_sorted_union():
         "controls:write",
         "documents:create",
         "evidence:review",
+        "findings:manage",
+        "findings:verify",
         "privacy:manage",
         "privacy:sensitive",
         "risks:accept_high",
@@ -67,4 +69,12 @@ def test_acceptance_permissions_follow_the_authority_levels():
 
 def test_internal_auditors_can_run_audits():
     assert "audits:write" in permissions_for([("internal_auditor", None)])
+
+
+def test_findings_are_managed_and_verified_by_managers_and_internal_auditors():
+    for role in ("isms_manager", "internal_auditor"):
+        perms = permissions_for([(role, None)])
+        assert {"findings:manage", "findings:verify"} <= set(perms), role
+    for role in ("control_owner", "risk_owner", "executive", "viewer", "external_auditor", "platform_admin"):
+        assert "findings:manage" not in permissions_for([(role, None)]), role
     assert "audits:write" not in permissions_for([("control_owner", None)])
