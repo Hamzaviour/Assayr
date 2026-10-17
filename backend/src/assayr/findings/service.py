@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 from assayr.audits.models import Audit, AuditItem
 from assayr.catalogue.access import has_perm
 from assayr.catalogue.models import Control
-from assayr.findings.models import Finding
+from assayr.findings.models import GRADES, STATUSES, Finding
 from assayr.identity.models import User
 from assayr.identity.rbac import Perm
 
@@ -132,3 +132,15 @@ def verify_problem(user: User, f: Finding) -> tuple[int, str] | None:
     if f.status != "awaiting_verification":
         return 409, "Record the root cause and complete the corrective actions first."
     return None
+
+
+def summarize(db: Session, scope_id: uuid.UUID, today: date) -> dict:
+    """Open findings by grade, overdue ones, and every finding by status (the register and the dashboard)."""
+    rows = db.scalars(select(Finding).where(Finding.scope_id == scope_id)).unique().all()
+    still_open = [f for f in rows if f.status != "closed"]
+    return {
+        "open": len(still_open),
+        "overdue": sum(1 for f in still_open if is_overdue(f.due_date, False, today)),
+        "by_grade": {g: sum(1 for f in still_open if f.grade == g) for g in GRADES},
+        "by_status": {s: sum(1 for f in rows if f.status == s) for s in STATUSES},
+    }

@@ -16,6 +16,8 @@ from assayr.catalogue.router import resolve_scope
 from assayr.catalogue.seed import FRAMEWORK_CODE
 from assayr.db import get_session, utcnow
 from assayr.evidence.models import ArtefactLink
+from assayr.findings.schemas import SummaryOut
+from assayr.findings.service import summarize
 from assayr.identity.deps import current_user, get_clock, require
 from assayr.identity.models import User
 from assayr.identity.rbac import Grant, Perm
@@ -82,6 +84,7 @@ class DashboardOut(BaseModel):
     unowned_controls: int
     trend: list[TrendPoint]
     training: dict[str, int] | None = None
+    findings: SummaryOut | None = None
 
 
 def _in_scope(controls: list[Control]) -> list[Control]:
@@ -236,4 +239,5 @@ def dashboard(
         training=training_card(db, scope.id, now.date())
         if has_perm(user, scope.id, Perm.TRAINING_MANAGE)
         else None,
+        findings=SummaryOut(**summarize(db, scope.id, now.date())),
     )

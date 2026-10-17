@@ -223,3 +223,12 @@ def test_list_filters_and_summary(client, db, seeded, clock):
         "by_grade": {"major": 1, "minor": 0, "observation": 1, "ofi": 0},
         "by_status": {"open": 2, "action_planned": 0, "awaiting_verification": 0, "closed": 0},
     }
+
+
+def test_dashboard_shows_findings(client, db, seeded, clock):
+    who = people(db)
+    as_(client, AUDITOR)
+    _, items = audit_with_results(client)
+    raise_finding(client, items["A.5.1"]["id"], owner_id=str(who["auditor"].id))
+    card = client.get("/api/v1/dashboard").json()["findings"]
+    assert card["open"] == 1 and card["by_grade"]["major"] == 1 and card["overdue"] == 0

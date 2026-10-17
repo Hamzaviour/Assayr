@@ -41,6 +41,7 @@ from assayr.findings.service import (
     is_overdue,
     raise_from_item,
     refresh_status,
+    summarize,
     verify_problem,
 )
 from assayr.identity.deps import actor_for, current_user, get_clock, require
@@ -215,15 +216,7 @@ def summary(
     scope_id: uuid.UUID | None = None,
 ) -> SummaryOut:
     scope = resolve_scope(db, scope_id, grant)
-    rows = db.scalars(select(Finding).where(Finding.scope_id == scope.id)).unique().all()
-    today = _today(request)
-    still_open = [f for f in rows if f.status != "closed"]
-    return SummaryOut(
-        open=len(still_open),
-        overdue=sum(1 for f in still_open if is_overdue(f.due_date, False, today)),
-        by_grade={g: sum(1 for f in still_open if f.grade == g) for g in GRADES},
-        by_status={s: sum(1 for f in rows if f.status == s) for s in STATUSES},
-    )
+    return SummaryOut(**summarize(db, scope.id, _today(request)))
 
 
 @router.post("", response_model=FindingDetailOut, status_code=status.HTTP_201_CREATED)
