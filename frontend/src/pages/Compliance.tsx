@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router"
-import { useId, useState } from "react"
+import { type ReactNode, useId, useState } from "react"
 import { type FrameworkRow, type GroupRow, frameworkTitle, isNia, useDashboard } from "../api/dashboard"
 import { useImportNiaText } from "../api/nia"
 import { useMe } from "../auth/session"
@@ -52,6 +52,17 @@ function NiaImport() {
   )
 }
 
+/** ISO opens its controls, NIA the NIA controls, PDPPL the privacy obligations. */
+function FrameworkLink({ f, className, children }: { f: FrameworkRow; className: string; children: ReactNode }) {
+  if (f.code.startsWith("pdppl")) {
+    return <Link to="/privacy" search={{ tab: "pdppl" }} className={className}>{children}</Link>
+  }
+  if (isNia(f)) {
+    return <Link to="/controls" search={{ framework: "nia" }} className={className}>{children}</Link>
+  }
+  return <Link to="/controls" className={className}>{children}</Link>
+}
+
 function FrameworkCard({ f }: { f: FrameworkRow }) {
   const me = useMe()
   const canImport = (me.data?.permissions ?? []).includes("controls:write")
@@ -59,14 +70,15 @@ function FrameworkCard({ f }: { f: FrameworkRow }) {
   const panelId = useId()
   const title = frameworkTitle(f)
   const nia = isNia(f)
-  const breakdown = nia ? "Domains" : "Themes"
+  const pdppl = f.code.startsWith("pdppl")
+  const breakdown = pdppl ? "Topics" : nia ? "Domains" : "Themes"
   return (
     <article className="grid gap-5 rounded-xl border border-line bg-surface p-6">
       <p className="flex items-baseline justify-between gap-3">
-        <span className="text-[19px]">
+        <FrameworkLink f={f} className="text-[19px] hover:text-primary hover:underline">
           <strong>{title.name}</strong>
           {title.note && <span className="text-fg-3"> {title.note}</span>}
-        </span>
+        </FrameworkLink>
         <span className="font-display text-[30px] font-extrabold leading-none tabular-nums text-primary">{percent(f.readiness)}</span>
       </p>
       <ProgressBar value={f.compliant} max={f.total} label={`${f.name} controls compliant`} />
@@ -102,7 +114,11 @@ function FrameworkCard({ f }: { f: FrameworkRow }) {
           <ul className="grid gap-1">
             {f.groups.map((g) => (
               <li key={g.name}>
-                {nia ? (
+                {pdppl ? (
+                  <div className={ROW}>
+                    <GroupLine g={g} />
+                  </div>
+                ) : nia ? (
                   <Link to="/controls" search={{ framework: "nia", domain: g.code ?? undefined }} className={`${ROW} hover:bg-subtle`}>
                     <GroupLine g={g} />
                   </Link>

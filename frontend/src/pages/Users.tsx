@@ -12,6 +12,7 @@ const ROLE_LABEL: Record<string, string> = {
   external_auditor: "External auditor",
   executive: "Executive",
   employee: "Employee",
+  privacy_officer: "Privacy officer",
   viewer: "Viewer",
 }
 

@@ -241,9 +241,17 @@ export interface Asset {
   integrity: number
   availability: number
   criticality: number
+  confidentiality_label?: string
+  integrity_label?: string
+  availability_label?: string
+  criticality_label?: string
   location: string | null
   description: string | null
   lifecycle: string
+  holds_pii?: boolean
+  pii_categories?: string[]
+  pii_sensitive?: boolean
+  pii_volume?: string | null
 }
 export interface Person { id: string; full_name: string; email: string; roles: string[] }
 

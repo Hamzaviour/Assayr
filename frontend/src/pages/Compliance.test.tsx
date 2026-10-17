@@ -102,3 +102,19 @@ test("people without manager rights see no import", async () => {
   await screen.findByText("NIA v2.1")
   expect(screen.queryByLabelText("Import official text (PDF)")).not.toBeInTheDocument()
 })
+
+
+test("framework names open their controls, and PDPPL opens the privacy obligations", async () => {
+  const PDPPL = { ...NIA, code: "pdppl-2016", name: "PDPPL", version: "2016", groups: [group("Rights of individuals", 3, 1, 33)] }
+  mockApi({
+    "GET /auth/me": () => json(200, ME),
+    "GET /dashboard": () =>
+      json(200, { frameworks: [ISO, NIA, PDPPL], evidence: { needs_attention: 0, ok: 0, total: 0 }, risks: null, unowned_controls: 0, trend: [] }),
+  })
+  renderApp("/compliance")
+  expect(await screen.findByRole("link", { name: /ISO\/IEC 27001/ })).toHaveAttribute("href", "/controls")
+  expect(screen.getByRole("link", { name: /NIA v2\.1/ })).toHaveAttribute("href", "/controls?framework=nia")
+  expect(screen.getByRole("link", { name: /PDPPL/ })).toHaveAttribute("href", "/privacy?tab=pdppl")
+  await userEvent.click(screen.getByRole("button", { name: /Topics/ }))
+  expect(screen.getByText("Rights of individuals")).toBeInTheDocument()
+})
