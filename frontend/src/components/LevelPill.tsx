@@ -1,6 +1,6 @@
 import { RISK_STATUS_LABEL } from "../api/risks"
 import type { Level } from "../api/types"
-import { StatusPill } from "./StatusPill"
+import { Status } from "./Status"
 
 export const HEAT: Record<string, string> = {
   very_low: "bg-heat-1",
@@ -22,18 +22,6 @@ export function LevelPill({ level }: { level: Level | null }) {
   )
 }
 
-const RISK_STYLE: Record<string, string> = {
-  draft: "not_started",
-  reassessing: "in_review",
-  assessed: "in_progress",
-  treatment_planned: "in_progress",
-  in_treatment: "in_progress",
-  treated: "in_review",
-  accepted: "compliant",
-  review_due: "at_risk",
-  closed: "excluded",
-}
-
 export function RiskStatusPill({ status }: { status: string }) {
-  return <StatusPill status={RISK_STYLE[status] ?? "not_started"} label={RISK_STATUS_LABEL[status] ?? status} />
+  return <Status area="risk" value={status} label={RISK_STATUS_LABEL[status]} />
 }

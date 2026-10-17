@@ -44,8 +44,9 @@ Sign in with the administrator account.
 
 ## Day to day
 
-Use **Assayr Admin** from the Start menu (or `"C:\Program Files\Assayr\assayr-admin.cmd"` in an
-administrator command prompt):
+Use **Assayr Admin** from the Start menu. It opens a window that shows the status and then takes
+the commands below (type `help` for the list, `exit` to close). From an administrator command prompt
+you can also run `"C:\Program Files\Assayr\assayr-admin.exe" status` (or `assayr-admin.cmd`):
 
 | Command | What it does |
 |---|---|

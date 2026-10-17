@@ -29,12 +29,25 @@ export interface AssetInput {
   location: string | null
   description: string | null
   lifecycle: string
+  holds_pii: boolean
+  pii_categories: string[]
+  pii_sensitive: boolean
+  pii_volume: string | null
 }
 
-export function useAssets(includeRetired = false) {
+export type AssetFilters = { criticality?: number; pii?: boolean }
+
+export function useAssets(includeRetired = false, filters: AssetFilters = {}) {
   return useQuery({
-    queryKey: ["assets", includeRetired],
-    queryFn: () => api<Asset[]>(`/assets${includeRetired ? "?include_retired=true" : ""}`),
+    queryKey: ["assets", includeRetired, filters],
+    queryFn: () => {
+      const params = new URLSearchParams()
+      if (includeRetired) params.set("include_retired", "true")
+      if (filters.criticality) params.set("criticality", String(filters.criticality))
+      if (filters.pii) params.set("pii", "true")
+      const query = params.toString()
+      return api<Asset[]>(`/assets${query ? `?${query}` : ""}`)
+    },
   })
 }
 

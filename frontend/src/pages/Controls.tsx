@@ -1,10 +1,12 @@
 import { Link, useNavigate, useSearch } from "@tanstack/react-router"
 import { type FormEvent, useMemo, useState } from "react"
-import { useControls } from "../api/controls"
+import { useControlStats, useControls } from "../api/controls"
 import { useNiaControls } from "../api/nia"
 import { Button } from "../components/Button"
 import { ControlId } from "../components/ControlId"
 import { StatusPill } from "../components/StatusPill"
+import { StatusBar } from "../components/StatusBar"
+import { countBy, statusSegments } from "../lib/statusBars"
 
 const THEMES = ["Organizational", "People", "Physical", "Technological"]
 
@@ -63,12 +65,24 @@ function NiaControls({ domain }: { domain?: string }) {
     for (const c of all) seen.set(c.domain, c.domain_name)
     return [...seen]
   }, [all])
+  const [status, setStatus] = useState<string | null>(null)
   const term = filter.trim().toLowerCase()
-  const rows = all.filter(
-    (c) => (!domain || c.domain === domain) && (!term || c.ref.toLowerCase().includes(term) || c.title.toLowerCase().includes(term)),
+  const inDomain = all.filter((c) => !domain || c.domain === domain)
+  const rows = inDomain.filter(
+    (c) => (!status || c.status === status) && (!term || c.ref.toLowerCase().includes(term) || c.title.toLowerCase().includes(term)),
   )
   return (
     <section className="rounded-xl border border-line bg-surface">
+      {all.length > 0 && (
+        <div className="border-b border-line px-3.5 py-3">
+          <StatusBar
+            label="NIA controls by status"
+            selected={status}
+            onSelect={setStatus}
+            segments={statusSegments("control", countBy(inDomain, (c) => c.status))}
+          />
+        </div>
+      )}
       <div className="flex flex-wrap items-center gap-2 border-b border-line px-3.5 py-3">
         <label htmlFor="domain-filter" className="text-[13px] text-fg-2">Domain</label>
         <select
@@ -147,7 +161,8 @@ function IsoControls() {
   const search = useSearch({ from: "/app/controls" })
   const navigate = useNavigate({ from: "/controls" })
   const [query, setQuery] = useState(search.q ?? "")
-  const controls = useControls({ theme: search.theme, q: search.q, owner: search.owner })
+  const controls = useControls({ theme: search.theme, q: search.q, owner: search.owner, status: search.status })
+  const stats = useControlStats()
   const rows = controls.data?.pages.flatMap((p) => p.items) ?? []
 
   function onSearch(event: FormEvent) {
@@ -157,6 +172,16 @@ function IsoControls() {
 
   return (
       <section className="rounded-xl border border-line bg-surface">
+        {stats.data && (
+          <div className="border-b border-line px-3.5 py-3">
+            <StatusBar
+              label="Controls by status"
+              selected={search.status ?? null}
+              onSelect={(status) => navigate({ search: (prev) => ({ ...prev, status: status ?? undefined }) })}
+              segments={statusSegments("control", stats.data.by_status)}
+            />
+          </div>
+        )}
         <div className="flex flex-wrap items-center gap-2 border-b border-line px-3.5 py-3">
           <label htmlFor="theme-filter" className="text-[13px] text-fg-2">Theme</label>
           <select

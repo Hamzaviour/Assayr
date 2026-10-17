@@ -3,7 +3,6 @@ import { type CSSProperties, type FormEvent, useState } from "react"
 import {
   type Audit,
   type AuditCounts,
-  AUDIT_STATUS_LABEL,
   type AuditFramework,
   FRAMEWORK_LABEL,
   useAudits,
@@ -13,6 +12,9 @@ import {
 import { useMe } from "../auth/session"
 import { Button } from "../components/Button"
 import { formatDate } from "../lib/format"
+import { Status } from "../components/Status"
+import { StatusBar } from "../components/StatusBar"
+import { countBy, statusSegments } from "../lib/statusBars"
 
 const order = (i: number) => ({ "--i": i }) as CSSProperties
 const FIELD = "rounded-lg border border-line-2 bg-surface px-2.5 py-1.5 text-[13.5px] text-fg"
@@ -41,17 +43,7 @@ export function ResultBar({ counts }: { counts: AuditCounts }) {
 }
 
 export function AuditStatus({ status }: { status: Audit["status"] }) {
-  const tone =
-    status === "completed"
-      ? "bg-ok-soft text-ok border-ok/25"
-      : status === "in_progress"
-        ? "bg-primary-soft text-primary border-primary/25"
-        : "bg-transparent text-fg-2 border-line-2 border-dashed"
-  return (
-    <span className={`inline-flex whitespace-nowrap rounded-full border px-2 py-0.5 text-[11.5px] font-semibold ${tone}`}>
-      {AUDIT_STATUS_LABEL[status]}
-    </span>
-  )
+  return <Status area="audit" value={status} />
 }
 
 function Panel({ title, children }: { title: string; children: React.ReactNode }) {
@@ -167,7 +159,9 @@ export function AuditsPage() {
   const audits = useAudits()
   const [panel, setPanel] = useState<"new" | "import" | null>(null)
   const canWrite = (me.data?.permissions ?? []).includes("audits:write")
-  const list = audits.data ?? []
+  const all = audits.data ?? []
+  const [status, setStatus] = useState<string | null>(null)
+  const list = status ? all.filter((a) => a.status === status) : all
 
   return (
     <div className="mx-auto grid max-w-6xl gap-4">
@@ -192,6 +186,11 @@ export function AuditsPage() {
         <p className="rounded-xl border border-dashed border-line-2 p-8 text-center text-fg-3">
           No audits yet.{canWrite && " Create one, or import an existing internal audit workbook."}
         </p>
+      )}
+      {all.length > 0 && (
+        <div className="rounded-xl border border-line bg-surface px-4 py-3">
+          <StatusBar label="Audits by status" selected={status} onSelect={setStatus} segments={statusSegments("audit", countBy(all, (a) => a.status))} />
+        </div>
       )}
       <ul className="grid gap-3">
         {list.map((a, i) => (

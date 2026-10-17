@@ -5,7 +5,7 @@
   --primary: #8a1538; --primary-hover: #6f102c; --primary-soft: #f7e8ed; --on-primary: #ffffff;
   --ink: #0a0f1f; --brass: #cfae4e;
   --ok: #15803d; --ok-soft: #e6f5eb; --warn: #b45309; --warn-soft: #fcf1df; --bad: #c62828; --bad-soft: #fcebeb;
-  --review: #6d28d9; --review-soft: #f0eafe; --idle: #5e6a80; --idle-soft: #eef0f5; --na: #8c95a8;
+  --review: #6d28d9; --review-soft: #f0eafe; --info: #1d4ed8; --info-soft: #e8effd; --idle: #5e6a80; --idle-soft: #eef0f5; --na: #8c95a8;
   --f-display: "Schibsted Grotesk", "IBM Plex Sans", system-ui, sans-serif;
   --f-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   --f-mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
@@ -18,7 +18,7 @@
     --primary: #e0577c; --primary-hover: #ea7a98; --primary-soft: #3a1220; --on-primary: #1a0610;
     --chart-1: #e0577c; --chart-2: #2dd4bf; --chart-3: #fbbf24; --chart-4: #94a3b8; --chart-5: #4ade80; --chart-6: #6b7280;
     --ok: #4cc17e; --ok-soft: #0f2e1e; --warn: #e6a645; --warn-soft: #33260f; --bad: #f26b66; --bad-soft: #3a1517;
-    --review: #b39bff; --review-soft: #261a45; --idle: #95a0b8; --idle-soft: #1b2340; --na: #6e7894;
+    --review: #b39bff; --review-soft: #261a45; --info: #7aa2ff; --info-soft: #16233f; --idle: #95a0b8; --idle-soft: #1b2340; --na: #6e7894;
     --brand: #6e1030; --brand-deep: #2c0613; --brand-bright: #8f1a42; --brand-glow: #b1305a;
     --on-brand-2: #f0cfda; --on-brand-3: #d79cb0;
     --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 14px rgba(0, 0, 0, 0.25);
@@ -36,7 +36,7 @@
   --primary: #e0577c; --primary-hover: #ea7a98; --primary-soft: #3a1220; --on-primary: #1a0610;
     --chart-1: #e0577c; --chart-2: #2dd4bf; --chart-3: #fbbf24; --chart-4: #94a3b8; --chart-5: #4ade80; --chart-6: #6b7280;
   --ok: #4cc17e; --ok-soft: #0f2e1e; --warn: #e6a645; --warn-soft: #33260f; --bad: #f26b66; --bad-soft: #3a1517;
-  --review: #b39bff; --review-soft: #261a45; --idle: #95a0b8; --idle-soft: #1b2340; --na: #6e7894;
+  --review: #b39bff; --review-soft: #261a45; --info: #7aa2ff; --info-soft: #16233f; --idle: #95a0b8; --idle-soft: #1b2340; --na: #6e7894;
   color-scheme: dark;
 }
 
