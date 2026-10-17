@@ -24,6 +24,7 @@ from assayr.health import router as health_router
 from assayr.identity.auth_router import router as auth_router
 from assayr.identity.people_router import router as people_router
 from assayr.identity.users_router import router as users_router
+from assayr.mail.router import router as mail_router
 from assayr.nia.router import frameworks_router as nia_frameworks_router
 from assayr.nia.router import router as nia_router
 from assayr.privacy.breaches_router import router as privacy_breaches_router
@@ -70,6 +71,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(health_router, prefix="/api/v1")
     app.include_router(auth_router, prefix="/api/v1")
     app.include_router(users_router, prefix="/api/v1")
+    app.include_router(mail_router, prefix="/api/v1")
     app.include_router(people_router, prefix="/api/v1")
     app.include_router(risk_library_router, prefix="/api/v1")
     app.include_router(assets_router, prefix="/api/v1")

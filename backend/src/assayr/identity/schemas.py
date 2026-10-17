@@ -30,6 +30,7 @@ class UserOut(BaseModel):
     is_active: bool
     department: str | None = None
     must_change_password: bool = False
+    digest_opt_out: bool = False
     roles: list[RoleGrantOut]
     permissions: list[str]
 
@@ -43,6 +44,7 @@ class UserOut(BaseModel):
             is_active=user.is_active,
             department=user.department,
             must_change_password=user.must_change_password,
+            digest_opt_out=user.digest_opt_out,
             roles=[RoleGrantOut(role=r, scope_id=s) for r, s in pairs],
             permissions=permissions_for(pairs),
         )

@@ -30,8 +30,10 @@ class Settings(BaseSettings):
     reject_threshold: float = 0.60
     worker_poll_seconds: float = 2.0
     recompute_interval_minutes: int = 60
+    # Encrypts secrets kept in the database (the mail server password). Set by the installers.
+    secret_key: str | None = None
 
-    @field_validator("clamav_host", mode="before")
+    @field_validator("clamav_host", "secret_key", mode="before")
     @classmethod
     def _blank_host_is_none(cls, value):
         return value or None
